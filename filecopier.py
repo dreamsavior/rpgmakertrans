@@ -63,7 +63,6 @@ class FileCopier(object):
             raise Exception('Could not access file %s' % fn)
         
     def doCopyfile(self, fid, infn, outfn, infnmtime, mtimes, newmtimes):
-        print fid, self.ignorefiles
         if os.path.splitext(infn)[1] in self.ignoreexts:
             ret = False
         elif fid in self.ignorefiles:
