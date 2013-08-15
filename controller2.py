@@ -2,8 +2,8 @@ import time
 
 from multiprocessing import Manager, Pool, freeze_support
 from errorhook import testExcept, setErrorOut
-from qtui import startView
-from qterror import errorMsg
+from ui.qtui import startView
+from ui.qterror import errorMsg
 
 class Controller(object):
     def __init__(self):
