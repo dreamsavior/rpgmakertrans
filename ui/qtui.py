@@ -7,6 +7,7 @@ Created on 3 Feb 2013
 import sys
 from PySide import QtGui, QtCore
 from errorhook import errorWrap, ErrorClass, ErrorMeta
+from sender import Sender
 
 labelString = ''.join([
     "RPGMaker Trans (C) Habisain 2011-2012\n",
@@ -54,7 +55,7 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         return self.combobox.itemData(self.combobox.currentIndex())
         
     def browsePressed(self):
-        self.eventComms.append(('button', [self.idtoken]))
+        self.eventComms.send('button', self.idtoken)
         
     
         
@@ -82,7 +83,7 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
         self.inplace.toggled.connect(lambda: self.toggle('inplace', self.inplace.isChecked()))
         
     def toggle(self, signal, val):
-        self.eventComms.append(('newval', (signal, val)))
+        self.eventComms.send('newval', signal, val)
         
     def enable(self, state):
         for widget in self.create, self.inplace:
@@ -92,7 +93,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
-        self.eventComms = []
+        self.eventComms = Sender()
         self.game = SelectorBlock('Game location', 'gameloc', self, self.eventComms)
         self.patch = SelectorBlock('Patch location', 'patchloc', self, self.eventComms)
         self.trans = SelectorBlock('Translation Location', 'transloc', self, self.eventComms)
@@ -118,7 +119,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.show()
         
     def closeEvent(self, event):
-        self.eventComms.append(('QUIT', []))
+        self.eventComms.send('QUIT')
         event.ignore()
         
     def displayMessage(self, style, title, maintext):
@@ -197,7 +198,7 @@ class WindowLogicQTComms(object):
     __metaclass__ = ErrorMeta
     def __init__(self):
         #super(WindowLogicQTComms, self).__init__()
-        self.comsin, self.comsout = [], []
+        #self.comsin, self.comsout = [], []
         self.app = QtGui.QApplication(sys.argv)
         self.window = MainWindow()
         
@@ -208,7 +209,7 @@ class WindowLogicQTComms(object):
         self.app.exit()
         
     def __iter__(self):
-        comms = self.window.eventComms
+        comms = self.window.eventComms.get()
         while comms:
             yield comms.pop()
         
@@ -219,8 +220,8 @@ class WindowLogicQTComms(object):
         
 class WindowLogic(object):
     __metaclass__ = ErrorMeta
-    def __init__(self, wndComms, comsin, comsout):
-        self.comsin, self.comsout = comsin, comsout
+    def __init__(self, wndComms, sendin, sendout):
+        self.sendin, self.sendout = sendin, sendout
         self.wndComms = wndComms                
         self.timer = Timer(100, self.updateGUI)
         self.actions = {'addGame': lambda x,y,z: self.wndComms.comboBoxAdd('gameloc', x,y,z),
@@ -243,17 +244,18 @@ class WindowLogic(object):
         self.wndComms.start()
         
     def updateGUI(self):
-        while self.comsin:
-            acttype, actargs = self.comsin.pop(0)
+        events = self.sendin.get()
+        while events:
+            acttype, actargs, actkwargs = events.pop(0)
             if acttype in self.actions:
-                self.actions[acttype](*actargs)
+                self.actions[acttype](*actargs, **actkwargs)
             else:
-                self.logger.warning('warning, unknown action %s with args %s' % (str(acttype), str(actargs)))
-        for msg, params in self.wndComms:
+                self.logger.warning('warning, unknown action %s with args %s %s' % (str(acttype), str(actargs), str(actkwargs)))
+        for msg, args, kwargs in self.wndComms:
             if msg == 'QUIT':
                 self.close()
             elif msg in self. uiactions:
-                self.uiactions[msg](*params)
+                self.uiactions[msg](*args, **kwargs)
             else:
                 print msg, params
         #self.wndComms.setProgress(self.progressAmount)
@@ -261,19 +263,19 @@ class WindowLogic(object):
     def buttonPressed(self, button):
         if button == 'go':
             gameid, patchid, transid = self.wndComms.getTransParams()
-            self.comsout.append(['doPatch', [gameid, patchid, transid]])
+            self.sendout.send('doPatch', gameid, patchid, transid)
         elif button == 'gameloc':
             newgame = self.selectGame()
             if newgame:
-                self.comsout.append(['addGame', [newgame]])
+                self.sendout.send('addGame', newgame)
         elif button == 'patchloc':
             newpatch = self.selectPatch()
             if newpatch:
-                self.comsout.append(['addPatch', [newpatch]])
+                self.sendout.send('addPatch', newpatch)
         elif button == 'transloc':
             transdir = self.selectTransDir()
             if transdir:
-                self.comsout.append(['addTrans', [newpatch]]) 
+                self.sendout.send('addTrans', newpatch) 
         else:
             print 'unknown button %s' % button
 
@@ -289,7 +291,7 @@ class WindowLogic(object):
     
     def close(self):
         self.wndComms.stop()
-        self.comsout.append(['KILL', []])
+        self.sendout.send('KILL')
         
     def displayOK(self, title, message):
         self.wndComms.displayMessage('OK', title, message)

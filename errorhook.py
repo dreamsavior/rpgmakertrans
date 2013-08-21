@@ -6,7 +6,7 @@ Created on 3 Feb 2013
 
 import traceback, functools
 
-errorOut = []
+errorOut = None
 def setErrorOut(comsout):
     global errorOut
     errorOut = comsout
@@ -18,7 +18,8 @@ def errorWrap(func):
             return func(*args, **kwargs)
         except Exception, e:
             global errorOut
-            errorOut.append(['ERROR', [traceback.format_exc(e)]])
+            errorOut.send('ERROR', traceback.format_exc(e))
+            print traceback.format_exc(e)
             raise e
     return wrap
 
@@ -41,6 +42,7 @@ class ErrorMeta(type):
                 setattr(cls, x, errorWrap(f))
 @errorWrap  
 def testExcept():
+    print 'called'
     raise Exception('Something went wrong, natch')
     print 'hmm'
     
