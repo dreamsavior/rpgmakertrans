@@ -15,7 +15,7 @@ class ErrorMsg(QtGui.QDialog):
             vbox.addWidget(x)
          
         self.setLayout(vbox)    
-        self.setWindowTitle('RPGMaker Trans ErrorClass')
+        self.setWindowTitle('RPGMaker Trans Error')
         button.released.connect(lambda: clip.setText(self.msg))
         
     def setMsg(self, msg):
