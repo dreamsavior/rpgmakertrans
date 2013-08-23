@@ -11,15 +11,15 @@ class SenderManager(BaseManager):
 
 class Sender(object):
     def __init__(self):
-        self.signals = []
+        self.__signals = []
     
     def send(self, signal, *args, **kwargs):
         #print 'got a %s' % signal
-        self.signals.append((signal, args, kwargs))
+        self.__signals.append((signal, args, kwargs))
         
     def get(self):
-        ret = self.signals
-        self.signals = []
+        ret = self.__signals
+        self.__signals = []
         return ret 
     
     def __getattr__(self, key):
