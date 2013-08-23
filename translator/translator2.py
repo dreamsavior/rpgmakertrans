@@ -1,5 +1,8 @@
 import random
 from twokpatcher.speedy2kconstants import contextDict
+from translatorbase import Translator
+from collections import defaultdict
+
 ###########!######! TRANSLATED TEXT #############!###!
 shopMenu = '49 char limit'
 battleStuff = '49 char limit'
@@ -155,7 +158,7 @@ compatRewrite = {}
 compatRewrite['itemAttr/ItemDescription'] = 'itemAttr/Description'
 compatRewrite['skillAttr/SkillDescription'] = 'skillAttr/Description'
 
-class Translator(object):
+class Translator2kv2f(object):
     def __init__(self, incodec='cp932', outcodec='cp932'):
         d = {30441: [123, 107, 49, 41, 91, 51, 115, 114, 123, 41, 100, 97, 125, 50, 112, 97, 102, 93, 36, 100, 125, 91, 93, 115, 125, 51, 125], 30123: [48, 49, 52, 124, 35, 80, 35, 92, 53, 35, 95, 124, 95, 48, 124, 112, 124, 49, 35], 30001: [83, 84, 73, 66, 69, 71, 79, 69, 83, 80, 65, 76, 65, 70, 73, 83, 83, 73, 83, 83, 76, 76, 75, 80], 38102: [112, 107, 97, 97, 112, 115, 36, 115, 111, 107, 115, 97, 97, 50, 111, 36, 52, 100, 112, 48, 106, 111, 105, 100, 119], 23994: [124, 117, 105, 124, 124, 47, 92, 94, 38, 36, 124, 52, 53, 92, 92, 124, 94, 47, 53, 38, 124, 45], 42911: [65, 84, 82, 77, 65, 76, 78, 64, 75, 75, 73, 126, 126, 69, 64, 80, 76, 82, 82, 83, 71]}
         self.keys = []
@@ -288,5 +291,21 @@ class Translator(object):
                 translation, t, string = t2.partition('\n# END STRING')
                 self.loadTranslatable(translation.strip())
                 
+class Translator2kv2(Translator):
+    def __init__(self, data):
+        self.translators = defaultdict(Translator2kv2f)
+        for name in data:
+            self.translators[data].loadTranslatables(data[name])
+            
+    def translate(self, string, context):
+        name, ocontext = context
+        return self.translators[name].translateString(string, ocontext)
+    
+    def getPatchData(self):
+        ret = {}
+        for name, translator in self.translators.items():
+            ret[name] = translator.dumpTranslatables()
+        return ret
+    
 if __name__ == '__main__':
     pass

@@ -26,6 +26,10 @@ class BasePatch(Resource):
         raise Exception('Translator grabbing not implemented')
     
     @staticmethod
+    def getPatchData():
+        raise Exception('getting patch data not implemented')
+    
+    @staticmethod
     def writePatch(translator):
         return False
     
