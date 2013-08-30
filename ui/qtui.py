@@ -257,7 +257,7 @@ class WindowLogic(object):
             elif msg in self. uiactions:
                 self.uiactions[msg](*args, **kwargs)
             else:
-                print msg, params
+                print msg, args, kwargs
         #self.wndComms.setProgress(self.progressAmount)
     
     def buttonPressed(self, button):
