@@ -6,7 +6,7 @@ Created on 10 Apr 2013
 from errorhook import ErrorMeta
 
 class Resource(object):
-    
+    __metaclass__ = ErrorMeta
     @staticmethod
     def sniff(path):
         raise Exception('Sniffing not implemented')
@@ -17,7 +17,7 @@ class BaseGame(Resource):
         raise Exception('Patching not implemented')
 
 class BasePatch(Resource):
-    __metaclass__ = ErrorMeta
+    
     def __init__(self, path):
         self.path = path
          

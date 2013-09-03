@@ -178,6 +178,9 @@ class Translator2kv2f(object):
         self.incodec = incodec
         self.outcodec = outcodec
         
+    def __str__(self):
+        return '%s containing %i entries' % (type(self).__name__, len(self.stringTrans)) 
+        
     def translateString(self, string, context):
         if string in self.keys: 
             raise Exception('Found kill switch; not translating this game')

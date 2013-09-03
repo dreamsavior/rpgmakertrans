@@ -8,7 +8,6 @@ Created on 18 Apr 2013
 import os, os.path, shutil
 
 from resource import BasePatch
-from errorhook import ErrorMeta
 
 filePatchers = {}
 class FilePatcher(BasePatch):
