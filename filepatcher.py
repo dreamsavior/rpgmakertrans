@@ -17,7 +17,6 @@ class FilePatcher(BasePatch):
         super(FilePatcher, self).__init__(path)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
-        raise Exception('Yo')
             
     def makeTranslator(self):
         raise Exception('Not implemented')
@@ -35,7 +34,7 @@ class FilePatcher(BasePatch):
     def getNonPatchedList(self):
         ret = []
         for fpath in self.__filePaths():
-            name = fpath.replace(self.path + os.sep, '')
+            name = os.path.relpath(fpath, self.path) #fpath.replace(self.path + os.sep, '')
             ret.append(name)
         return ret
     
@@ -87,7 +86,7 @@ def getFilePatcher(path):
             return filePatchers[x](path)
             
 if __name__ == '__main__':
-    print getFilePatcher('/home/habisain/tr/RyonaRPG_patch')
+    print getFilePatcher('/home/habisain/tr/RyonaRPG_patch').getNonPatchedList()
     #x = FilePatcher('/home/habisain/tr/RyonaRPG_patch')
     #print x.getNonPatchedList()
     #x.doFullPatches('/home/habisain/tr/RyonaRPG_translated')

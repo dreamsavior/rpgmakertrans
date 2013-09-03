@@ -25,4 +25,4 @@ class Patcher(ErrorClass):
         
     def finishJob(self):
         self.progress += 1
-        self.comsout.setProgress(self.progress / len(self.jobs))
+        self.comsout.setProgress('patching', self.progress / len(self.jobs))

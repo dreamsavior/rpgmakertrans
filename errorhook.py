@@ -18,7 +18,8 @@ def errorWrap(func):
             return func(*args, **kwargs)
         except Exception, e:
             global errorOut
-            errorOut.send('ERROR', traceback.format_exc(e))
+            if errorOut is not None:
+                errorOut.send('ERROR', traceback.format_exc(e))
             print traceback.format_exc(e)
             raise e
     return wrap
