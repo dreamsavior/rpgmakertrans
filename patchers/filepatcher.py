@@ -60,7 +60,7 @@ def sniffv3(path):
             return True
     return False
 
-filePatchers[sniffv3] = FilePatcherv3
+#filePatchers[sniffv3] = FilePatcherv3
 
 class FilePatcherv2(FilePatcher):
     pass
