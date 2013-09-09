@@ -271,16 +271,11 @@ class Translator2kv2f(object):
         originalString = '\n'.join(raw)
         if translationString.strip() != '':
             self.stringTrans[(originalString, context)] = translationString
-            
+    
     def loadTranslatables(self, string):
         # TODO: Behaviour here isn't correct. I shouldn't be detecting based on encoding
         # as encoding should be done by the backend.
         if not string: return
-        try:
-            string = string.decode('utf-8')
-        except UnicodeError:
-            raise ValueError('Patch file not recognised')
-            
         string = string.replace('\r', '')
         if string.partition('\n')[0].upper().strip() != '# RPGMAKER TRANS PATCH FILE VERSION 2.0':
             raise ValueError('Patch file not recognised')
@@ -295,10 +290,11 @@ class Translator2kv2f(object):
                 self.loadTranslatable(translation.strip())
                 
 class Translator2kv2(Translator):
-    def __init__(self, data):
+    def __init__(self, data, mtime):
+        super(Translator2kv2, self).__init__(mtime)
         self.translators = defaultdict(Translator2kv2f)
         for name in data:
-            self.translators[data].loadTranslatables(data[name])
+            self.translators[name].loadTranslatables(data[name])
             
     def translate(self, string, context):
         name, ocontext = context

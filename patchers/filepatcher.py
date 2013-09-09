@@ -4,10 +4,14 @@ Created on 18 Apr 2013
 @author: habisain
 '''
 
+if __name__ == '__main__':
+    import sys
+    sys.path.append('../')
 
 import os, os.path, shutil
-
-from resource import BasePatch
+import codecs
+from resources import BasePatch
+from translator.translator2 import Translator2kv2 
 
 filePatchers = {}
 class FilePatcher(BasePatch):
@@ -18,7 +22,19 @@ class FilePatcher(BasePatch):
             self.path = os.path.split(path)[0]
             
     def makeTranslator(self):
-        raise Exception('Not implemented')
+        data = {}
+        mtime = 0
+        for fn in os.listdir(self.path):
+            if fn.lower().endswith('.txt'):
+                fullfn = os.path.join(self.path, fn)
+                name = fn.rpartition('.')[0].lower()
+                mtime = max(mtime, os.path.getmtime(fullfn))
+            try:
+                with codecs.open(fullfn, 'r', encoding='utf-8') as f:
+                    data[name] = f.read()
+            except UnicodeError:
+                pass # Not a valid RPGMaker Trans file, evidently.
+        return self.translatorClass(data, mtime)
     
     def __filePaths(self):
         for dir, subdir, files in os.walk(self.path):
@@ -63,7 +79,9 @@ def sniffv3(path):
 #filePatchers[sniffv3] = FilePatcherv3
 
 class FilePatcherv2(FilePatcher):
-    pass
+    def __init__(self, *args, **kwargs):
+        super(FilePatcherv2, self).__init__(*args, **kwargs)
+        self.translatorClass = Translator2kv2
     
 def sniffv2(path):
     if os.path.isfile(path) and path.endswith('rpgmktranspatch'):
@@ -85,7 +103,7 @@ def getFilePatcher(path):
             return filePatchers[x](path)
             
 if __name__ == '__main__':
-    print getFilePatcher('/home/habisain/tr/RyonaRPG_patch').getNonPatchedList()
+    print getFilePatcher('/home/habisain/tr/RyonaRPG_patch').makeTranslator()
     #x = FilePatcher('/home/habisain/tr/RyonaRPG_patch')
     #print x.getNonPatchedList()
     #x.doFullPatches('/home/habisain/tr/RyonaRPG_translated')
