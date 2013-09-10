@@ -11,7 +11,6 @@ if __name__ == '__main__':
 import os, os.path, shutil
 import codecs
 from resources import BasePatch
-from translator.translator2 import Translator2kv2 
 from translator.translatorbase import TranslatorManager
 
 filePatchers = {}
