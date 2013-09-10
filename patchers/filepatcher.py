@@ -12,6 +12,7 @@ import os, os.path, shutil
 import codecs
 from resources import BasePatch
 from translator.translator2 import Translator2kv2 
+from translator.translatorbase import TranslatorManager
 
 filePatchers = {}
 class FilePatcher(BasePatch):
@@ -20,6 +21,8 @@ class FilePatcher(BasePatch):
         super(FilePatcher, self).__init__(path)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
+        self.translatorManager = TranslatorManager()
+        self.translatorManager.start()
             
     def makeTranslator(self):
         data = {}
@@ -34,7 +37,7 @@ class FilePatcher(BasePatch):
                     data[name] = f.read()
             except UnicodeError:
                 pass # Not a valid RPGMaker Trans file, evidently.
-        return self.translatorClass(data, mtime)
+        return getattr(self.translatorManager, type(self).translatorClass)(data, mtime)
     
     def __filePaths(self):
         for dir, subdir, files in os.walk(self.path):
@@ -79,9 +82,7 @@ def sniffv3(path):
 #filePatchers[sniffv3] = FilePatcherv3
 
 class FilePatcherv2(FilePatcher):
-    def __init__(self, *args, **kwargs):
-        super(FilePatcherv2, self).__init__(*args, **kwargs)
-        self.translatorClass = Translator2kv2
+    translatorClass = 'Translator2kv2'
     
 def sniffv2(path):
     if os.path.isfile(path) and path.endswith('rpgmktranspatch'):
@@ -103,7 +104,7 @@ def getFilePatcher(path):
             return filePatchers[x](path)
             
 if __name__ == '__main__':
-    print getFilePatcher('/home/habisain/tr/RyonaRPG_patch').makeTranslator()
+    print type(getFilePatcher('/home/habisain/tr/RyonaRPG_patch').makeTranslator())
     #x = FilePatcher('/home/habisain/tr/RyonaRPG_patch')
     #print x.getNonPatchedList()
     #x.doFullPatches('/home/habisain/tr/RyonaRPG_translated')

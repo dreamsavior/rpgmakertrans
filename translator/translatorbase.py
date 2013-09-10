@@ -7,8 +7,9 @@ Created on 15 Aug 2013
 from multiprocessing.managers import BaseManager
 
 class TranslatorManager(BaseManager):
-    def __init__(self):
-        self.start()
+    pass
+    #def __init__(self):
+    #    self.start()
 
 class TranslatorMeta(type):
     def __init__(cls, a, b, c):
