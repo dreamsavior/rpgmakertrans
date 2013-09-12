@@ -241,12 +241,15 @@ class Translator2kv2f(object):
         for x, c in self.stringOrder:
             if not contexts or c.startswith(contexts):
                 ret.append(self.dumpTranslatable(x, c))
-        unused = sorted([x for x in self.stringTrans if x not in self.stringOrder])
+        if contexts is None:
+            unused = sorted([x for x in self.stringTrans if x not in self.stringOrder])
+        else:
+            unused = sorted([x for x in self.stringTrans if x not in self.stringOrder if x[1].startswith(contexts)])
         if unused:
             ret.append('# UNUSED TRANSLATABLES')
             for x, c in unused:
-                if not contexts or c in contexts:
-                    ret.append(self.dumpTranslatable(x, c))
+            #    if not contexts or c.startswith(contexts):
+                ret.append(self.dumpTranslatable(x, c))
         if ret:
             ret = ['# RPGMAKER TRANS PATCH FILE VERSION 2.0'] + ret
         return '\n'.join(ret)#.encode('utf-8')
@@ -310,9 +313,14 @@ class Translator2kv2(Translator):
             if name == 'RPG_RT':
                 for subsection in rtsubsections:
                     secname = (name + '_' + subsection).upper()
-                    ret[secname] = translator.dumpTranslatables(contexts=rtsubsections[subsection])    
+                    translations = translator.dumpTranslatables(
+                                    contexts=rtsubsections[subsection])
+                    if translations:
+                        ret[secname] = translations    
             else:
-                ret[name.capitalize()] = translator.dumpTranslatables()
+                translations = translator.dumpTranslatables()
+                if translations:
+                    ret[name.capitalize()] = translations 
         return ret
     
 if __name__ == '__main__':
