@@ -11,7 +11,7 @@ if __name__ == '__main__':
 import os, os.path, shutil
 import codecs
 from resources import BasePatch
-from translator.translatorbase import TranslatorManager
+from translator import TranslatorManager
 
 filePatchers = {}
 class FilePatcher(BasePatch):
@@ -37,6 +37,15 @@ class FilePatcher(BasePatch):
             except UnicodeError:
                 pass # Not a valid RPGMaker Trans file, evidently.
         return getattr(self.translatorManager, type(self).translatorClass)(data, mtime)
+    
+    def writeTranslator(self, translator, path=None):
+        if path is None: path = self.path # Normal non-debug behaviour
+        data = translator.getPatchData()
+        for name in data:
+            fn = name + '.txt'
+            fullfn = os.path.join(path, fn)
+            with codecs.open(fullfn, 'w', encoding='utf-8') as f:
+                f.write(data[name])
     
     def __filePaths(self):
         for dir, subdir, files in os.walk(self.path):
@@ -103,7 +112,10 @@ def getFilePatcher(path):
             return filePatchers[x](path)
             
 if __name__ == '__main__':
-    print type(getFilePatcher('/home/habisain/tr/RyonaRPG_patch').makeTranslator())
+    x = getFilePatcher('/home/habisain/tr/RyonaRPG_patch')
+    y = x.makeTranslator()
+    print type(y)
+    x.writeTranslator(y, path='/home/habisain/tr/RyonaRPG_patch2')
     #x = FilePatcher('/home/habisain/tr/RyonaRPG_patch')
     #print x.getNonPatchedList()
     #x.doFullPatches('/home/habisain/tr/RyonaRPG_translated')

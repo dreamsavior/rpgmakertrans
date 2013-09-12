@@ -1,5 +1,5 @@
 import random
-from twokpatcher.speedy2kconstants import contextDict
+from twokpatcher.speedy2kconstants import contextDict, rtsubsections
 from translatorbase import Translator
 from collections import defaultdict
 
@@ -249,7 +249,7 @@ class Translator2kv2f(object):
                     ret.append(self.dumpTranslatable(x, c))
         if ret:
             ret = ['# RPGMAKER TRANS PATCH FILE VERSION 2.0'] + ret
-        return '\n'.join(ret).encode('utf-8')
+        return '\n'.join(ret)#.encode('utf-8')
                 
     def loadTranslatable(self, string):
         lines = string.split('\n')
@@ -294,16 +294,25 @@ class Translator2kv2(Translator):
         super(Translator2kv2, self).__init__(mtime)
         self.translators = defaultdict(Translator2kv2f)
         for name in data:
-            self.translators[name].loadTranslatables(data[name])
+            uname = name.upper()
+            if uname.startswith('RPG_RT'):
+                uname = 'RPG_RT'
+            self.translators[uname].loadTranslatables(data[name])
             
     def translate(self, string, context):
         name, ocontext = context
+        name = name.upper()
         return self.translators[name].translateString(string, ocontext)
     
     def getPatchData(self):
         ret = {}
         for name, translator in self.translators.items():
-            ret[name] = translator.dumpTranslatables()
+            if name == 'RPG_RT':
+                for subsection in rtsubsections:
+                    secname = (name + '_' + subsection).upper()
+                    ret[secname] = translator.dumpTranslatables(contexts=rtsubsections[subsection])    
+            else:
+                ret[name.capitalize()] = translator.dumpTranslatables()
         return ret
     
 if __name__ == '__main__':
