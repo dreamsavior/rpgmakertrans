@@ -138,12 +138,16 @@ def sniffv2(path):
     return False         
         
 filePatchers[sniffv2] = FilePatcherv2
+DEFAULT = FilePatcherv2
 
 def getFilePatcher(path):
     for x in filePatchers:
         if x(path):
             return filePatchers[x](path)
-            
+    if not os.path.exists(path):
+        os.mkdir(path)
+    return DEFAULT(path)
+    
 if __name__ == '__main__':
     x = getFilePatcher('/home/habisain/tr/RyonaRPG_patch')
     y = x.makeTranslator()

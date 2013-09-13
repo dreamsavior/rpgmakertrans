@@ -36,11 +36,12 @@ class FileCopier(object):
                 f.write('RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
         for directory in self.dirs:
             os.mkdir(directory)
+        # TODO: Send a signal that we're good to start patching the game here!
         copied = 0
         for fid, infn, outfn in self.files:
             self.doCopyFile(fid, infn, outfn)
             copied += 1
-            self.comsout.setProgress('copying', copied / len(self.files))
+            self.comsout.send('setProgress', 'copying', copied / len(self.files))
             
     def doCopyFile(self, fid, infn, outfn):
         if os.path.splitext(infn)[1] in self.ignoreexts:
@@ -49,7 +50,7 @@ class FileCopier(object):
             ret = False
         else:
             infnmtime = os.path.getmtime(infn)
-            self.testFile(infn)
+            #self.testFile(infn)
             outfnmtime = self.mtimes.get(outfn, None)
             if infnmtime == outfnmtime:
                 ret = False
