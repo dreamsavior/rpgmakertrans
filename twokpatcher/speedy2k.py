@@ -66,7 +66,7 @@ class RPGFile(object):
 
     def matchString(self, newstring):
         # returns True and moves on if string matches
-        # else returns Falfse (and doesn't move on)
+        # else returns False (and doesn't move on)
         if self.string.startswith(newstring, self.index):
             self.index += len(newstring)
             self.output.append(newstring)
@@ -93,8 +93,8 @@ class RPGFile(object):
         length = self.rpgint()
         self.index += length
         self.output.append(self.string[start:self.index])
-        if '.png' in self.output[-1]:
-            print 'FOUND IMAGE'
+        #if '.png' in self.output[-1]:
+        #    print 'FOUND IMAGE'
         
     def blindbytes(self):
         # advances by a bytes object, returning nothing

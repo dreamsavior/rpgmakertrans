@@ -44,40 +44,31 @@ class FilePatcher(BasePatch):
             with codecs.open(fullfn, 'w', encoding='utf-8') as f:
                 f.write(data[name])
                 
-    def __patchDataFiles(self):
-        for fn in self.__filePaths():
-            if fn.endswith('.txt'):
-                try:
-                    with codecs.open(fn, 'r', encoding='utf-8') as f:
-                        header = '# RPGMAKER TRANS PATCH'
-                        x = f.read(len(header))
-                        if x.startswith(header):
-                            yield fn
-                except UnicodeError:
-                    pass
+    def patchDataFiles(self):
+        raise Exception('This method needs to be overridden')
                 
     def genPatchDataFiles(self):
-        self.patchDataFiles = [x for x in self.__patchDataFiles()]
+        self.patchDataFiles = [x for x in self.patchDataFiles()]
     
-    def __filePaths(self):
+    def filePaths(self):
         for dir, subdir, files in os.walk(self.path):
             for fn in files:
                 fpath = os.path.join(dir, fn)
                 yield fpath
                 
-    def __fileDirs(self):
+    def fileDirs(self):
         for dr, subdirs, fns in os.walk(self.path):
             yield dr
 
     def getNonPatchedList(self):
         ret = []
-        for fpath in self.__filePaths():
+        for fpath in self.filePaths():
             name = os.path.relpath(fpath, self.path) #fpath.replace(self.path + os.sep, '')
             ret.append(name)
         return ret
     
     def doFullPatches(self, inpath, outpath): 
-        for fn in self.__filePaths():
+        for fn in self.filePaths():
             name = fn.replace(self.path + os.sep, '')
             infn = os.path.join(inpath, name)
             if os.path.isfile(infn):
@@ -87,7 +78,18 @@ class FilePatcher(BasePatch):
                 shutil.copy(fn, outfn)
                 
 class FilePatcherv3(FilePatcher):
-    pass
+    def patchDataFiles(self):
+        raise Exception('This needs to be made compliant with the final version of v3 patches')
+        for fn in self.filePaths():
+            if fn.endswith('.txt'):
+                try:
+                    with codecs.open(fn, 'r', encoding='utf-8') as f:
+                        header = '# RPGMAKER TRANS PATCH'
+                        x = f.read(len(header))
+                        if x.startswith(header):
+                            yield fn
+                except UnicodeError:
+                    pass
     
 def sniffv3(path):
     if os.path.isdir(path):
@@ -103,7 +105,19 @@ def sniffv3(path):
 
 class FilePatcherv2(FilePatcher):
     translatorClass = 'Translator2kv2'
-    
+    def patchDataFiles(self):
+        # TODO: Move this down into subclasses: reason - may not be constant amongst versions.
+        for fn in os.listdir(self.path):
+            if fn.lower().endswith('.txt'):
+                try:
+                    with codecs.open(fn, 'r', encoding='utf-8') as f:
+                        header = '# RPGMAKER TRANS PATCH'
+                        x = f.read(len(header))
+                        if x.startswith(header):
+                            yield fn
+                except UnicodeError:
+                    pass
+                
 def sniffv2(path):
     if os.path.isdir(path):
         path = os.path.join(path, 'rpgmktranspatch')
