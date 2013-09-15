@@ -37,6 +37,7 @@ class FileCopier(object):
         for directory in self.dirs:
             os.mkdir(directory)
         # TODO: Send a signal that we're good to start patching the game here!
+        self.comsout.send('dirsCopied')
         copied = 0
         for fid, infn, outfn in self.files:
             self.doCopyFile(fid, infn, outfn)
@@ -44,24 +45,15 @@ class FileCopier(object):
             self.comsout.send('setProgress', 'copying', copied / len(self.files))
             
     def doCopyFile(self, fid, infn, outfn):
-        if os.path.splitext(infn)[1] in self.ignoreexts:
-            ret = False
-        elif fid in self.ignorefiles:
-            ret = False
-        else:
-            infnmtime = os.path.getmtime(infn)
-            #self.testFile(infn)
-            outfnmtime = self.mtimes.get(outfn, None)
-            if infnmtime == outfnmtime:
-                ret = False
-            else:
-                try:
-                    shutil.copy(infn, outfn)
-                except IOError:
-                    raise Exception('Could not copy %s to %s' % (infn, outfn))
-                ret = True
+        infnmtime = os.path.getmtime(infn)
+        #self.testFile(infn)
+        outfnmtime = self.mtimes.get(outfn, None)
+        if infnmtime != outfnmtime:
+            try:
+                shutil.copy(infn, outfn)
+            except IOError:
+                raise Exception('Could not copy %s to %s' % (infn, outfn))
         self.newmtimes[outfn] = infnmtime
-        return ret
 
     def changeDir(self, path, partA, partB): 
         if path.startswith(partA):
@@ -87,7 +79,9 @@ class FileCopier(object):
                 origfile = os.path.normcase(os.path.join(path, fname))
                 fid = origfile.replace(indir + os.path.sep, '', 1)
                 transfile = self.changeDir(origfile, indir, outdir)
-                self.files.append((fid, origfile, transfile))
+                ext = os.path.splitext(fname)[1]
+                if not (fid in self.ignorefiles or ext in self.ignoreexts):
+                    self.files.append((fid, origfile, transfile))
                 
 def copyfiles(indir, outdir,
               ignoredirs, ignoreexts, ignorefiles, 

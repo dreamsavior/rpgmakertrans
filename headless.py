@@ -11,7 +11,7 @@ def patch(indir, patchpath, outdir):
     dontcopy = patcher.getNonPatchedList()
     fileCopyPool = multiprocessing.Pool()
     r = fileCopyPool.apply_async(copyfiles, kwds={'indir': indir, 'outdir': outdir,
-              'ignoredirs': [], 'ignoreexts':['lmu', 'ldb'], 'ignorefiles': dontcopy, 
+              'ignoredirs': [], 'ignoreexts':['.lmu', '.ldb', '.lsd'], 'ignorefiles': dontcopy, 
               'comsout': dummycoms, 'translator': None, 'mtimes': {}, 'newmtimes': {}})
     fileCopyPool.close()
     fileCopyPool.join()
