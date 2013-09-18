@@ -37,6 +37,8 @@ class FilePatcher(BasePatch):
     
     def writeTranslator(self, translator, path=None):
         if path is None: path = self.path # Normal non-debug behaviour
+        if not os.path.exists(path):
+            os.mkdir(path)
         data = translator.getPatchData()
         for name in data:
             fn = name + '.txt'

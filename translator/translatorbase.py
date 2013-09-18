@@ -23,3 +23,6 @@ class Translator(object):
         
     def updateMTime(self, newmtime):
         self.mtime = max(self.mtime, newmtime)
+        
+    def getMTime(self):
+        return self.mtime

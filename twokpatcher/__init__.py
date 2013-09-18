@@ -1,0 +1,1 @@
+from speedy2kapi import TwoKGame

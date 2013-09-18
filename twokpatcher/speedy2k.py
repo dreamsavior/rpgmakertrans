@@ -1,6 +1,6 @@
 import os.path
 from struct import unpack, Struct
-from speedy2kconstants import schemas
+from speedy2kconstants import schemas, containerTypes
 
 
 # TODO LIST:
