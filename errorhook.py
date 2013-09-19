@@ -11,16 +11,20 @@ def setErrorOut(comsout):
     global errorOut
     errorOut = comsout
 
+caught = set()
+
 def errorWrap(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception, e:
-            global errorOut
-            if errorOut is not None:
-                errorOut.send('ERROR', traceback.format_exc(e))
-            print traceback.format_exc(e)
+            global errorOut, caught
+            if e not in caught:
+                if errorOut is not None:
+                    errorOut.send('ERROR', traceback.format_exc(e))
+                print traceback.format_exc(e)
+                caught.add(e)
             raise e
     return wrap
 

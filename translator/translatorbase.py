@@ -5,13 +5,14 @@ Created on 15 Aug 2013
 '''
 
 from multiprocessing.managers import BaseManager
+from errorhook import ErrorMeta
 
 class TranslatorManager(BaseManager):
     pass
     #def __init__(self):
     #    self.start()
 
-class TranslatorMeta(type):
+class TranslatorMeta(ErrorMeta):
     def __init__(cls, a, b, c):
         super(TranslatorMeta, cls).__init__(a, b, c)
         TranslatorManager.register(cls.__name__, cls)

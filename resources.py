@@ -16,28 +16,5 @@ class BaseGame(Resource):
     def patch(indir, outdir, translator):
         raise Exception('Patching not implemented')
 
-class BasePatch(Resource):
-    
-    def __init__(self, path):
-        self.path = path
-         
-    @staticmethod
-    def makeTranslator():
-        raise Exception('Translator grabbing not implemented')
-    
-    @staticmethod
-    def getPatchData():
-        raise Exception('getting patch data not implemented')
-    
-    @staticmethod
-    def writePatch(translator):
-        return False
-    
-    @staticmethod
-    def getNonPatchedList():
-        raise Exception('Nonpatched List not implemented')
-    
-    @staticmethod
-    def doFullPatches(outpath):
-        raise Exception('FullPatching not implemented')
+
     

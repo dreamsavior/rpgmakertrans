@@ -6,14 +6,15 @@ Created on 3 Sep 2013
 from __future__ import division
 
 import os.path, shutil
-from errorhook import ErrorClass
+from errorhook import ErrorClass, errorWrap
 
 class FileCopier(ErrorClass):
     """Handles copying files from orig directory to target. Does *not* copy patch files."""
     
     def __init__(self, indir, outdir,
                  ignoredirs, ignoreexts, ignorefiles, 
-                 comsout, translator, mtimes, newmtimes, *args, **kwargs):
+                 comsout, translator, mtimes, newmtimes,
+                 progresssig, dirssig, *args, **kwargs):
         super(FileCopier, self).__init__(*args, **kwargs)
         self.indir = os.path.normcase(indir)
         self.outdir = os.path.normcase(outdir)
@@ -26,6 +27,8 @@ class FileCopier(ErrorClass):
         self.translator = translator # For future compatibility
         self.mtimes = mtimes
         self.newmtimes = newmtimes
+        self.progresssig = progresssig
+        self.dirssig = dirssig
         
     def run(self):
         self.getLists()
@@ -38,11 +41,14 @@ class FileCopier(ErrorClass):
         for directory in self.dirs:
             os.mkdir(directory)
         # TODO: Send a signal that we're good to start patching the game here!
-        self.comsout.send('trigger', 'dirsCopied')
-        self.comsout.send('setProgressDiv', 'copying', len(self.files))
+        if self.dirssig: 
+            self.comsout.send('trigger', self.dirssig)
+        if self.progresssig: 
+            self.comsout.send('setProgressDiv', self.progresssig, len(self.files))
         for fid, infn, outfn in self.files:
             self.doCopyFile(fid, infn, outfn)
-            self.comsout.send('incProgress', 'copying')
+            if self.progresssig: 
+                self.comsout.send('incProgress', self.progresssig)
             
     def doCopyFile(self, fid, infn, outfn):
         infnmtime = os.path.getmtime(infn)
@@ -82,13 +88,15 @@ class FileCopier(ErrorClass):
                 ext = os.path.splitext(fname)[1]
                 if not (fid in self.ignorefiles or ext in self.ignoreexts):
                     self.files.append((fid, origfile, transfile))
-                
+@errorWrap      
 def copyfiles(indir, outdir,
               ignoredirs, ignoreexts, ignorefiles, 
-              comsout, translator, mtimes, newmtimes):
+              comsout, translator, mtimes, newmtimes,
+              progresssig, dirssig):
     x = FileCopier(indir, outdir,
                  ignoredirs, ignoreexts, ignorefiles, 
-                 comsout, translator, mtimes, newmtimes)
+                 comsout, translator, mtimes, newmtimes,
+                 progresssig, dirssig)
     x.run()
                 
             

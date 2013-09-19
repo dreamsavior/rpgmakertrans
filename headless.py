@@ -23,7 +23,7 @@ class Headless(object):
         self.actions = {'trigger': self.trigger, 'setProgress': self.setProgress, 
                         'submit': self.submit, 'waitUntil': self.waitUntil,
                         'setProgressDiv': self.setProgressDiv, 'incProgress': self.incProgress}
-        self.progress = {'copying': [0, 1], 'patching': [0, 1]}
+        self.progress = {'copying': [0, 1], 'patching': [0, 1], 'patchdata': [0, 1]}
         
     def setProgressDiv(self, key, div):
         self.progress[key][1] = div
@@ -48,6 +48,10 @@ class Headless(object):
         if 'comsout' in args:
             args = list(args)
             args[args.index('comsout')] = self.coms
+        else:
+            for (key, value) in kwargs.items():
+                if value == 'comsout':
+                    kwargs[key] = self.coms
         future = self.pools[pool].submit(fn, *args, **kwargs)
         self.results.append(future)
         return future
@@ -62,15 +66,16 @@ class Headless(object):
         for pool in self.pools.values(): pool.shutdown()     
             
     def run(self, indir, patchpath, outdir):
-        patcher = getPatcher(patchpath)
+        patcher = getPatcher(patchpath, self.coms)
         translator = patcher.makeTranslator()
-        dontcopy = patcher.getNonPatchedList()
+        dontcopy = patcher.getAssetNames()
         self.submit('copier', copyfiles, indir=indir, outdir=outdir,
               ignoredirs=[], ignoreexts=['.lmu', '.ldb', '.lsd'], ignorefiles= dontcopy, 
               comsout=self.coms, translator=translator, mtimes=self.mtimes, 
-              newmtimes=self.newmtimes)
+              newmtimes=self.newmtimes, progresssig='copying', dirssig='dirsCopied')
         self.submit('patcher', process2kgame, indir, outdir, translator, 
                 mtimes=self.mtimes, newmtimes=self.newmtimes, comsout=self.coms)
+        patcher.doFullPatches(outdir, translator, self.mtimes, self.newmtimes)
         while self.going:
             events = self.coms.get()
             while events:
