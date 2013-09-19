@@ -86,7 +86,8 @@ class Headless(object):
                     print 'Got an unknown code'
                     print code, args, kwargs
             time.sleep(0.1)
-        patcher.writeTranslator(translator, path=patchpath + '_2')
+        patcher.path += '_2'
+        patcher.writeTranslator(translator)
                 
     
     

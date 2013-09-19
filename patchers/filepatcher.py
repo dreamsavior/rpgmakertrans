@@ -4,15 +4,10 @@ Created on 18 Apr 2013
 @author: habisain
 '''
 
-if __name__ == '__main__':
-    import sys
-    sys.path.append('../')
-
-import os, os.path, shutil
+import os, os.path
 import codecs
 from basepatcher import BasePatch
 from translator import TranslatorManager
-from multiprocessing.managers import BaseManager
 from filecopier2 import copyfiles
 
 filePatchers = {}
@@ -34,13 +29,12 @@ class FilePatcher(BasePatch):
                 data[name] = f.read()
         return data, mtime
         
-    def writePatchData(self, data, path=None):
-        if path is None: path = self.path # Normal non-debug behaviour
-        if not os.path.exists(path):
-            os.mkdir(path)
+    def writePatchData(self, data):
+        if not os.path.exists(self.path):
+            os.mkdir(self.path)
         for name in data:
             fn = name + '.txt'
-            fullfn = os.path.join(path, fn)
+            fullfn = os.path.join(self.path, fn)
             with codecs.open(fullfn, 'w', encoding='utf-8') as f:
                 f.write(data[name])
                     
@@ -123,15 +117,6 @@ def sniffv2(path):
             versionString = f.read()
         if not versionString.strip():
             return True
-    #if os.path.isfile(path) and path.endswith('rpgmktranspatch'):
-    #    path = os.path.split(path)[0]
-    #if os.path.isdir(path):
-    #    path = os.path.join(path, 'Map0001.txt')
-    #if os.path.isfile(path):
-    #    with open(path, 'r') as f:
-    #        content = f.read()
-    #    if content.startswith('# RPGMAKER TRANS PATCH FILE VERSION 2.0'):
-    #        return True
     return False         
         
 filePatchers[sniffv2] = FilePatcherv2
@@ -145,11 +130,3 @@ def getFilePatcher(path, coms):
         os.mkdir(path)
     return DEFAULT(path, coms)
     
-if __name__ == '__main__':
-    x = getFilePatcher('/home/habisain/tr/RyonaRPG_patch')
-    y = x.makeTranslator()
-    print type(y)
-    x.writeTranslator(y, path='/home/habisain/tr/RyonaRPG_patch2')
-    #x = FilePatcher('/home/habisain/tr/RyonaRPG_patch')
-    #print x.getNonPatchedList()
-    #x.doFullPatches('/home/habisain/tr/RyonaRPG_translated')

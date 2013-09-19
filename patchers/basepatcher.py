@@ -4,9 +4,10 @@ Created on 19 Sep 2013
 @author: habisain
 '''
 
-from resources import Resource
+from errorhook import ErrorMeta
 
-class BasePatch(Resource):
+class BasePatch(object):
+    __metaclass__ = ErrorMeta
     
     def __init__(self, path, coms):
         self.path = path
@@ -16,15 +17,15 @@ class BasePatch(Resource):
     def loadPatchData(self):
         raise Exception('loading patch data not implemented')
     
-    def writePatchData(self, data, path=None):
+    def writePatchData(self, data):
         raise Exception('Writing patch data not implemented')
     
     def categorisePatchFiles(self):
         raise Exception('This method must be overridden')
 
-    def writeTranslator(self, translator, path=None):
+    def writeTranslator(self, translator):
         data = translator.getPatchData()
-        self.writePatchData(data, path)
+        self.writePatchData(data)
         
     def makeTranslator(self):
         data, mtime = self.loadPatchData()
