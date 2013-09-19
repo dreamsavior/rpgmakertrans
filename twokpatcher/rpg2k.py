@@ -11,7 +11,7 @@ import os.path
 import cPickle
 from gamepatcher import Patcher
 
-class RPG2k(ErrorClass, BaseGame):    
+class RPG2k(ErrorClass, BaseGame):
     @staticmethod
     def sniff(path):
         if not os.path.isdir(path):

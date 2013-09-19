@@ -1,1 +1,1 @@
-from speedy2kapi import TwoKGame
+from speedy2kapi import process2kgame

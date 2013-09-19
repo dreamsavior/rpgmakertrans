@@ -1,11 +1,14 @@
 from __future__ import division
 
-import os, multiprocessing
+import os
+from concurrent.futures import ProcessPoolExecutor
 
 from speedy2k import TwoKRPGFile
+from errorhook import ErrorClass, errorWrap
 
-class TwoKGame(object):
-    def __init__(self, inpath, outpath, translator, mtimes, newmtimes, comsout):
+class TwoKGame(ErrorClass):
+    def __init__(self, inpath, outpath, translator, mtimes, newmtimes, comsout, *args, **kwargs):
+        super(TwoKGame, self).__init__(*args, **kwargs)
         self.inpath = inpath
         self.outpath = outpath
         self.translator = translator
@@ -22,26 +25,36 @@ class TwoKGame(object):
             if os.path.splitext(fn)[1].lower() in ('.lmu', '.ldb'):
                 infn = os.path.join(self.inpath, fn)
                 outfn = os.path.join(self.outpath, fn)
-                jobs.append((process2kfile, (infn, outfn, self.mtimes, self.newmtimes, self.translator)))
+                jobs.append((process2kfile, (infn, outfn, self.mtimes, self.newmtimes, self.translator, 'comsout')))
         self.jobsTotal = len(jobs)
         return jobs
     
     def callback(self, res):
+        self.jobsDone += 1
         self.comsout.send('setProgess', 'patching', self.jobsDone / self.jobsTotal)
     
     def run(self):
         if self.pool is not None:
             raise Exception('Trying to run the same TwoKGame Translator twice')
         jobs = self.jobs()
-        rets = {}
-        self.pool = multiprocessing.Pool()
+        self.comsout.send('setProgressDiv', 'patching', len(jobs))
         for fn, args in jobs:
-            rets[args[0]] = self.pool.apply_async(fn, args, callback=self.callback)
+            self.comsout.send('waitUntil', 'dirsCopied', 'patcher', fn, *args)
+            
+#        self.pool = multiprocessing.Pool()
+#        for fn, args in jobs:
+#            rets[args[0]] = self.pool.apply_async(fn, args, callback=self.callback)
             #apply(fn, args)
-        self.pool.close()
-        self.pool.join()
+#        self.pool.close()
+#        self.pool.join()
 
-def process2kfile(inFileName, outFileName, mtimes, newmtimes, translator, dbgid=None):
+@errorWrap
+def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
+    game = TwoKGame(inpath, outpath, translator, mtimes, newmtimes, comsout)
+    game.run()
+
+@errorWrap
+def process2kfile(inFileName, outFileName, mtimes, newmtimes, translator, comsout, dbgid=None):
     # Args: inFileName: input file name
     # outFileName: output file name
     # mtimes: the mtimes dictionary    
@@ -52,7 +65,8 @@ def process2kfile(inFileName, outFileName, mtimes, newmtimes, translator, dbgid=
         rpgfile = TwoKRPGFile(name, inFileName, translator)
         rpgfile.parse()
         rpgfile.outputfile(outFileName)
-        # TODO: insert new mtime into newmtimes        
+        # TODO: insert new mtime into newmtimes
+    comsout.send('incProgress', 'patching')        
     if dbgid:
         return ret, dbgid
     else:

@@ -3,17 +3,18 @@ Created on 3 Sep 2013
 
 @author: habisain
 '''
+from __future__ import division
 
 import os.path, shutil
-from errorhook import ErrorMeta
+from errorhook import ErrorClass
 
-class FileCopier(object):
+class FileCopier(ErrorClass):
     """Handles copying files from orig directory to target. Does *not* copy patch files."""
-    __metaclass__ = ErrorMeta
     
     def __init__(self, indir, outdir,
                  ignoredirs, ignoreexts, ignorefiles, 
-                 comsout, translator, mtimes, newmtimes):
+                 comsout, translator, mtimes, newmtimes, *args, **kwargs):
+        super(FileCopier, self).__init__(*args, **kwargs)
         self.indir = os.path.normcase(indir)
         self.outdir = os.path.normcase(outdir)
         self.ignoredirs = [os.path.normcase(x) for x in ignoredirs] +  ['.svn', 'cvs', '.git', '.hg', '.bzr']
@@ -37,12 +38,11 @@ class FileCopier(object):
         for directory in self.dirs:
             os.mkdir(directory)
         # TODO: Send a signal that we're good to start patching the game here!
-        self.comsout.send('dirsCopied')
-        copied = 0
+        self.comsout.send('trigger', 'dirsCopied')
+        self.comsout.send('setProgressDiv', 'copying', len(self.files))
         for fid, infn, outfn in self.files:
             self.doCopyFile(fid, infn, outfn)
-            copied += 1
-            self.comsout.send('setProgress', 'copying', copied / len(self.files))
+            self.comsout.send('incProgress', 'copying')
             
     def doCopyFile(self, fid, infn, outfn):
         infnmtime = os.path.getmtime(infn)

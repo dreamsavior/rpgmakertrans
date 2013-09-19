@@ -69,7 +69,9 @@ class FilePatcher(BasePatch):
             ret.append(name)
         return ret
     
-    def doFullPatches(self, inpath, outpath): 
+    def doFullPatches(self, inpath, outpath):
+        # TODO: Not a good way of doing it. Should make it into a seperate function
+        # and get arguments. 
         for fn in self.filePaths():
             name = fn.replace(self.path + os.sep, '')
             infn = os.path.join(inpath, name)

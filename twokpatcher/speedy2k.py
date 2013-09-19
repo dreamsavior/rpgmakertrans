@@ -1,14 +1,15 @@
 import os.path
 from struct import unpack, Struct
 from speedy2kconstants import schemas, containerTypes
-
+from errorhook import ErrorClass
 
 # TODO LIST:
 # Convert to rPython->cPython extension module - some variables overloaded
 #              but I don't think there's anything major that needs changing.
 
-class RPGFile(object):
-    def __init__(self, name, string, schemas, translator):
+class RPGFile(ErrorClass):
+    def __init__(self, name, string, schemas, translator, *args, **kwargs):
+        super(RPGFile, self).__init__(*args, **kwargs)
         self.name = name
         self.string = string
         self.intstring = unpack('B'*len(string), self.string)
