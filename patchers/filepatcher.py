@@ -119,7 +119,7 @@ def sniffv2(path):
             return True
     return False         
         
-filePatchers[sniffv2] = FilePatcherv2
+filePatchers[sniffv2] = 'FilePatcherv2'
 DEFAULT = FilePatcherv2
 
 def getFilePatcher(path, coms):

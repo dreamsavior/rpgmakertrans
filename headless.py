@@ -1,72 +1,70 @@
-import time
-from patchers import getPatcher
+from __future__ import division
+
+from patchers import getPatcher, PatchManager
 from filecopier2 import copyfiles
-from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
-from sender import SenderManager
 from collections import defaultdict
 from twokpatcher import process2kgame
+from coreprotocol import CoreProtocol
 
-class Headless(object):
+class Headless(CoreProtocol):
     def __init__(self):
-        self.senderManager = SenderManager()
-        self.senderManager.start()
+        super(Headless, self).__init__()
+        self.patchManager = PatchManager()
+        self.patchManager.start()
+        
         self.manager = multiprocessing.Manager()
-        self.coms = self.senderManager.Sender()
         self.mtimes = self.manager.dict()
         self.newmtimes = self.manager.dict()
-        self.waiting = defaultdict(list)
-        self.dispatched = set()
-        self.pools = defaultdict(ProcessPoolExecutor)
-        self.results = []
-        self.going = True
-        self.actions = {'trigger': self.trigger, 'setProgress': self.setProgress, 
-                        'submit': self.submit, 'waitUntil': self.waitUntil,
-                        'setProgressDiv': self.setProgressDiv, 'incProgress': self.incProgress}
-        self.progress = {'copying': [0, 1], 'patching': [0, 1], 'patchdata': [0, 1]}
+        self.progress = defaultdict(lambda: [0, 1])
+        self.progressVal = 0
+        self.indir = None
+        self.outdir = None
+        self.patchpath = None
+        
+    def reset(self): 
+        self.progress = defaultdict(lambda: [0, 1])
+        self.progressVal = 0
+        self.indir = None
+        self.outdir = None
+        self.patchpath = None
+        for pool in self.pools: pool.join()
+        self.pools.clear()
         
     def setProgressDiv(self, key, div):
         self.progress[key][1] = div
         
     def setProgress(self, key, progress):
         self.progress[key][0] = progress
-        #print self.progress
-        if all((self.progress[0] == self.progress[1] for x in self.progress)):
-            self.going = False
+        self.updateProgress()
             
     def incProgress(self, key):
         self.progress[key][0] += 1
-        #print self.progress
-        if all((self.progress[x][0] == self.progress[x][1] for x in self.progress)):
-            self.going = False
-        
-    def waitUntil(self, signal, pool, fn, *args, **kwargs):
-        if signal in self.dispatched: self.submit(pool, fn, *args, **kwargs)
-        else: self.waiting[signal].append((pool, fn, args, kwargs))
-        
-    def submit(self, pool, fn, *args, **kwargs):
-        if 'comsout' in args:
-            args = list(args)
-            args[args.index('comsout')] = self.coms
-        else:
-            for (key, value) in kwargs.items():
-                if value == 'comsout':
-                    kwargs[key] = self.coms
-        future = self.pools[pool].submit(fn, *args, **kwargs)
-        self.results.append(future)
-        return future
-        
-    def trigger(self, signal):
-        self.dispatched.add(signal)
-        for pool, fn, args, kwargs in self.waiting[signal]:
-            self.submit(pool, fn, *args, **kwargs)
+        self.updateProgress()
             
-    def shutdown(self):
-        for future in self.results: future.result()
-        for pool in self.pools.values(): pool.shutdown()     
+    def updateProgress(self):
+        if all((x[0] == x[1] for x in self.progress.values())):
+            self.going = False
+        newProgressVal = min((x[0] / x[1] for x in self.progress.values()))
+        #print str(round(newProgressVal, 2)) + '\r', 
+        # TODO: Send to UI module
+                
+    def setInDir(self, indir):
+        self.indir = indir
+        
+    def setPatchPath(self, patchpath):
+        self.patchpath = patchpath
+        
+    def setOutDir(self, outdir):
+        self.outdir = outdir
+        
+    def go(self):
+        if self.indir and self.outdir and self.patchpath:
+            self.patcher = getPatcher(self.patchManager, patchpath, self.coms)
+            self.localWaitUntil('patcherReady', self.getTranslator)
             
     def run(self, indir, patchpath, outdir):
-        patcher = getPatcher(patchpath, self.coms)
+        patcher = getPatcher(self.patchManager, patchpath, self.coms)
         translator = patcher.makeTranslator()
         dontcopy = patcher.getAssetNames()
         self.submit('copier', copyfiles, indir=indir, outdir=outdir,
@@ -76,20 +74,10 @@ class Headless(object):
         self.submit('patcher', process2kgame, indir, outdir, translator, 
                 mtimes=self.mtimes, newmtimes=self.newmtimes, comsout=self.coms)
         patcher.doFullPatches(outdir, translator, self.mtimes, self.newmtimes)
-        while self.going:
-            events = self.coms.get()
-            while events:
-                code, args, kwargs = events.pop(0)
-                if code in self.actions:
-                    self.actions[code](*args, **kwargs)
-                else:
-                    print 'Got an unknown code'
-                    print code, args, kwargs
-            time.sleep(0.1)
-        patcher.path += '_2'
+        super(Headless, self).run()
+        patcher.setPath(patchpath + '_2')
         patcher.writeTranslator(translator)
                 
-    
     
 
 if __name__ == '__main__':

@@ -5,14 +5,20 @@ Created on 19 Sep 2013
 '''
 
 from errorhook import ErrorMeta
+from metamanager import makeMetaManager
+
+PatchManager, PatchMeta = makeMetaManager('Patch', ErrorMeta)
 
 class BasePatch(object):
-    __metaclass__ = ErrorMeta
+    __metaclass__ = PatchMeta
     
     def __init__(self, path, coms):
         self.path = path
         self.coms = coms
         self.categorisePatchFiles()
+        
+    def setPath(self, path):
+        self.path = path
     
     def loadPatchData(self):
         raise Exception('loading patch data not implemented')
