@@ -49,3 +49,8 @@ class BasePatch(object):
     def doFullPatches(self):
         raise Exception('FullPatching not implemented')
     
+def makeTranslator(patcher, coms):
+    ret = patcher.makeTranslator()
+    coms.send('trigger', 'translatorReady')
+    return ret
+    

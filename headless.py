@@ -1,6 +1,6 @@
 from __future__ import division
 
-from patchers import getPatcher, PatchManager
+from patchers import getPatcher, PatchManager, makeTranslator
 from filecopier2 import copyfiles
 import multiprocessing
 from collections import defaultdict
@@ -44,7 +44,7 @@ class Headless(CoreProtocol):
             
     def updateProgress(self):
         if all((x[0] == x[1] for x in self.progress.values())):
-            self.going = False
+            self.trigger('patchingFinished')
         newProgressVal = min((x[0] / x[1] for x in self.progress.values()))
         #print str(round(newProgressVal, 2)) + '\r', 
         # TODO: Send to UI module
@@ -58,14 +58,13 @@ class Headless(CoreProtocol):
     def setOutDir(self, outdir):
         self.outdir = outdir
         
-    def go(self):
-        if self.indir and self.outdir and self.patchpath:
-            self.patcher = getPatcher(self.patchManager, patchpath, self.coms)
-            self.localWaitUntil('patcherReady', self.getTranslator)
-            
-    def run(self, indir, patchpath, outdir):
+    def go(self, indir, patchpath, outdir):
         patcher = getPatcher(self.patchManager, patchpath, self.coms)
-        translator = patcher.makeTranslator()
+        translatorRet = self.submit('copier', makeTranslator, patcher, self.coms)
+        self.localWaitUntil('translatorReady', self.beginTranslation, patcher, translatorRet)
+        
+    def beginTranslation(self, patcher, translatorRet):
+        translator = translatorRet.get()
         dontcopy = patcher.getAssetNames()
         self.submit('copier', copyfiles, indir=indir, outdir=outdir,
               ignoredirs=[], ignoreexts=['.lmu', '.ldb', '.lsd'], ignorefiles= dontcopy, 
@@ -74,10 +73,16 @@ class Headless(CoreProtocol):
         self.submit('patcher', process2kgame, indir, outdir, translator, 
                 mtimes=self.mtimes, newmtimes=self.newmtimes, comsout=self.coms)
         patcher.doFullPatches(outdir, translator, self.mtimes, self.newmtimes)
-        super(Headless, self).run()
+        self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, translator)
+        
+    def finaliseTranslation(self, patcher, translator):
         patcher.setPath(patchpath + '_2')
         patcher.writeTranslator(translator)
-                
+        self.going = False
+            
+    def run(self, indir, patchpath, outdir):
+        self.go(indir, patchpath, outdir)
+        super(Headless, self).run()        
     
 
 if __name__ == '__main__':
