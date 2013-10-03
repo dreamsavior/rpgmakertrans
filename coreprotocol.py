@@ -45,6 +45,8 @@ class CoreProtocol(object):
         self.results = []
         self.going = True
         self.localWaiting = defaultdict(list)
+        self.combotriggers = {}
+        self.subtriggers = defaultdict(list)
         
     def finished(self):
         return not self.going
@@ -52,6 +54,14 @@ class CoreProtocol(object):
     def reset(self): 
         for pool in self.pools: pool.join()
         self.pools.clear()
+        
+    def comboTrigger(self, triggername, subtriggers):
+        subtriggerset = set(x for x in subtriggers if x not in self.dispatched)
+        if subtriggerset:
+            for subtrigger in subtriggers:
+                self.subtriggers[subtrigger].append((triggername, subtriggerset))
+        else:
+            self.trigger(triggername)
         
     def waitUntil(self, signal, pool, fn, *args, **kwargs):
         if signal in self.dispatched: self.submit(pool, fn, *args, **kwargs)
@@ -74,11 +84,16 @@ class CoreProtocol(object):
         return ret
         
     def trigger(self, signal):
-        self.dispatched.add(signal)
-        for pool, fn, args, kwargs in self.waiting[signal]:
-            self.submit(pool, fn, *args, **kwargs)
-        for fn, args, kwargs in self.localWaiting[signal]:
-            fn(*args, **kwargs)
+        if signal not in self.dispatched:
+            self.dispatched.add(signal)
+            for pool, fn, args, kwargs in self.waiting[signal]:
+                self.submit(pool, fn, *args, **kwargs)
+            for fn, args, kwargs in self.localWaiting[signal]:
+                fn(*args, **kwargs)
+            for combotrigger, subtriggers in self.subtriggers[signal]:
+                subtriggers.remove(signal)
+                if not subtriggers:
+                    self.trigger(combotrigger)
             
     def shutdown(self):
         for ret in self.results: ret.get
