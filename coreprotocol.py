@@ -84,6 +84,7 @@ class CoreProtocol(object):
         return ret
         
     def trigger(self, signal):
+        print signal
         if signal not in self.dispatched:
             self.dispatched.add(signal)
             for pool, fn, args, kwargs in self.waiting[signal]:

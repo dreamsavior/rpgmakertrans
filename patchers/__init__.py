@@ -1,6 +1,6 @@
 import os.path
 from filepatcher import filePatchers
-from basepatcher import PatchManager, makeTranslator
+from basepatcher import PatchManager, makeTranslator, writeTranslator
 
 DEFAULT = 'FilePatcherv2'
 

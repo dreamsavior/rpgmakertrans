@@ -54,3 +54,7 @@ def makeTranslator(patcher, coms):
     coms.send('trigger', 'translatorReady')
     return ret
     
+def writeTranslator(patcher, translator, coms):
+    patcher.writeTranslator(translator)
+    coms.send('trigger', 'translatorWritten')
+    

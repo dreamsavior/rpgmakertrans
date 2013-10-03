@@ -1,20 +1,19 @@
 from __future__ import division
 
-from patchers import getPatcher, PatchManager, makeTranslator
+from patchers import getPatcher, PatchManager, makeTranslator, writeTranslator
 from filecopier2 import copyfiles
-import multiprocessing
 from collections import defaultdict
 from twokpatcher import process2kgame
 from coreprotocol import CoreProtocol, CoreRunner
+from mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class Headless(CoreProtocol):
     def __init__(self, *args, **kwargs):
         super(Headless, self).__init__()
         self.patchManager = PatchManager()
         self.patchManager.start()
-        self.manager = multiprocessing.Manager()
-        self.mtimes = self.manager.dict()
-        self.newmtimes = self.manager.dict()
+        self.mtimesManager = MTimesHandlerManager()
+        self.mtimesManager.start()
         self.progress = defaultdict(lambda: [0, 1])
         self.progressVal = 0
         
@@ -37,31 +36,40 @@ class Headless(CoreProtocol):
         # TODO: Send to UI module
         
     def go(self, indir, patchpath, outdir):
+        mtimesManager = self.mtimesManager.MTimesHandler(patchpath)
         patcher = getPatcher(self.patchManager, patchpath, self.coms)
-        translatorRet = self.submit('copier', makeTranslator, patcher, self.coms)
-        self.localWaitUntil('translatorReady', self.beginTranslation, patcher, translatorRet)
+        self.submit('patcher', loadMTimes, mtimesManager, self.coms)
+        translatorRet = self.submit('patcher', makeTranslator, patcher, self.coms)
+        self.comboTrigger('startTranslation', ['translatorReady', 'mtimesReady'])
+        self.localWaitUntil('startTranslation', self.beginTranslation, patcher, 
+                            translatorRet, mtimesManager)
         
-    def beginTranslation(self, patcher, translatorRet):
+    def beginTranslation(self, patcher, translatorRet, mtimesManager):
         translator = translatorRet.get()
         dontcopy = patcher.getAssetNames()
+        mtimes = mtimesManager.getMTimes()
+        newmtimes = mtimesManager.getNewMTimes()
+
         self.submit('copier', copyfiles, indir=indir, outdir=outdir,
               ignoredirs=[], ignoreexts=['.lmu', '.ldb', '.lsd'], ignorefiles= dontcopy, 
-              comsout=self.coms, translator=translator, mtimes=self.mtimes, 
-              newmtimes=self.newmtimes, progresssig='copying', dirssig='dirsCopied')
+              comsout=self.coms, translator=translator, mtimes=mtimes, 
+              newmtimes=newmtimes, progresssig='copying', dirssig='dirsCopied')
         self.submit('patcher', process2kgame, indir, outdir, translator, 
-                mtimes=self.mtimes, newmtimes=self.newmtimes, comsout=self.coms)
-        patcher.doFullPatches(outdir, translator, self.mtimes, self.newmtimes)
-        self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, translator)
+                mtimes=mtimes, newmtimes=newmtimes, comsout=self.coms)
+        patcher.doFullPatches(outdir, translator, mtimes, newmtimes) # TODO: Make asyncronous!
+        self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, 
+                            translator, mtimesManager)
         
-    def finaliseTranslation(self, patcher, translator):
-        patcher.setPath(patchpath + '_2')
-        patcher.writeTranslator(translator)
+    def finaliseTranslation(self, patcher, translator, mtimesManager):
+        patcher.setPath(patchpath + '_2') # Debug only
+        self.submit('patcher', writeTranslator, patcher, translator, self.coms)
+        self.submit('copier', dumpMTimes, mtimesManager, self.coms)
+        self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
+        self.localWaitUntil('finish', self.finish)
+
+        
+    def finish(self):
         self.going = False
-            
-    #def run(self, indir, patchpath, outdir):
-    #    self.go(indir, patchpath, outdir)
-    #    super(Headless, self).run()        
-    
 
 if __name__ == '__main__':
     indir = '/home/habisain/tr/cr'
