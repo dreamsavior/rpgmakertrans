@@ -11,3 +11,7 @@ def getPatcher(manager, path, coms):
     if not os.path.exists(path):
         os.mkdir(path)
     return getattr(manager, DEFAULT)(path, coms)
+
+def doFullPatches(patcher, outdir, translator, mtimes, newmtimes, coms):
+    patcher.doFullPatches(outdir, translator, mtimes, newmtimes)
+    coms.send('trigger', 'fullPatchesDone')

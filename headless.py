@@ -1,7 +1,7 @@
 from __future__ import division
 
-from patchers import getPatcher, PatchManager, makeTranslator, writeTranslator
-from filecopier2 import copyfiles
+from patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
+from filecopier2 import copyfilesAndTrigger
 from collections import defaultdict
 from twokpatcher import process2kgame
 from coreprotocol import CoreProtocol, CoreRunner
@@ -29,11 +29,10 @@ class Headless(CoreProtocol):
         self.updateProgress()
             
     def updateProgress(self):
-        if all((x[0] == x[1] for x in self.progress.values())):
-            self.trigger('patchingFinished')
         newProgressVal = min((x[0] / x[1] for x in self.progress.values()))
-        #print str(round(newProgressVal, 2)) + '\r', 
-        # TODO: Send to UI module
+        if newProgressVal != self.progressVal: 
+            self.comsout.send('setProgress', newProgressVal)
+            self.progressVal = newProgressVal
         
     def go(self, indir, patchpath, outdir):
         mtimesManager = self.mtimesManager.MTimesHandler(patchpath)
@@ -50,13 +49,14 @@ class Headless(CoreProtocol):
         mtimes = mtimesManager.getMTimes()
         newmtimes = mtimesManager.getNewMTimes()
 
-        self.submit('copier', copyfiles, indir=indir, outdir=outdir,
+        self.submit('copier', copyfilesAndTrigger, indir=indir, outdir=outdir,
               ignoredirs=[], ignoreexts=['.lmu', '.ldb', '.lsd'], ignorefiles= dontcopy, 
               comsout=self.coms, translator=translator, mtimes=mtimes, 
               newmtimes=newmtimes, progresssig='copying', dirssig='dirsCopied')
         self.submit('patcher', process2kgame, indir, outdir, translator, 
                 mtimes=mtimes, newmtimes=newmtimes, comsout=self.coms)
-        patcher.doFullPatches(outdir, translator, mtimes, newmtimes) # TODO: Make asyncronous!
+        self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher, outdir, translator, mtimes, newmtimes, self.coms)
+        self.comboTrigger('patchingFinished', ['fileCopyDone', 'gamePatchingDone', 'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, 
                             translator, mtimesManager)
         
@@ -70,6 +70,7 @@ class Headless(CoreProtocol):
         
     def finish(self):
         self.going = False
+        self.comsout.send('finishedPatching')
 
 if __name__ == '__main__':
     indir = '/home/habisain/tr/cr'

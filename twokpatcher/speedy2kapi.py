@@ -51,6 +51,7 @@ class TwoKGame(ErrorClass):
 def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
     game = TwoKGame(inpath, outpath, translator, mtimes, newmtimes, comsout)
     game.run()
+    comsout.send('trigger', 'gamePatchingDone')
 
 @errorWrap
 def process2kfile(inFileName, outFileName, mtimes, newmtimes, translator, comsout, dbgid=None):

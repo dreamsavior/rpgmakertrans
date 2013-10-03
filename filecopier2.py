@@ -88,6 +88,17 @@ class FileCopier(ErrorClass):
                 ext = os.path.splitext(fname)[1]
                 if not (fid in self.ignorefiles or ext in self.ignoreexts):
                     self.files.append((fid, origfile, transfile))
+@errorWrap
+def copyfilesAndTrigger(indir, outdir,
+              ignoredirs, ignoreexts, ignorefiles, 
+              comsout, translator, mtimes, newmtimes,
+              progresssig, dirssig):
+    copyfiles(indir, outdir,
+              ignoredirs, ignoreexts, ignorefiles, 
+              comsout, translator, mtimes, newmtimes,
+              progresssig, dirssig)
+    comsout.send('trigger', 'fileCopyDone')
+
 @errorWrap      
 def copyfiles(indir, outdir,
               ignoredirs, ignoreexts, ignorefiles, 
