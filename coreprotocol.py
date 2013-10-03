@@ -10,6 +10,7 @@ from sender import SenderManager
 from errorhook import setErrorOut
 
 class CoreRunner(object):
+    # TODO: Runner should handle all errors somehow.
     def __init__(self, runners):
         self.running = []
         for runner in runners:

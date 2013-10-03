@@ -9,7 +9,7 @@ from mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class Headless(CoreProtocol):
     def __init__(self, *args, **kwargs):
-        super(Headless, self).__init__()
+        super(Headless, self).__init__(*args, **kwargs)
         self.patchManager = PatchManager()
         self.patchManager.start()
         self.mtimesManager = MTimesHandlerManager()
@@ -41,9 +41,9 @@ class Headless(CoreProtocol):
         translatorRet = self.submit('patcher', makeTranslator, patcher, self.coms)
         self.comboTrigger('startTranslation', ['translatorReady', 'mtimesReady'])
         self.localWaitUntil('startTranslation', self.beginTranslation, patcher, 
-                            translatorRet, mtimesManager)
+                            translatorRet, mtimesManager, indir, patchpath, outdir)
         
-    def beginTranslation(self, patcher, translatorRet, mtimesManager):
+    def beginTranslation(self, patcher, translatorRet, mtimesManager, indir, patchpath, outdir):
         translator = translatorRet.get()
         dontcopy = patcher.getAssetNames()
         mtimes = mtimesManager.getMTimes()
@@ -58,9 +58,9 @@ class Headless(CoreProtocol):
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher, outdir, translator, mtimes, newmtimes, self.coms)
         self.comboTrigger('patchingFinished', ['fileCopyDone', 'gamePatchingDone', 'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, 
-                            translator, mtimesManager)
+                            translator, mtimesManager, indir, patchpath, outdir)
         
-    def finaliseTranslation(self, patcher, translator, mtimesManager):
+    def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir):
         patcher.setPath(patchpath + '_2') # Debug only
         self.submit('patcher', writeTranslator, patcher, translator, self.coms)
         self.submit('copier', dumpMTimes, mtimesManager, self.coms)
