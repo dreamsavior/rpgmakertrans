@@ -45,14 +45,22 @@ class CLIMode(CoreProtocol):
     def finishedPatching(self):
         self.normalPrint('\nPatching finished')
         self.going = False
-    
-if '--cli' in sys.argv or '-c' in sys.argv:
+
+longargs = set()
+shortargs = set()
+for x in sys.argv:
+    if x.startswith('--'):
+        longargs.add(x)
+    elif x.startswith('-'):
+        shortargs.add(x)
+
+if '--cli' in longargs or any('c' in x for x in shortargs):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cli', help='Enable CLI mode', action='store_true')
+    parser.add_argument('-c', '--cli', help='Enable CLI mode', action='store_true')
     parser.add_argument("input", help="Path of input game to patch")
     parser.add_argument("patch", help="Path of patch (directory or zip)")
     parser.add_argument("output", help="Path to output directory (will create missing directories)")
-    parser.add_argument('--quiet', help='Suppress all output', action='store_true')
+    parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
     args = parser.parse_args()
     z = CoreRunner([])
     x = CLIMode(args, z)
