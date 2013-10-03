@@ -7,19 +7,47 @@ Created on 20 Sep 2013
 import multiprocessing, time
 from collections import defaultdict
 from sender import SenderManager
+from errorhook import setErrorOut
+
+class CoreRunner(object):
+    def __init__(self, runners):
+        self.running = []
+        for runner in runners:
+            self.attach(runner)
+    
+    def attach(self, runner):
+        self.running.append(runner)
+        
+    def detach(self, runner):
+        if runner in self.running: self.running.remove(runner)
+        
+    def run(self):
+        while self.running:
+            detachments = []
+            for runner in self.running:
+                runner.update()
+                if runner.finished():
+                    detachments.append(runner)
+            for runner in detachments:
+                self.detach(runner)
+            time.sleep(0.1)
 
 class CoreProtocol(object):
-    def __init__(self):
+    def __init__(self, comsout=None, errout=None):
         self.senderManager = SenderManager()
         self.senderManager.start()
         self.coms = self.senderManager.Sender()
-        self.comsout = self.senderManager.Sender()
+        if comsout is None: comsout = self.senderManager.Sender()
+        self.comsout = comsout
         self.waiting = defaultdict(list)
         self.dispatched = set()
-        self.pools = defaultdict(multiprocessing.Pool)
+        self.pools = defaultdict(lambda: multiprocessing.Pool(initializer=setErrorOut, initargs=[errout]))
         self.results = []
         self.going = True
         self.localWaiting = defaultdict(list)
+        
+    def finished(self):
+        return not self.going
         
     def reset(self): 
         for pool in self.pools: pool.join()
@@ -59,14 +87,12 @@ class CoreProtocol(object):
     def terminate(self):
         for pool in self.pools.values(): pool.terminate()
                     
-    def run(self):
-        while self.going:
-            events = self.coms.get()
-            while events:
-                code, args, kwargs = events.pop(0)
-                if hasattr(self, code) and callable(getattr(self, code)):
-                    getattr(self, code)(*args, **kwargs)
-                else:
-                    print 'Got an unknown code'
-                    print code, args, kwargs
-            time.sleep(0.1)
+    def update(self):
+        events = self.coms.get()
+        while events:
+            code, args, kwargs = events.pop(0)
+            if hasattr(self, code) and callable(getattr(self, code)):
+                getattr(self, code)(*args, **kwargs)
+            else:
+                print 'Got an unknown code'
+                print code, args, kwargs

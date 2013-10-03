@@ -1,7 +1,6 @@
 from __future__ import division
 
 import os
-from concurrent.futures import ProcessPoolExecutor
 
 from speedy2k import TwoKRPGFile
 from errorhook import ErrorClass, errorWrap

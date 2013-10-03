@@ -5,31 +5,18 @@ from filecopier2 import copyfiles
 import multiprocessing
 from collections import defaultdict
 from twokpatcher import process2kgame
-from coreprotocol import CoreProtocol
+from coreprotocol import CoreProtocol, CoreRunner
 
 class Headless(CoreProtocol):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super(Headless, self).__init__()
         self.patchManager = PatchManager()
         self.patchManager.start()
-        
         self.manager = multiprocessing.Manager()
         self.mtimes = self.manager.dict()
         self.newmtimes = self.manager.dict()
         self.progress = defaultdict(lambda: [0, 1])
         self.progressVal = 0
-        self.indir = None
-        self.outdir = None
-        self.patchpath = None
-        
-    def reset(self): 
-        self.progress = defaultdict(lambda: [0, 1])
-        self.progressVal = 0
-        self.indir = None
-        self.outdir = None
-        self.patchpath = None
-        for pool in self.pools: pool.join()
-        self.pools.clear()
         
     def setProgressDiv(self, key, div):
         self.progress[key][1] = div
@@ -48,15 +35,6 @@ class Headless(CoreProtocol):
         newProgressVal = min((x[0] / x[1] for x in self.progress.values()))
         #print str(round(newProgressVal, 2)) + '\r', 
         # TODO: Send to UI module
-                
-    def setInDir(self, indir):
-        self.indir = indir
-        
-    def setPatchPath(self, patchpath):
-        self.patchpath = patchpath
-        
-    def setOutDir(self, outdir):
-        self.outdir = outdir
         
     def go(self, indir, patchpath, outdir):
         patcher = getPatcher(self.patchManager, patchpath, self.coms)
@@ -80,9 +58,9 @@ class Headless(CoreProtocol):
         patcher.writeTranslator(translator)
         self.going = False
             
-    def run(self, indir, patchpath, outdir):
-        self.go(indir, patchpath, outdir)
-        super(Headless, self).run()        
+    #def run(self, indir, patchpath, outdir):
+    #    self.go(indir, patchpath, outdir)
+    #    super(Headless, self).run()        
     
 
 if __name__ == '__main__':
@@ -90,5 +68,7 @@ if __name__ == '__main__':
     patchpath = '/home/habisain/tr/cr_p'
     outdir = '/home/habisain/tr/cr_t'
     x = Headless()
-    x.run(indir, patchpath, outdir)
+    z = CoreRunner([x])
+    x.go(indir, patchpath, outdir)
+    z.run()
     
