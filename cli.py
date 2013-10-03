@@ -46,23 +46,28 @@ class CLIMode(CoreProtocol):
         self.normalPrint('\nPatching finished')
         self.going = False
 
-longargs = set()
-shortargs = set()
-for x in sys.argv:
-    if x.startswith('--'):
-        longargs.add(x)
-    elif x.startswith('-'):
-        shortargs.add(x)
+def CLIBackend(runner):
+    longargs = set()
+    shortargs = set()
+    for x in sys.argv:
+        if x.startswith('--'):
+            longargs.add(x)
+        elif x.startswith('-'):
+            shortargs.add(x)
+    
+    if '--cli' in longargs or any('c' in x for x in shortargs):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-c', '--cli', help='Enable CLI mode', action='store_true')
+        parser.add_argument("input", help="Path of input game to patch")
+        parser.add_argument("patch", help="Path of patch (directory or zip)")
+        parser.add_argument("output", help="Path to output directory (will create missing directories)")
+        parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
+        args = parser.parse_args()
+        x = CLIMode(args, runner)
+        runner.attach(x)
+        return x
 
-if '--cli' in longargs or any('c' in x for x in shortargs):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--cli', help='Enable CLI mode', action='store_true')
-    parser.add_argument("input", help="Path of input game to patch")
-    parser.add_argument("patch", help="Path of patch (directory or zip)")
-    parser.add_argument("output", help="Path to output directory (will create missing directories)")
-    parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
-    args = parser.parse_args()
+if __name__ == '__main__':
     z = CoreRunner([])
-    x = CLIMode(args, z)
-    z.attach(x)
+    CLIBackend(z)
     z.run()
