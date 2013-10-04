@@ -7,7 +7,6 @@ Created on 18 Apr 2013
 import os, os.path
 import codecs
 from basepatcher import BasePatch
-from translator import TranslatorManager
 from filecopier2 import copyfiles
 
 filePatchers = {}
@@ -16,8 +15,6 @@ class FilePatcher(BasePatch):
         super(FilePatcher, self).__init__(path, coms)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
-        self.translatorManager = TranslatorManager()
-        self.translatorManager.start()
     
     def loadPatchData(self):
         data = {}

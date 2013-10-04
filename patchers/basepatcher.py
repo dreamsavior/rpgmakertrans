@@ -3,9 +3,11 @@ Created on 19 Sep 2013
 
 @author: habisain
 '''
-
+import sys # TODO: Remove when possible
+sys.path.append('..')
 from errorhook import ErrorMeta
 from metamanager import makeMetaManager
+from translator import TranslatorManager
 
 PatchManager, PatchMeta = makeMetaManager('Patch', ErrorMeta)
 
@@ -16,6 +18,8 @@ class BasePatch(object):
         self.path = path
         self.coms = coms
         self.categorisePatchFiles()
+        self.translatorManager = TranslatorManager()
+        self.translatorManager.start()
         
     def setPath(self, path):
         self.path = path
@@ -46,7 +50,7 @@ class BasePatch(object):
     def getAssetNames(self):
         raise Exception('getAssetNames not implemented')
     
-    def doFullPatches(self):
+    def doFullPatches(self, outpath, translator, mtimes, newmtimes):
         raise Exception('FullPatching not implemented')
     
 def makeTranslator(patcher, coms):
