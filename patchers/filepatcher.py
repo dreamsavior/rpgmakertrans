@@ -6,10 +6,9 @@ Created on 18 Apr 2013
 
 import os, os.path
 import codecs
-from basepatcher import BasePatch
+from basepatcher import BasePatch, REGISTRY
 from filecopier2 import copyfiles
 
-filePatchers = {}
 class FilePatcher(BasePatch):
     def __init__(self, path, coms):
         super(FilePatcher, self).__init__(path, coms)
@@ -117,14 +116,6 @@ def sniffv2(path):
             return True
     return False         
         
-filePatchers[sniffv2] = 'FilePatcherv2'
-DEFAULT = FilePatcherv2
+REGISTRY[sniffv2] = 'FilePatcherv2'
 
-def getFilePatcher(path, coms):
-    for x in filePatchers:
-        if x(path):
-            return filePatchers[x](path, coms)
-    if not os.path.exists(path):
-        os.mkdir(path)
-    return DEFAULT(path, coms)
     

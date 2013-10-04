@@ -3,8 +3,6 @@ Created on 19 Sep 2013
 
 @author: habisain
 '''
-import sys # TODO: Remove when possible
-sys.path.append('..')
 from errorhook import ErrorMeta
 from metamanager import makeMetaManager
 from translator import TranslatorManager
@@ -61,4 +59,6 @@ def makeTranslator(patcher, coms):
 def writeTranslator(patcher, translator, coms):
     patcher.writeTranslator(translator)
     coms.send('trigger', 'translatorWritten')
+    
+REGISTRY = {}
     
