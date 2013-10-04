@@ -13,18 +13,19 @@ SEPERATORS = '\\/'
 class ZIPPatcher(BasePatch):
     def __init__(self, path, coms):
         self.zip = zipfile.ZipFile(path)
+        self.mtime = os.path.getmtime(path)
         super(ZIPPatcher, self).__init__(path, coms)
     
     def loadPatchData(self):
         data = {}
-        mtime = os.path.getmtime(self.path)
+        
         for fn in self.patchDataFiles:
             zfile = self.zip.open(fn)
             raw = zfile.read(2**22)
             dec = raw.decode('utf-8')
             name = fn.partition(self.root)[2].strip(SEPERATORS).rpartition('.')[0].lower()
             data[name] = dec
-        return data, mtime
+        return data, self.mtime
 
     def writePatchData(self, data):
         pass
@@ -35,11 +36,29 @@ class ZIPPatcher(BasePatch):
         return path
     
     def getAssetNames(self):
-        return [self.toOSFileStyle(x.partition(self.root)[2].strip(SEPERATORS)) 
-                for x in self.assetFiles]
+        return [self.toAssetName(x) for x in self.assetFiles]
+        
+    def toAssetName(self, string):
+        return self.toOSFileStyle(string.partition(self.root)[2].strip(SEPERATORS)) 
         
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
-        raise Exception('Not implemented')
+        for fn in self.assetFiles:
+            outfn = os.path.join(outpath, self.toAssetName(fn))
+            outfntime = mtimes.get(outfn, None)
+            if outfntime != self.mtime:
+                dirname = os.path.split(outfn)[0]
+                if os.path.exists(dirname):
+                    if os.path.isfile(dirname):
+                        raise Exception('Directory name conflicts with patch file name')
+                else:
+                    os.makedirs(dirname)
+                z = self.zip.open(fn)
+                data = z.read(2**20)
+                with open(outfn, 'wb') as f:
+                    while data:
+                        f.write(data)
+                        data = z.read(2**20)
+            newmtimes[outfn] = self.mtime
 
     
 class ZIPPatcherv2(ZIPPatcher):
@@ -57,7 +76,6 @@ class ZIPPatcherv2(ZIPPatcher):
         self.assetFiles = []
         self.patchDataFiles = []
         for fn in patchfiles:
-            print fn, fn.lower().endswith('.txt')
             if fn.lower().endswith('.txt') and fn in rootfiles:
                 try:
                     header = '# RPGMAKER TRANS PATCH'
@@ -68,7 +86,7 @@ class ZIPPatcherv2(ZIPPatcher):
                         self.patchDataFiles.append(fn)
                     else:
                         self.assetFiles.append(fn)
-                except UnicodeError:
+                except UnicodeError:                
                     self.assetFiles.append(fn)
             else:
                 if not fn.endswith('RPGMKTRANSPATCH'):
@@ -77,5 +95,5 @@ class ZIPPatcherv2(ZIPPatcher):
 if __name__ == '__main__':
     zipfn = '/home/habisain/tr/cr_p.zip'
     x = ZIPPatcherv2(zipfn, None)
-    print x.getAssetNames()
+    x.doFullPatches('/home/habisain/tr/cr_pzip_test', None, {}, {})
     

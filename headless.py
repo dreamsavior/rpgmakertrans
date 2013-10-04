@@ -35,7 +35,7 @@ class Headless(CoreProtocol):
             self.progressVal = newProgressVal
         
     def go(self, indir, patchpath, outdir):
-        mtimesManager = self.mtimesManager.MTimesHandler(patchpath)
+        mtimesManager = self.mtimesManager.MTimesHandler(outdir)
         patcher = getPatcher(self.patchManager, patchpath, self.coms)
         self.submit('patcher', loadMTimes, mtimesManager, self.coms)
         translatorRet = self.submit('patcher', makeTranslator, patcher, self.coms)
