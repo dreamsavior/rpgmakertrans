@@ -29,6 +29,19 @@ class ZIPPatcher(BasePatch):
     def writePatchData(self, data):
         pass
     
+    def toOSFileStyle(self, path):
+        for sep in SEPERATORS:
+            path = path.replace(sep, os.path.sep)
+        return path
+    
+    def getAssetNames(self):
+        return [self.toOSFileStyle(x.partition(self.root)[2].strip(SEPERATORS)) 
+                for x in self.assetFiles]
+        
+    def doFullPatches(self, outpath, translator, mtimes, newmtimes):
+        raise Exception('Not implemented')
+
+    
 class ZIPPatcherv2(ZIPPatcher):
     def categorisePatchFiles(self):
         
@@ -37,13 +50,14 @@ class ZIPPatcherv2(ZIPPatcher):
         if len(transpatches) > 1:
             raise Exception('ZIP file contains more than one RPGMKTRANSPATCH file; cannot determine root')
         self.root = transpatches[0].rpartition('RPGMKTRANSPATCH')[0]
-        patchfiles = [x for x in contents if x.startswith(self.root)]
+        patchfiles = [x for x in contents if x.startswith(self.root) and not any(x.endswith(sep) for sep in SEPERATORS)]
         rootfiles = [x for x in patchfiles if 
             all([y not in x.partition(self.root)[2] for y in SEPERATORS])]
         
         self.assetFiles = []
         self.patchDataFiles = []
         for fn in patchfiles:
+            print fn, fn.lower().endswith('.txt')
             if fn.lower().endswith('.txt') and fn in rootfiles:
                 try:
                     header = '# RPGMAKER TRANS PATCH'
@@ -57,9 +71,11 @@ class ZIPPatcherv2(ZIPPatcher):
                 except UnicodeError:
                     self.assetFiles.append(fn)
             else:
-                self.assetFiles.append(fn)
+                if not fn.endswith('RPGMKTRANSPATCH'):
+                    self.assetFiles.append(fn)
                 
 if __name__ == '__main__':
-    zipfn = '/home/habisain/tr/rrpg_patch.zip'
+    zipfn = '/home/habisain/tr/cr_p.zip'
     x = ZIPPatcherv2(zipfn, None)
+    print x.getAssetNames()
     

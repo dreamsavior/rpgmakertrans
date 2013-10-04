@@ -103,7 +103,8 @@ class FilePatcherv2(FilePatcher):
                 except UnicodeError:
                     self.assetFiles.append(fn)
             else:
-                self.assetFiles.append(fn)
+                if not fn.endswith('RPGMKTRANSPATCH'):
+                    self.assetFiles.append(fn)
                 
                 
 def sniffv2(path):
