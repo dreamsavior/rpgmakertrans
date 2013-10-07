@@ -3,9 +3,10 @@ from __future__ import division
 import os
 
 from speedy2k import TwoKRPGFile
-from errorhook import ErrorClass, errorWrap
+from errorhook import ErrorMeta, errorWrap
 
-class TwoKGame(ErrorClass):
+class TwoKGame(object):
+    __metaclass__ = ErrorMeta
     def __init__(self, inpath, outpath, translator, mtimes, newmtimes, comsout, *args, **kwargs):
         super(TwoKGame, self).__init__(*args, **kwargs)
         self.inpath = inpath
@@ -24,7 +25,7 @@ class TwoKGame(ErrorClass):
             if os.path.splitext(fn)[1].lower() in ('.lmu', '.ldb'):
                 infn = os.path.join(self.inpath, fn)
                 outfn = os.path.join(self.outpath, fn)
-                jobs.append((process2kfile, (infn, outfn, self.mtimes, self.newmtimes, self.translator, 'comsout')))
+                jobs.append((process2kfile, (infn, outfn, self.mtimes, self.newmtimes, self.translator, 'outputcoms')))
         self.jobsTotal = len(jobs)
         return jobs
     

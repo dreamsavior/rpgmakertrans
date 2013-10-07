@@ -24,7 +24,7 @@ class CLIMode(CoreProtocol):
         self.normalPrint('Patch path : %s' % cargs.patch)
         self.normalPrint('Output path: %s' % cargs.output)
         self.progressPrint('Starting patcher...')
-        self.headless = Headless(comsout=self.coms)
+        self.headless = Headless(outputcoms=self.inputcoms)
         runner.attach(self.headless)
         self.headless.go(cargs.input, cargs.patch, cargs.output)
         

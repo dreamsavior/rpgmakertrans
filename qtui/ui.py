@@ -58,8 +58,6 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
     def browsePressed(self):
         self.eventComms.send('button', self.idtoken)
         
-    
-        
 class PatchOptions(ErrorClass, QtGui.QGroupBox):
     def __init__(self, qtparent, eventComms):
         name = 'Patch Options'
@@ -134,6 +132,14 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             msgBox.setIcon(QtGui.QMessageBox.Information)
         return msgBox.exec_()
     
+    def yesNoBox(self, title, maintext):
+        msgBox = QtGui.QMessageBox(self)
+        msgBox.setWindowTitle(title)
+        msgBox.setText(maintext)
+        msgBox.setIcon(QtGui.QMessageBox.Question)
+        msgBox.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
+        return msgBox.exec_() == QtGui.QMessageBox.Ok
+    
     def getComboControl(self, controlID):
         control = None
         for x in self.game, self.trans, self.patch:
@@ -156,7 +162,10 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         control.selectItem(tokenID)
             
     def getTransParams(self):
-        return [x.getCurrentSelectedID() for x in [self.game, self.patch, self.trans]]
+        ret = {'gameid': self.game.getCurrentSelectedID(),
+               'patchid': self.patch.getCurrentSelectedID(),
+               'transid': self.trans.getCurrentSelectedID(),}
+        return ret
     
     def setProgress(self, percent):
         if percent == -1:
@@ -169,7 +178,6 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.comms.setText(message)
         
     def toggleUI(self, state):
-        
         self.game.enable(state)
         self.patch.enable(state and self.game.getCurrentSelectedID() is not None)
         self.trans.enable(state and self.game.getCurrentSelectedID() is not None)
@@ -195,140 +203,3 @@ class Timer(object):
         self.timer.start(period)
         self.timer.timeout.connect(connectTo)
         
-class WindowLogicQTComms(object):
-    __metaclass__ = ErrorMeta
-    def __init__(self):
-        #super(WindowLogicQTComms, self).__init__()
-        #self.comsin, self.comsout = [], []
-        self.app = QtGui.QApplication(sys.argv)
-        self.window = MainWindow()
-        
-    def start(self):
-        self.app.exec_()
-        
-    def stop(self):
-        self.app.exit()
-        
-    def __iter__(self):
-        comms = self.window.eventComms.get()
-        while comms:
-            yield comms.pop()
-        
-    def __getattr__(self, key):
-        if hasattr(self.window, key):
-            setattr(self, key, getattr(self.window, key))
-        return super(WindowLogicQTComms, self).__getattribute__(key)
-        
-class WindowLogic(object):
-    __metaclass__ = ErrorMeta
-    def __init__(self, wndComms, sendin, sendout):
-        self.sendin, self.sendout = sendin, sendout
-        self.wndComms = wndComms                
-        self.timer = Timer(100, self.updateGUI)
-        self.actions = {'addGame': lambda x,y,z: self.wndComms.comboBoxAdd('gameloc', x,y,z),
-                        'addPatch': lambda x,y,z: self.wndComms.comboBoxAdd('patchloc', x,y,z),
-                        'addTrans': lambda x,y,z: self.wndComms.comboBoxAdd('transloc', x,y,z),
-                        'setProgress': lambda x: self.wndComms.setProgress(x),
-                        'setMessage': lambda x: self.wndComms.setMessage(x),
-                        'displayOK': lambda x, y: self.wndComms.displayMessage('OK', x, y),
-                        'displayError': lambda x, y: self.wndComms.displayMessage('ErrorClass', x, y),
-                        'displayOKKill': self.displayOKKill,
-                        'selectGame': lambda x: self.wndComms.comboBoxSelect('gameloc', x),
-                        'selectPatch': lambda x: self.wndComms.comboBoxSelect('patchloc', x),
-                        'selectTrans': lambda x: self.wndComms.comboBoxSelect('transloc', x),
-                        'toggleUI': lambda x: self.wndComms.toggleUI(x),
-                        }
-        self.uiactions = {'button': self.buttonPressed}
-        self.wndComms.start()
-        
-    def start(self):
-        self.wndComms.start()
-        
-    def updateGUI(self):
-        events = self.sendin.get()
-        while events:
-            acttype, actargs, actkwargs = events.pop(0)
-            if acttype in self.actions:
-                self.actions[acttype](*actargs, **actkwargs)
-            else:
-                self.logger.warning('warning, unknown action %s with args %s %s' % (str(acttype), str(actargs), str(actkwargs)))
-        for msg, args, kwargs in self.wndComms:
-            if msg == 'QUIT':
-                self.close()
-            elif msg in self. uiactions:
-                self.uiactions[msg](*args, **kwargs)
-            else:
-                print msg, args, kwargs
-        #self.wndComms.setProgress(self.progressAmount)
-    
-    def buttonPressed(self, button):
-        if button == 'go':
-            gameid, patchid, transid = self.wndComms.getTransParams()
-            self.sendout.send('doPatch', gameid, patchid, transid)
-        elif button == 'gameloc':
-            newgame = self.selectGame()
-            if newgame:
-                self.sendout.send('addGame', newgame)
-        elif button == 'patchloc':
-            newpatch = self.selectPatch()
-            if newpatch:
-                self.sendout.send('addPatch', newpatch)
-        elif button == 'transloc':
-            transdir = self.selectTransDir()
-            if transdir:
-                self.sendout.send('addTrans', newpatch) 
-        else:
-            print 'unknown button %s' % button
-
-    # TODO: These wildcards are QT dependent. Make it not so.
-    def selectGame(self):
-        return self.wndComms.fileDialog('Choose game', 'RPGMaker Game Files (RPG_RT.EXE)')
-    
-    def selectPatch(self):
-        return self.wndComms.fileDialog('Choose patch', 'RPGMaker Trans Patches (*.zip RPGMKTRANSPATCH')
-    
-    def selectTransDir(self):
-        return self.wndComms.dirDialog('Choose translation directory')
-    
-    def close(self):
-        self.wndComms.stop()
-        self.sendout.send('KILL')
-        
-    def displayOK(self, title, message):
-        self.wndComms.displayMessage('OK', title, message)
-    
-    def displayOKKill(self, title, message):
-        self.wndComms.displayMessage('OK', title, message)
-        self.close()
-#        sys.exit(0)
-        
-    def displayError(self, title, message):
-        self.wndComms.displayMessage('ErrorClass', title, message)
-
-@errorWrap
-def startView(comsin, comsout):
-    control = WindowLogic(WindowLogicQTComms(), comsin, comsout)
-    control.start()
-
-    
-def main():
-    outcmds = []
-    ex = WindowLogic(WindowLogicQTComms(),
-                     [['addGame', ['TestGame', 0, False]],
-                      ['addGame', ['TestGame2', 1, True]],
-                      ['addPatch', ['TestPatch', 0, False]],
-                      ['addTrans', ['TestTrans', 0, False]],
-                      ['setProgress', [20]],
-                      ['setMessage', ['Testing 1 2 3']],
-                      #['displayOK', ['Nonsense', 'Ying tong iddle']],
-                      ['selectGame', [0]],
-                      ['toggleUI', [True]],
-                     ],
-                     outcmds,)
-    ex.start()
-    print outcmds
-    #sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()

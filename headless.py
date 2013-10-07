@@ -31,14 +31,14 @@ class Headless(CoreProtocol):
     def updateProgress(self):
         newProgressVal = min((x[0] / x[1] for x in self.progress.values()))
         if newProgressVal != self.progressVal: 
-            self.comsout.send('setProgress', newProgressVal)
+            self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
         
     def go(self, indir, patchpath, outdir):
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
-        patcher = getPatcher(self.patchManager, patchpath, self.coms)
-        self.submit('patcher', loadMTimes, mtimesManager, self.coms)
-        translatorRet = self.submit('patcher', makeTranslator, patcher, self.coms)
+        patcher = getPatcher(self.patchManager, patchpath, self.inputcoms)
+        self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
+        translatorRet = self.submit('patcher', makeTranslator, patcher, self.inputcoms)
         self.comboTrigger('startTranslation', ['translatorReady', 'mtimesReady'])
         self.localWaitUntil('startTranslation', self.beginTranslation, patcher, 
                             translatorRet, mtimesManager, indir, patchpath, outdir)
@@ -51,26 +51,26 @@ class Headless(CoreProtocol):
 
         self.submit('copier', copyfilesAndTrigger, indir=indir, outdir=outdir,
               ignoredirs=[], ignoreexts=['.lmu', '.ldb', '.lsd'], ignorefiles= dontcopy, 
-              comsout=self.coms, translator=translator, mtimes=mtimes, 
+              comsout=self.inputcoms, translator=translator, mtimes=mtimes, 
               newmtimes=newmtimes, progresssig='copying', dirssig='dirsCopied')
         self.submit('patcher', process2kgame, indir, outdir, translator, 
-                mtimes=mtimes, newmtimes=newmtimes, comsout=self.coms)
-        self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher, outdir, translator, mtimes, newmtimes, self.coms)
+                mtimes=mtimes, newmtimes=newmtimes, comsout=self.inputcoms)
+        self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher, outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.comboTrigger('patchingFinished', ['fileCopyDone', 'gamePatchingDone', 'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, 
                             translator, mtimesManager, indir, patchpath, outdir)
         
     def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir):
         patcher.setPath(patchpath + '_2') # Debug only
-        self.submit('patcher', writeTranslator, patcher, translator, self.coms)
-        self.submit('copier', dumpMTimes, mtimesManager, self.coms)
+        self.submit('patcher', writeTranslator, patcher, translator, self.inputcoms)
+        self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish)
 
         
     def finish(self):
         self.going = False
-        self.comsout.send('finishedPatching')
+        self.outputcoms.send('finishedPatching')
 
 if __name__ == '__main__':
     indir = '/home/habisain/tr/cr'

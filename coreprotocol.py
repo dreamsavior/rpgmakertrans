@@ -11,7 +11,8 @@ from errorhook import setErrorOut
 
 class CoreRunner(object):
     # TODO: Runner should handle all errors somehow.
-    def __init__(self, runners):
+    def __init__(self, runners=None):
+        if runners is None: runners = []
         self.running = []
         for runner in runners:
             self.attach(runner)
@@ -34,12 +35,15 @@ class CoreRunner(object):
             time.sleep(0.1)
 
 class CoreProtocol(object):
-    def __init__(self, comsout=None, errout=None):
-        self.senderManager = SenderManager()
-        self.senderManager.start()
-        self.coms = self.senderManager.Sender()
-        if comsout is None: comsout = self.senderManager.Sender()
-        self.comsout = comsout
+    def __init__(self, inputcoms=None, outputcoms=None, errout=None):
+        if inputcoms is None or outputcoms is None:
+            self.senderManager = SenderManager()
+            self.senderManager.start()
+        if inputcoms is None: inputcoms = self.senderManager.Sender()
+            
+        self.inputcoms = inputcoms
+        if outputcoms is None: outputcoms = self.senderManager.Sender()
+        self.outputcoms = outputcoms
         self.waiting = defaultdict(list)
         self.dispatched = set()
         self.pools = defaultdict(lambda: multiprocessing.Pool(initializer=setErrorOut, initargs=[errout]))
@@ -73,13 +77,13 @@ class CoreProtocol(object):
         else: self.localWaiting[signal].append((fn, args, kwargs))
         
     def submit(self, pool, fn, *args, **kwargs):
-        if 'comsout' in args:
+        if 'outputcoms' in args:
             args = list(args)
-            args[args.index('comsout')] = self.coms
+            args[args.index('outputcoms')] = self.inputcoms
         else:
             for (key, value) in kwargs.items():
-                if value == 'comsout':
-                    kwargs[key] = self.coms
+                if value == 'outputcoms':
+                    kwargs[key] = self.inputcoms
         ret = self.pools[pool].apply_async(fn, args=args, kwds=kwargs)
         self.results.append(ret)
         return ret
@@ -105,7 +109,7 @@ class CoreProtocol(object):
         self.going = False
                     
     def update(self, coms=None):
-        events = self.coms.get()
+        events = self.inputcoms.get()
         while events:
             code, args, kwargs = events.pop(0)
             if hasattr(self, code) and callable(getattr(self, code)):
