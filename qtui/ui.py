@@ -10,11 +10,11 @@ from errorhook import errorWrap, ErrorClass, ErrorMeta
 from sender import Sender
 
 labelString = ''.join([
-    "RPGMaker Trans (C) Habisain 2011-2012\n",
-    "You may not redistribute games patched by ",
-    "RPGMaker Trans without fulfilling a number ",
-    "of criteria that 3rd party or fan translations ",
-    "are unlikely to meet. "])
+    "RPGMaker Trans (C) Habisain 2011-2013\n",
+    "Redistributing a game patched by RPGMaker Trans ",
+    "will likely breach copyright on that game, and ",
+    "so you should not do so without the original ",
+    "authors permission, even for free games. "])
 
 class SelectorBlock(ErrorClass, QtGui.QGroupBox):
     def __init__(self, name, idtoken, qtparent, eventComms):
@@ -27,6 +27,7 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         hbox = QtGui.QHBoxLayout()
         self.combobox = QtGui.QComboBox()
         self.combobox.setMinimumWidth(300)
+        self.combobox.setEditable(True)
         hbox.addWidget(self.combobox)
         self.browseButton = QtGui.QPushButton("Browse...")
         hint = self.browseButton.sizeHint()
@@ -90,10 +91,10 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
             widget.setEnabled(state)
 
 class MainWindow(ErrorClass, QtGui.QWidget):
-    def __init__(self):
+    def __init__(self, eventComms):
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
-        self.eventComms = Sender()
+        self.eventComms = eventComms
         self.game = SelectorBlock('Game location', 'gameloc', self, self.eventComms)
         self.patch = SelectorBlock('Patch location', 'patchloc', self, self.eventComms)
         self.trans = SelectorBlock('Translation Location', 'transloc', self, self.eventComms)
@@ -119,7 +120,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.show()
         
     def closeEvent(self, event):
-        self.eventComms.send('QUIT')
+        self.eventComms.send('stop')
         event.ignore()
         
     def displayMessage(self, style, title, maintext):

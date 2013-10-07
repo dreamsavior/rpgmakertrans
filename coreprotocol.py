@@ -104,7 +104,7 @@ class CoreProtocol(object):
         for pool in self.pools.values(): pool.terminate()
         self.going = False
                     
-    def update(self):
+    def update(self, coms=None):
         events = self.coms.get()
         while events:
             code, args, kwargs = events.pop(0)
