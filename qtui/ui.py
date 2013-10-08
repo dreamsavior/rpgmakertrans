@@ -27,7 +27,7 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         hbox = QtGui.QHBoxLayout()
         self.combobox = QtGui.QComboBox()
         self.combobox.setMinimumWidth(300)
-        self.combobox.setEditable(True)
+        #self.combobox.setEditable(True)
         hbox.addWidget(self.combobox)
         self.browseButton = QtGui.QPushButton("Browse...")
         hint = self.browseButton.sizeHint()
@@ -107,7 +107,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             vbox.addWidget(x)
         self.setLayout(vbox)    
         self.setWindowTitle('RPGMaker Trans QTUI Experiment')
-        self.gobutton.released.connect(lambda: self.eventComms.append(('button',('go',))))
+        self.gobutton.released.connect(lambda: self.eventComms.send('button', 'go'))
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
@@ -180,12 +180,12 @@ class MainWindow(ErrorClass, QtGui.QWidget):
     def toggleUI(self, state):
         self.game.enable(state)
         self.patch.enable(state and self.game.getCurrentSelectedID() is not None)
-        self.trans.enable(state and self.game.getCurrentSelectedID() is not None)
+        self.trans.enable(state and self.game.getCurrentSelectedID() is not None
+                          and self.patch.getCurrentSelectedID() is not None)
         self.patchopts.enable(state and self.game.getCurrentSelectedID() is not None)
         self.gobutton.setEnabled(state and self.patch.getCurrentSelectedID() is not None
                                  and self.trans.getCurrentSelectedID() is not None
                                  and self.game.getCurrentSelectedID() is not None)
-        self.trans.enable(False)
             
     def fileDialog(self, title, wildcard):
         """Return a UTF string of the selected name"""

@@ -47,7 +47,7 @@ def sniff(path):
     for name, sniffer in SNIFFERS.items():
         if sniffer(path): 
             return name
-    return None
+    return False
 
 def sniffAll(path):
     if os.path.isdir(path):

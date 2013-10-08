@@ -1,23 +1,19 @@
 import os.path
 import filepatcher
 import zippatcher
-from basepatcher import PatchManager, makeTranslator, writeTranslator, REGISTRY
-
+from basepatcher import PatchManager, makeTranslator, writeTranslator
+from registry import getClassName
 DEFAULT = 'FilePatcherv2'
 
 def getPatcher(manager, path, coms):
-    for x in REGISTRY:
-        if x(path):
-            return getattr(manager, REGISTRY[x])(path, coms)
-    if not os.path.exists(path):
-        os.mkdir(path)
-    return getattr(manager, DEFAULT)(path, coms)
-
-def isPatcher(path):
-    for x in REGISTRY:
-        if x(path):
-            return True
-    return False
+    className = getClassName(path)
+    if className is None:
+        if not os.path.exists(path):
+            os.mkdir(path)
+        elif not os.path.isdir(path):
+            raise Exception('Not a patcher!') 
+        className = DEFAULT
+    return getattr(manager, className)(path, coms)
 
 def doFullPatches(patcher, outdir, translator, mtimes, newmtimes, coms):
     patcher.doFullPatches(outdir, translator, mtimes, newmtimes)

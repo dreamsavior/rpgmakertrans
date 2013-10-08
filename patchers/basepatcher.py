@@ -59,6 +59,4 @@ def makeTranslator(patcher, coms):
 def writeTranslator(patcher, translator, coms):
     patcher.writeTranslator(translator)
     coms.send('trigger', 'translatorWritten')
-    
-REGISTRY = {}
-    
+        
