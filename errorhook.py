@@ -23,7 +23,8 @@ def errorWrap(func):
             if e not in caught:
                 if errorOut is not None:
                     errorOut.send('ERROR', traceback.format_exc(e))
-                print traceback.format_exc(e)
+                else:
+                    print traceback.format_exc(e)
                 caught.add(e)
             raise e
     return wrap

@@ -5,6 +5,7 @@ Created on 7 Oct 2013
 '''
 
 from coreprotocol import CoreRunner, CoreProtocol
+from sniffers import sniffAll
 
 from qtui import startView
 
@@ -19,6 +20,14 @@ class GUIController(CoreProtocol):
         self.headless = None
         self.outputcoms.send('setMessage', 'Loading games, patches...')
         self.outputcoms.send('setUI', False)
+        sniffData = self.submit('patcher', sniffAllTrigger, os.getcwd())
+        self.localWaitUntil('sniffingDone', setUpSniffedData, sniffData)
+        
+    def setUpSniffedData(self, sniffData):
+        print sniffData
+        
+    def addGame(self, gamepath):
+        pass
         
     def stop(self):
         if self.headless is None or not self.headless.going:
@@ -36,7 +45,11 @@ class GUIController(CoreProtocol):
         self.terminate()
         self.going = False
         
-    
+def sniffAllTrigger(path, coms):
+    ret = sniffAll(path)
+    coms.send('trigger', 'sniffingDone')
+    return ret
+
 if __name__ == '__main__':
     z = CoreRunner()
     x = GUIController(runner=z)

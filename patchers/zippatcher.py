@@ -101,6 +101,7 @@ class ZIPPatcherv2(ZIPPatcher):
                 if not fn.endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
 
+@patcherSniffer('v2ZipPatch', 'ZIPPatcherv2')
 def sniffzipv2(path):
     if os.path.isfile(path) and zipfile.is_zipfile(path):
         z = zipfile.ZipFile(path)
