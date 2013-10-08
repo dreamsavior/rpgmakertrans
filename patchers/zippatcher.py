@@ -4,9 +4,10 @@ Created on 4 Oct 2013
 @author: habisain
 '''
 
-from basepatcher import BasePatch, REGISTRY
+from basepatcher import BasePatch
 import zipfile
 import os.path
+from registry import patcherSniffer, ZipPatchv2
 
 SEPERATORS = '\\/' 
 
@@ -101,7 +102,7 @@ class ZIPPatcherv2(ZIPPatcher):
                 if not fn.endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
 
-@patcherSniffer('v2ZipPatch', 'ZIPPatcherv2')
+@patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
 def sniffzipv2(path):
     if os.path.isfile(path) and zipfile.is_zipfile(path):
         z = zipfile.ZipFile(path)
@@ -113,8 +114,6 @@ def sniffzipv2(path):
             if not x.strip():
                 return True
     return False
-
-REGISTRY[sniffzipv2] = 'ZIPPatcherv2'
      
 if __name__ == '__main__':
     zipfn = '/home/habisain/tr/cr_p.zip'

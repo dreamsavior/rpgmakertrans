@@ -6,8 +6,9 @@ Created on 18 Apr 2013
 
 import os, os.path
 import codecs
-from basepatcher import BasePatch, REGISTRY
+from basepatcher import BasePatch
 from filecopier2 import copyfiles
+from registry import patcherSniffer, FilePatchv2
 
 class FilePatcher(BasePatch):
     def __init__(self, path, coms):
@@ -56,32 +57,6 @@ class FilePatcher(BasePatch):
             dirssig=None 
             )
                 
-class FilePatcherv3(FilePatcher):
-    def patchDataFiles(self):
-        raise Exception('This needs to be made compliant with the final version of v3 patches')
-        for fn in self.allPaths():
-            if fn.endswith('.txt'):
-                try:
-                    with codecs.open(fn, 'r', encoding='utf-8') as f:
-                        header = '# RPGMAKER TRANS PATCH'
-                        x = f.read(len(header))
-                        if x.startswith(header):
-                            yield fn
-                except UnicodeError:
-                    pass
-    
-def sniffv3(path):
-    if os.path.isdir(path):
-        path = os.path.join(path, 'rpgmktranspatch')
-    if os.path.isfile(path) and path.endswith('rpgmktranspatch'):
-        with open(path, 'r') as f:
-            versionString = f.read()
-        if versionString == 'RPGMAKER TRANS PATCH v3.0':
-            return True
-    return False
-
-#filePatchers[sniffv3] = FilePatcherv3
-
 class FilePatcherv2(FilePatcher):
     translatorClass = 'Translator2kv2'
     def categorisePatchFiles(self):
@@ -105,17 +80,19 @@ class FilePatcherv2(FilePatcher):
                 if not fn.endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
                 
-                
+@patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
     if os.path.isdir(path):
-        path = os.path.join(path, 'rpgmktranspatch')
+        cands = os.listdir(path)
+        for cand in cands:
+            if cand.lower() == 'rpgmktranspatch':
+                path = os.path.join(path, cand)
+                break
+        
     if os.path.isfile(path):
         with open(path, 'r') as f:
             versionString = f.read()
         if not versionString.strip():
             return True
     return False         
-        
-REGISTRY[sniffv2] = 'FilePatcherv2'
-
     

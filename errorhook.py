@@ -5,8 +5,9 @@ Created on 3 Feb 2013
 '''
 
 import traceback, functools
-
+import sys
 errorOut = None
+
 def setErrorOut(comsout):
     global errorOut
     errorOut = comsout
@@ -23,8 +24,8 @@ def errorWrap(func):
             if e not in caught:
                 if errorOut is not None:
                     errorOut.send('ERROR', traceback.format_exc(e))
-                else:
-                    print traceback.format_exc(e)
+                sys.stderr.write(traceback.format_exc(e))
+                sys.stderr.flush()
                 caught.add(e)
             raise e
     return wrap

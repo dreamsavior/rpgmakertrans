@@ -6,11 +6,11 @@ Created on 3 Sep 2013
 from __future__ import division
 
 import os.path, shutil
-from errorhook import ErrorClass, errorWrap
+from errorhook import ErrorMeta, errorWrap
 
-class FileCopier(ErrorClass):
+class FileCopier(object):
     """Handles copying files from orig directory to target. Does *not* copy patch files."""
-    
+    __metaclass__ = ErrorMeta
     def __init__(self, indir, outdir,
                  ignoredirs, ignoreexts, ignorefiles, 
                  comsout, translator, mtimes, newmtimes,
@@ -40,7 +40,6 @@ class FileCopier(ErrorClass):
                 f.write('RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
         for directory in self.dirs:
             os.mkdir(directory)
-        # TODO: Send a signal that we're good to start patching the game here!
         if self.dirssig: 
             self.comsout.send('trigger', self.dirssig)
         if self.progresssig: 

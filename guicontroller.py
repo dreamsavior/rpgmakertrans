@@ -3,10 +3,11 @@ Created on 7 Oct 2013
 
 @author: habisain
 '''
+import os
 
 from coreprotocol import CoreRunner, CoreProtocol
 from sniffers import sniffAll
-
+import patchers
 from qtui import startView
 
 class GUIController(CoreProtocol):
@@ -20,14 +21,27 @@ class GUIController(CoreProtocol):
         self.headless = None
         self.outputcoms.send('setMessage', 'Loading games, patches...')
         self.outputcoms.send('setUI', False)
-        sniffData = self.submit('patcher', sniffAllTrigger, os.getcwd())
-        self.localWaitUntil('sniffingDone', setUpSniffedData, sniffData)
+        sniffDataRet = self.submit('worker', sniffAllTrigger, path=os.getcwd(), coms=self.inputcoms)
+        self.localWaitUntil('sniffingDone', self.setUpSniffedData, sniffDataRet)
         
-    def setUpSniffedData(self, sniffData):
-        print sniffData
+    def setUpSniffedData(self, sniffDataRet):
+        sniffData = sniffDataRet.get()
+        for item, path in sniffData:
+            if item.maintype == 'GAME':
+                self.addGame(path, item)
+            elif item.maintype == 'PATCH':
+                self.addPatch(path, item)
+            elif item.maintype == 'TRANS':
+                self.addTrans(path, item)
+    
+    def addGame(self, gamepath, sniffData=None):
+        print 'adding game %s' % gamepath
         
-    def addGame(self, gamepath):
-        pass
+    def addPatch(self, patchpath, sniffData=None):
+        print 'adding patch %s' % patchpath
+        
+    def addTrans(self, transpath, sniffData=None):
+        print 'adding trans %s' % transpath
         
     def stop(self):
         if self.headless is None or not self.headless.going:

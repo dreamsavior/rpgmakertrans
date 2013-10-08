@@ -77,6 +77,8 @@ class CoreProtocol(object):
         else: self.localWaiting[signal].append((fn, args, kwargs))
         
     def submit(self, pool, fn, *args, **kwargs):
+        if pool == 'dbg':
+            return fn(*args, **kwargs)
         if 'outputcoms' in args:
             args = list(args)
             args[args.index('outputcoms')] = self.inputcoms

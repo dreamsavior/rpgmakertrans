@@ -183,7 +183,6 @@ class RPGFile(ErrorClass):
                     newSchemaType, newSchemaDict = schema[cntAttribID]
                     end = 0
                     if newSchemaType == 'string':
-                        # TODO: Insert translation
                         string = self.bytes()
                         contextData = (contextInfo, cntAttribID, cntItemID)
                         translated, string = self.translate(string, contextData)
@@ -234,7 +233,6 @@ class RPGFile(ErrorClass):
     def translateMessage(self, cmdList, schema, depth, translator, collStart, collEnd):
         text = '\n'.join((x[2] for x in cmdList))
         
-        #TODO: Insert translation
         translated, text = self.translate(text, 'Dialogue/Message/FaceUnknown')
         if translated:
             x = 0
@@ -253,7 +251,6 @@ class RPGFile(ErrorClass):
     def translateChoice(self, cmdList, schema, depth, translator, collStart, collEnd):
         cmd = cmdList[0]
         translated, text = self.translate(cmd[2], 'Dialogue/Choice')
-        #TODO: Insert translation
         if translated:
             choiceCode = schema['nextChoice']
             args = cmd[1]
@@ -272,9 +269,8 @@ class RPGFile(ErrorClass):
         for opc, args, line in cmdList:
             lineTrans = line
             for part in line.split('/'):
-                # TODO: Insert translation
-                nt, translation = self.translate(part, 'Dialogue/Choice')
-                translated |= nt
+                partTranslated, translation = self.translate(part, 'Dialogue/Choice')
+                translated |= partTranslated
                 lineTrans = lineTrans.replace(part, translation)
             textLS.append(lineTrans)
         if translated:
@@ -304,8 +300,6 @@ class RPGFile(ErrorClass):
             textLS.append(string)
             textLS.append('\n')
         textStr = ''.join(textLS).strip('\n')
-        # TODO: Insert translation
-        #transString = textStr
         translated, transString = self.translate(textStr, 'Dialogue/SetHeroName')
         if translated:
             for line in transString.split('\n'):
