@@ -4,6 +4,10 @@ Created on 6 Oct 2013
 @author: habisain
 '''
 
+if __name__ == '__main__':
+    import sys
+    sys.path.append('..')
+
 from coreprotocol import CoreProtocol
 from ui import MainWindow, Timer
 from PySide import QtGui, QtCore
@@ -25,20 +29,27 @@ class QTLogic(CoreProtocol):
         self.app.exit()
         self.outputcoms.send('shutdown')
         
-    def setUI(self, state):
-        self.window.toggleUI(state)
+    def setUI(self, states):
+        for element, state in states.items():
+            self.window.enableElement(element, state)
     
     def browseGame(self):
         newgameloc = self.window.fileDialog('Choose game', 'RPGMaker Game Files (RPG_RT.EXE)')
-        self.outputcoms.send('addGame', newgameloc)
+        self.outputcoms.send('addGame', newgameloc, select=True)
         
     def browsePatch(self):
         newpatchloc = self.window.fileDialog('Choose patch', 'RPGMaker Trans Patches (*.zip RPGMKTRANSPATCH')
-        self.outputcoms.send('addPatch', newpatchloc)
+        self.outputcoms.send('addPatch', newpatchloc, select=True)
         
     def browseTrans(self):
         newtransloc = self.window.dirDialog('Choose translation directory')
-        self.outputcoms.send('addTrans', newtransloc)
+        self.outputcoms.send('addTrans', newtransloc, select=True)
+        
+    def changeSelected(self, *args, **kwargs):
+        self.outputcoms.send('changeSelected', *args, **kwargs)
+        
+    def optionChanged(self, *args, **kwargs):
+        self.outputcoms.send('optionChanged', *args, **kwargs)
         
     def addGame(self, tokenName, tokenID, select=False):
         self.window.comboBoxAdd('gameloc', tokenName, tokenID, select)
@@ -87,3 +98,6 @@ class QTLogic(CoreProtocol):
 def startView(*args, **kwargs):
     x = QTLogic(*args, **kwargs)
     x.start()
+    
+if __name__ == '__main__':
+    startView()

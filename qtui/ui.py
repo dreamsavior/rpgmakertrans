@@ -19,7 +19,7 @@ labelString = ''.join([
 class SelectorBlock(ErrorClass, QtGui.QGroupBox):
     def __init__(self, name, idtoken, qtparent, eventComms):
         super(SelectorBlock, self).__init__(name, qtparent)
-        self.eventComms = eventComms
+        self.outputComs = eventComms
         self.name = name
         self.idtoken = idtoken
         self.idmap = {}
@@ -41,9 +41,13 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         self.setMinimumHeight(height)
         self.setMaximumHeight(height)
         self.browseButton.released.connect(self.browsePressed)
+        self.combobox.currentIndexChanged.connect(self.changedIndex)
         
     def addItem(self, item, idtoken):
         self.combobox.addItem(item, idtoken)
+    
+    def changedIndex(self, index):
+        self.outputComs.send('changeSelected', self.idtoken, self.getCurrentSelectedID())
         
     def enable(self, state):
         self.combobox.setEnabled(state)
@@ -56,47 +60,48 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         return self.combobox.itemData(self.combobox.currentIndex())
         
     def browsePressed(self):
-        self.eventComms.send('button', self.idtoken)
+        self.outputComs.send('button', self.idtoken)
         
 class PatchOptions(ErrorClass, QtGui.QGroupBox):
-    def __init__(self, qtparent, eventComms):
+    def __init__(self, qtparent, outputComs):
         name = 'Patch Options'
-        self.eventComms = eventComms
+        self.outputComs = outputComs
         super(PatchOptions, self).__init__(name, qtparent)
         hbox = QtGui.QHBoxLayout()
         self.create = QtGui.QCheckBox('Create patch', self)
         self.create.setToolTip('When first starting a translation project,\n'
                                'select this to create the initial patch')
-        self.inplace = QtGui.QCheckBox('Patch in place', self)
-        self.inplace.setToolTip('In-place patching is faster, but the\n'
-                                'results can\'t be updated with either\n'
-                                'new game data or a new translation\n'
-                                'If you won\'t want to update the game\n'
-                                'or the translation, select this.')
-        for x in self.create, self.inplace:
+        #self.inplace = QtGui.QCheckBox('Patch in place', self)
+        #self.inplace.setToolTip('In-place patching is faster, but the\n'
+        #                        'results can\'t be updated with either\n'
+        #                        'new game data or a new translation\n'
+        #                        'If you won\'t want to update the game\n'
+        #                        'or the translation, select this.')
+        self.widgets = [self.create]#, self.inplace]
+        for x in self.widgets:
             hbox.addWidget(x)
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
         self.setLayout(vbox)
         self.create.toggled.connect(lambda: self.toggle('create', self.create.isChecked()))
-        self.inplace.toggled.connect(lambda: self.toggle('inplace', self.inplace.isChecked()))
+        #self.inplace.toggled.connect(lambda: self.toggle('inplace', self.inplace.isChecked()))
         
     def toggle(self, signal, val):
-        self.eventComms.send('newval', signal, val)
+        self.outputComs.send('optionChanged', signal, val)
         
     def enable(self, state):
-        for widget in self.create, self.inplace:
+        for widget in self.widgets:
             widget.setEnabled(state)
 
 class MainWindow(ErrorClass, QtGui.QWidget):
     def __init__(self, eventComms):
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
-        self.eventComms = eventComms
-        self.game = SelectorBlock('Game location', 'gameloc', self, self.eventComms)
-        self.patch = SelectorBlock('Patch location', 'patchloc', self, self.eventComms)
-        self.trans = SelectorBlock('Translation Location', 'transloc', self, self.eventComms)
-        self.patchopts = PatchOptions(self, self.eventComms)
+        self.outputComs = eventComms
+        self.game = SelectorBlock('Game location', 'gameloc', self, self.outputComs)
+        self.patch = SelectorBlock('Patch location', 'patchloc', self, self.outputComs)
+        self.trans = SelectorBlock('Translation Location', 'transloc', self, self.outputComs)
+        self.patchopts = PatchOptions(self, self.outputComs)
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
         self.comms = QtGui.QLabel('Waiting for backend..')
@@ -107,7 +112,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             vbox.addWidget(x)
         self.setLayout(vbox)    
         self.setWindowTitle('RPGMaker Trans QTUI Experiment')
-        self.gobutton.released.connect(lambda: self.eventComms.send('button', 'go'))
+        self.gobutton.released.connect(lambda: self.outputComs.send('button', 'go'))
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
@@ -115,10 +120,16 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.setMaximumHeight(height)
         self.setMinimumWidth(width)
         self.setMaximumWidth(width)
+        self.enableElements = {'gameloc': self.game.enable, 'transloc': self.trans.enable,
+                               'patchloc': self.patch.enable, 'options': self.patchopts.enable,
+                               'go': self.gobutton.setEnabled}
         self.show()
         
+    def enableElement(self, element, state):
+        self.enableElements[element](state)
+        
     def closeEvent(self, event):
-        self.eventComms.send('stop')
+        self.outputComs.send('stop')
         event.ignore()
         
     def displayMessage(self, style, title, maintext):
@@ -176,17 +187,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             
     def setMessage(self, message):
         self.comms.setText(message)
-        
-    def toggleUI(self, state):
-        self.game.enable(state)
-        self.patch.enable(state and self.game.getCurrentSelectedID() is not None)
-        self.trans.enable(state and self.game.getCurrentSelectedID() is not None
-                          and self.patch.getCurrentSelectedID() is not None)
-        self.patchopts.enable(state and self.game.getCurrentSelectedID() is not None)
-        self.gobutton.setEnabled(state and self.patch.getCurrentSelectedID() is not None
-                                 and self.trans.getCurrentSelectedID() is not None
-                                 and self.game.getCurrentSelectedID() is not None)
-            
+                    
     def fileDialog(self, title, wildcard):
         """Return a UTF string of the selected name"""
         return QtGui.QFileDialog.getOpenFileName(parent=self, caption=title, 

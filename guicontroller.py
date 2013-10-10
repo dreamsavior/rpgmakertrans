@@ -37,9 +37,12 @@ class GUIController(CoreProtocol):
         self.gameDB = IDStore()
         self.patchDB = IDStore()
         self.transDB = IDStore()
+        self.currentState = {'gameloc': None, 'patchloc': None, 'transloc': None, 
+                             'create': False, 'enabled': True}
+
         self.headless = None
         self.outputcoms.send('setMessage', 'Loading games, patches...')
-        self.outputcoms.send('setUI', False)
+        self.enableUI()
         sniffDataRet = self.submit('worker', sniffAllTrigger, path=os.getcwd(), coms=self.inputcoms)
         self.localWaitUntil('sniffingDone', self.setUpSniffedData, sniffDataRet)
         self.runner = runner
@@ -55,7 +58,6 @@ class GUIController(CoreProtocol):
                 self.addPatch(path, item)
             elif item.maintype == 'TRANS':
                 self.addTrans(path, item)
-        self.outputcoms.send('setUI', True)
                 
     def addItem(self, path, sniffData, sniffDataType, idstore, sendSignal, select, prefix=None):
         if sniffData is None: sniffData = sniff(path)
@@ -81,6 +83,29 @@ class GUIController(CoreProtocol):
     def addTrans(self, transpath, sniffData=None, select=False):
         self.addItem(transpath, sniffData, 'TRANS', self.transDB, 'addTrans', select)
         
+    def changeSelected(self, idtoken, newid):
+        self.currentState[idtoken] = newid
+        self.enableUI()
+        
+    def optionChanged(self, option, value):
+        self.currentState[option] = value
+        if option == 'create':
+            print 'create option detected'
+        self.enableUI()
+        
+    def enableUI(self):
+        state = self.currentState['enabled']
+        states = {}
+        states['gameloc'] = state
+        state &= self.currentState['gameloc'] is not None
+        states['patchloc'] = state
+        states['options'] = state
+        state &= self.currentState['patchloc'] is not None
+        states['transloc'] = state
+        state &= self.currentState['transloc'] is not None
+        states['go'] = state
+        self.outputcoms.send('setUI', states)
+        
     def go(self, gameid, patchid, transid):
         gamepath = self.gameDB.reverse[gameid]
         patchpath = self.patchDB.reverse[patchid]
@@ -88,10 +113,14 @@ class GUIController(CoreProtocol):
         headless = Headless(outputcoms=self.inputcoms)
         self.runner.attach(headless)
         headless.go(gamepath, patchpath, transpath)
-        print 'translating'
-        print 'game: %s' % gamepath
-        print 'patch: %s' % patchpath
-        print 'trans: %s' % transpath
+        self.currentState['enabled'] = False
+        self.outputcoms.send('setMessage', 'Patching game...')
+        
+    def finishedPatching(self):
+        self.currentState['enabled'] = True
+        self.currentState['gameloc'] = None
+        self.outputcoms.send('setMessage', 'Finished patching')
+        self.enableUI()
         
     def setProgress(self, amount):
         self.outputcoms.send('setProgress', amount)

@@ -43,6 +43,7 @@ def sniffTransLoc(path):
            'RPGMKTRANSPATCH': True,
            'RPGMKTRANSLATED': False,}
     return checkForFiles(path, req)
+
 def sniff(path):
     for name, sniffer in SNIFFERS.items():
         if sniffer(path): 
