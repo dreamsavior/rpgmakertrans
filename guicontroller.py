@@ -8,7 +8,7 @@ import os
 from coreprotocol import CoreRunner, CoreProtocol
 from sniffers import sniffAll, sniff
 from headless import Headless
-from qtui import startView
+from qtui import startView, errorMsg
 
 class IDStore(dict):
     def __init__(self, reverse=True, *args, **kwargs):
@@ -42,7 +42,7 @@ class GUIController(CoreProtocol):
     def __init__(self, *args, **kwargs):
         super(GUIController, self).__init__(*args, **kwargs)
         self.submit('gui', startView, inputcoms=self.outputcoms, outputcoms=self.inputcoms)
-        
+        self.runner.setErrorHandler(errorMsg)
         self.gameDB = IDStore()
         self.patchDB = IDStore()
         self.transDB = IDStore()
@@ -52,7 +52,6 @@ class GUIController(CoreProtocol):
 
         self.headless = None
         self.outputcoms.send('setMessage', 'Loading games, patches...')
-        #self.enableUI()
         sniffDataRet = self.submit('worker', sniffAllTrigger, path=os.getcwd(), coms=self.inputcoms)
         self.localWaitUntil('sniffingDone', self.setUpSniffedData, sniffDataRet)
         
@@ -69,11 +68,12 @@ class GUIController(CoreProtocol):
             elif item.maintype == 'TRANS':
                 self.addTrans(path, item)
                 
-    def addItem(self, path, sniffData, sniffDataType, idstore, sendSignal, select, prefix=None):
+    def addItem(self, path, sniffData, sniffDataTypes, idstore, sendSignal, select, prefix=None):
         if sniffData is None: sniffData = sniff(path)
         if sniffData is False: return False
-        if sniffData.maintype != sniffDataType:
-            raise Exception('Bad data item of type %s, expected %s' % (sniffData.maintype, sniffDataType))
+        if sniffData.maintype not in sniffDataTypes:
+            return 
+            #raise Exception('Bad data item of type %s, expected %s' % (sniffData.maintype, sniffDataType))
         name = os.path.split(path)[1]
         if prefix is not None:
             prefix = prefix % sniffData.subtype
@@ -85,13 +85,13 @@ class GUIController(CoreProtocol):
         self.outputcoms.send(sendSignal, name, tid, select=select)
     
     def addGame(self, gamepath, sniffData=None, select=False):
-        self.addItem(gamepath, sniffData, 'GAME', self.gameDB, 'addGame', select, prefix='[%s]')
+        self.addItem(gamepath, sniffData, ['GAME', 'TRANS'], self.gameDB, 'addGame', select, prefix='[%s]')
         
     def addPatch(self, patchpath, sniffData=None, select=False):
-        self.addItem(patchpath, sniffData, 'PATCH', self.patchDB, 'addPatch', select)
+        self.addItem(patchpath, sniffData, ['PATCH'], self.patchDB, 'addPatch', select, prefix='[%s]')
         
     def addTrans(self, transpath, sniffData=None, select=False):
-        self.addItem(transpath, sniffData, 'TRANS', self.transDB, 'addTrans', select)
+        self.addItem(transpath, sniffData, ['TRANS'], self.transDB, 'addTrans', select, prefix='[%s]')
         
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid

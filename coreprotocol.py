@@ -7,11 +7,10 @@ Created on 20 Sep 2013
 import multiprocessing, time
 from collections import defaultdict
 from sender import SenderManager
-from errorhook import setErrorOut
+from errorhook import setErrorOut, ErrorMeta
 import sys
 
 class CoreRunner(object):
-    # TODO: Runner should handle all errors somehow.
     def __init__(self, runners=None, errors=None):
         if errors is None:
             self.errorManager = SenderManager()
@@ -20,6 +19,7 @@ class CoreRunner(object):
         self.errors = errors
         self.errorHandler = None
         self.running = []
+        setErrorOut(self.errors)
         
     def initialise(self, cls, **kwargs):
         newinstance = cls(runner=self, errout=self.errors, **kwargs)
@@ -37,6 +37,15 @@ class CoreRunner(object):
         
     def detach(self, runner):
         if runner in self.running: self.running.remove(runner)
+    
+    def doError(self, errMsg):
+        for x in self.running:
+            x.terminate()
+        if self.errorHandler is not None:
+            self.errorHandler(errMsg)
+        else:
+            sys.__stderr__.write('An error was found with the following traceback \n\n%s\n\nIf you believe this is a bug, please report it to habisain@gmail.com\n\n' % errMsg)
+            sys.__stderr__.flush()
         
     def run(self):
         while self.running:
@@ -49,19 +58,14 @@ class CoreRunner(object):
                 self.detach(runner)
             for msg in self.errors.get():
                 if msg[0] == 'ERROR':
-                    if self.errorHandler is not None:
-                        self.errorHandler(msg[1])
-                    else:
-                        for x in self.running:
-                            x.terminate()
-                        sys.stderr.write('An error was found with the following traceback \n\n%s\n\nIf you believe this is a bug, please report it to habisain@gmail.com' % msg[1])
-                        sys.stderr.flush()
+                    self.doError(*msg[1], **msg[2])
                 else:
                     print 'Unknown code on error bus %s' % str(msg)
                 sys.exit(1)
             time.sleep(0.1)
 
 class CoreProtocol(object):
+    __metaclass__ = ErrorMeta
     def __init__(self, runner=None, inputcoms=None, outputcoms=None, errout=None):
         if runner is None and errout is not None:
             raise Exception('%s: Must supply runner and errout arguments as a pair or not at all' % str(type(self)))

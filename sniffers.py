@@ -12,7 +12,9 @@ SNIFFERS = {}
 
 SniffedType = namedtuple('SniffedType', ['maintype', 'subtype'])
 RPG2k = SniffedType('GAME', 'RPG2k')
-TransLoc = SniffedType('TRANS', 'TransLocation')
+TransLoc = SniffedType('TRANS', 'overwrite')
+NewDirTransLoc = SniffedType('TRANS', 'create')
+
 def sniffer(name):
     global SNIFFERS
     def f(func):
@@ -43,6 +45,14 @@ def sniffTransLoc(path):
            'RPGMKTRANSPATCH': True,
            'RPGMKTRANSLATED': False,}
     return checkForFiles(path, req)
+
+@sniffer(NewDirTransLoc)
+def sniffNewDirTransLoc(path):
+    if os.path.isdir(path) and len(os.listdir(path)) == 0:
+        return True
+    elif not os.path.exists(path):
+        return True
+    return False
 
 def sniff(path):
     for name, sniffer in SNIFFERS.items():

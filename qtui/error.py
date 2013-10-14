@@ -1,4 +1,5 @@
 from PySide import QtGui, QtCore
+import sys
 
 class ErrorMsg(QtGui.QDialog):
     def __init__(self, clip):
