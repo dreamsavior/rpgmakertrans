@@ -29,23 +29,33 @@ class IDStore(dict):
         self.nextid += 1
         return r
 
+class UpdaterDict(dict):
+    def __init__(self, updateFunc, *args, **kwargs):
+        self.__updateFunc = updateFunc
+        super(UpdaterDict, self).__init__(*args, **kwargs)
+        
+    def __setitem__(self, key, value):
+        super(UpdaterDict, self).__setitem__(key, value)
+        self.__updateFunc()
+
 class GUIController(CoreProtocol):
-    def __init__(self, runner, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(GUIController, self).__init__(*args, **kwargs)
         self.submit('gui', startView, inputcoms=self.outputcoms, outputcoms=self.inputcoms)
-        runner.attach(self)
+        
         self.gameDB = IDStore()
         self.patchDB = IDStore()
         self.transDB = IDStore()
-        self.currentState = {'gameloc': None, 'patchloc': None, 'transloc': None, 
-                             'create': False, 'enabled': True}
+        self.currentState = UpdaterDict(self.enableUI)
+        self.currentState.update({'gameloc': None, 'patchloc': None, 'transloc': None, 
+                                  'create': False, 'enabled': True})
 
         self.headless = None
         self.outputcoms.send('setMessage', 'Loading games, patches...')
-        self.enableUI()
+        #self.enableUI()
         sniffDataRet = self.submit('worker', sniffAllTrigger, path=os.getcwd(), coms=self.inputcoms)
         self.localWaitUntil('sniffingDone', self.setUpSniffedData, sniffDataRet)
-        self.runner = runner
+        
         
     def setUpSniffedData(self, sniffDataRet):
         sniffData = sniffDataRet.get()
@@ -85,13 +95,13 @@ class GUIController(CoreProtocol):
         
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid
-        self.enableUI()
+        #self.enableUI()
         
     def optionChanged(self, option, value):
         self.currentState[option] = value
         if option == 'create':
             print 'create option detected'
-        self.enableUI()
+        #self.enableUI()
         
     def enableUI(self):
         state = self.currentState['enabled']
@@ -110,8 +120,7 @@ class GUIController(CoreProtocol):
         gamepath = self.gameDB.reverse[gameid]
         patchpath = self.patchDB.reverse[patchid]
         transpath = self.transDB.reverse[transid]
-        headless = Headless(outputcoms=self.inputcoms)
-        self.runner.attach(headless)
+        headless = self.runner.initialise(Headless, outputcoms=self.inputcoms)
         headless.go(gamepath, patchpath, transpath)
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
@@ -120,7 +129,7 @@ class GUIController(CoreProtocol):
         self.currentState['enabled'] = True
         self.currentState['gameloc'] = None
         self.outputcoms.send('setMessage', 'Finished patching')
-        self.enableUI()
+        #self.enableUI()
         
     def setProgress(self, amount):
         self.outputcoms.send('setProgress', amount)
@@ -148,6 +157,6 @@ def sniffAllTrigger(path, coms):
 
 if __name__ == '__main__':
     z = CoreRunner()
-    x = GUIController(runner=z)
+    x = z.initialise(GUIController)
     z.run()
     

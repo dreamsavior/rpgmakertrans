@@ -54,9 +54,9 @@ def sniffAll(path):
     if os.path.isdir(path):
         return [x for x in ((sniff(path2), path2) for path2 in 
                 (os.path.join(path, fn) for fn in os.listdir(path)))
-                if x[0] is not None]
+                if x[0] is not False]
     elif os.path.isfile(path):
-        return [x for x in ((sniff(path), path)) if x[0] is not None]
+        return [x for x in ((sniff(path), path)) if x[0] is not False]
     else:
         return []
             

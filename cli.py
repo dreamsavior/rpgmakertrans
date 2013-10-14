@@ -15,7 +15,7 @@ CLI_LENGTH = 79
     
 
 class CLIMode(CoreProtocol):
-    def __init__(self, cargs, runner, *args, **kwargs):
+    def __init__(self, cargs, *args, **kwargs):
         super(CLIMode, self).__init__(*args, **kwargs)
         # TODO: Need to check if the arguments are actually valid.
         self.quiet = cargs.quiet
@@ -24,8 +24,8 @@ class CLIMode(CoreProtocol):
         self.normalPrint('Patch path : %s' % cargs.patch)
         self.normalPrint('Output path: %s' % cargs.output)
         self.progressPrint('Starting patcher...')
-        self.headless = Headless(outputcoms=self.inputcoms)
-        runner.attach(self.headless)
+        self.headless = self.runner.initialise(Headless, outputcoms=self.inputcoms)
+        self.runner.attach(self.headless)
         self.headless.go(cargs.input, cargs.patch, cargs.output)
         
     def normalPrint(self, string):
@@ -63,8 +63,7 @@ def CLIBackend(runner):
         parser.add_argument("output", help="Path to output directory (will create missing directories)")
         parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
         args = parser.parse_args()
-        x = CLIMode(args, runner)
-        runner.attach(x)
+        x = runner.initialise(CLIMode, args)
         return x
 
 if __name__ == '__main__':

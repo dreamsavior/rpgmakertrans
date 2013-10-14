@@ -8,14 +8,29 @@ import multiprocessing, time
 from collections import defaultdict
 from sender import SenderManager
 from errorhook import setErrorOut
+import sys
 
 class CoreRunner(object):
     # TODO: Runner should handle all errors somehow.
-    def __init__(self, runners=None):
-        if runners is None: runners = []
+    def __init__(self, runners=None, errors=None):
+        if errors is None:
+            self.errorManager = SenderManager()
+            self.errorManager.start()
+            errors = self.errorManager.Sender()
+        self.errors = errors
+        self.errorHandler = None
         self.running = []
-        for runner in runners:
-            self.attach(runner)
+        
+    def initialise(self, cls, **kwargs):
+        newinstance = cls(runner=self, errout=self.errors, **kwargs)
+        self.attach(newinstance)
+        return newinstance
+    
+    def setErrorHandler(self, handler):
+        self.errorHandler = handler
+        
+    def getErrorSender(self):
+        return self.errors
     
     def attach(self, runner):
         self.running.append(runner)
@@ -32,22 +47,36 @@ class CoreRunner(object):
                     detachments.append(runner)
             for runner in detachments:
                 self.detach(runner)
+            for msg in self.errors.get():
+                if msg[0] == 'ERROR':
+                    if self.errorHandler is not None:
+                        self.errorHandler(msg[1])
+                    else:
+                        for x in self.running:
+                            x.terminate()
+                        sys.stderr.write('An error was found with the following traceback \n\n%s\n\nIf you believe this is a bug, please report it to habisain@gmail.com' % msg[1])
+                        sys.stderr.flush()
+                else:
+                    print 'Unknown code on error bus %s' % str(msg)
+                sys.exit(1)
             time.sleep(0.1)
 
 class CoreProtocol(object):
-    def __init__(self, inputcoms=None, outputcoms=None, errout=None):
+    def __init__(self, runner=None, inputcoms=None, outputcoms=None, errout=None):
+        if runner is None and errout is not None:
+            raise Exception('%s: Must supply runner and errout arguments as a pair or not at all' % str(type(self)))
         if inputcoms is None or outputcoms is None:
             self.senderManager = SenderManager()
             self.senderManager.start()
         if inputcoms is None: inputcoms = self.senderManager.Sender()
-            
+        self.runner = runner
         self.inputcoms = inputcoms
         if outputcoms is None: outputcoms = self.senderManager.Sender()
         self.outputcoms = outputcoms
         self.waiting = defaultdict(list)
         self.dispatched = set()
         self.pools = defaultdict(lambda: multiprocessing.Pool(initializer=setErrorOut, initargs=[errout]))
-        self.results = []
+        self.results = set()
         self.going = True
         self.localWaiting = defaultdict(list)
         self.combotriggers = {}
@@ -76,6 +105,7 @@ class CoreProtocol(object):
         if signal in self.dispatched: fn(*args, **kwargs)
         else: self.localWaiting[signal].append((fn, args, kwargs))
         
+        
     def submit(self, pool, fn, *args, **kwargs):
         if pool == 'dbg':
             return fn(*args, **kwargs)
@@ -87,7 +117,7 @@ class CoreProtocol(object):
                 if value == 'outputcoms':
                     kwargs[key] = self.inputcoms
         ret = self.pools[pool].apply_async(fn, args=args, kwds=kwargs)
-        self.results.append(ret)
+        self.results.add(ret)
         return ret
         
     def trigger(self, signal):
@@ -101,7 +131,16 @@ class CoreProtocol(object):
                 subtriggers.remove(signal)
                 if not subtriggers:
                     self.trigger(combotrigger)
-            
+                    
+    def checkResults(self):
+        remove = set()
+        for ret in self.results:
+            if ret.ready(): 
+                ret.get()
+                remove.add(ret)
+        for removal in remove:
+            self.results.remove(removal)
+                
     def shutdown(self):
         for ret in self.results: ret.get
         for pool in self.pools.values(): pool.join()
@@ -119,3 +158,4 @@ class CoreProtocol(object):
             else:
                 print 'Got an unknown code'
                 print code, args, kwargs
+        #self.checkResults()

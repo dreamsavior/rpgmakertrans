@@ -6,13 +6,16 @@ Created on 3 Feb 2013
 
 import traceback, functools
 import sys
+import StringIO
 errorOut = None
 
 def setErrorOut(comsout):
     global errorOut
     errorOut = comsout
-
-caught = set()
+    if errorOut is None:
+        sys.stderr = sys.__stderr__
+    else:
+        sys.stderr = StringIO.StringIO() 
 
 def errorWrap(func):
     @functools.wraps(func)
@@ -21,12 +24,10 @@ def errorWrap(func):
             return func(*args, **kwargs)
         except Exception, e:
             global errorOut, caught
-            if e not in caught:
-                if errorOut is not None:
-                    errorOut.send('ERROR', traceback.format_exc(e))
-                sys.stderr.write(traceback.format_exc(e))
-                sys.stderr.flush()
-                caught.add(e)
+            if errorOut is not None:
+                errorOut.send('ERROR', traceback.format_exc(e))
+            sys.stderr.write(traceback.format_exc(e))
+            sys.stderr.flush()
             raise e
     return wrap
 
