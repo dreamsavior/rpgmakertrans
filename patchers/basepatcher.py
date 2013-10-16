@@ -12,12 +12,12 @@ PatchManager, PatchMeta = makeMetaManager('Patch', ErrorMeta)
 class BasePatch(object):
     __metaclass__ = PatchMeta
     
-    def __init__(self, path, coms):
+    def __init__(self, path, coms, errout):
         self.path = path
         self.coms = coms
         self.categorisePatchFiles()
         self.translatorManager = TranslatorManager()
-        self.translatorManager.start()
+        self.translatorManager.start(errout)
         
     def setPath(self, path):
         self.path = path

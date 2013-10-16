@@ -12,10 +12,10 @@ from registry import patcherSniffer, ZipPatchv2
 SEPERATORS = '\\/' 
 
 class ZIPPatcher(BasePatch):
-    def __init__(self, path, coms):
+    def __init__(self, path, *args, **kwargs):
         self.zip = zipfile.ZipFile(path)
         self.mtime = os.path.getmtime(path)
-        super(ZIPPatcher, self).__init__(path, coms)
+        super(ZIPPatcher, self).__init__(path, *args, **kwargs)
     
     def loadPatchData(self):
         data = {}

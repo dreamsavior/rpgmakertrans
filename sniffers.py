@@ -10,7 +10,22 @@ from errorhook import errorWrap
 
 SNIFFERS = {}
 
-SniffedType = namedtuple('SniffedType', ['maintype', 'subtype'])
+class SniffedType(object):
+    def __init__(self, maintype, subtype, canonicalpath=None):
+        self.maintype = maintype
+        self.subtype = subtype
+        self.canonicalpath = canonicalpath
+        
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            return self.__getattribute__(item)
+        elif isinstance(item, int):
+            if item == 0: return self.maintype
+            elif item == 1: return self.subtype
+            elif item == 2: return self.canonicalpath
+        else:
+            raise Exception('Invalid index %s' % str(item))
+
 RPG2k = SniffedType('GAME', 'RPG2k')
 TransLoc = SniffedType('TRANS', 'overwrite')
 NewDirTransLoc = SniffedType('TRANS', 'create')

@@ -85,6 +85,7 @@ class CoreProtocol(object):
         self.localWaiting = defaultdict(list)
         self.combotriggers = {}
         self.subtriggers = defaultdict(list)
+        self.errout = errout
         
     def finished(self):
         return not self.going

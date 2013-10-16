@@ -4,10 +4,14 @@ Created on 20 Sep 2013
 @author: habisain
 '''
 from multiprocessing.managers import BaseManager
+from errorhook import ErrorMeta, setErrorOut
 
-def makeMetaManager(self, name, metainherit=type):
+def makeMetaManager(name, metainherit=type):
     class CustomManager(BaseManager):
-        pass
+        def start(self, errout=None):
+            if errout is None:
+                raise Exception('Starting a %s without an errout' % type(self).__name__)
+            super(CustomManager, self).start(initializer=setErrorOut, initargs=[errout])
     
     class MetaCustomManager(metainherit):
         def __init__(cls, a, b, c):

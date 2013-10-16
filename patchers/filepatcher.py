@@ -11,8 +11,8 @@ from filecopier2 import copyfiles
 from registry import patcherSniffer, FilePatchv2
 
 class FilePatcher(BasePatch):
-    def __init__(self, path, coms):
-        super(FilePatcher, self).__init__(path, coms)
+    def __init__(self, path, *args, **kwargs):
+        super(FilePatcher, self).__init__(path, *args, **kwargs)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
     

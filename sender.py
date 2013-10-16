@@ -14,7 +14,6 @@ class Sender(object):
         self.__signals = []
     
     def send(self, signal, *args, **kwargs):
-        #print 'got a %s' % signal
         self.__signals.append((signal, args, kwargs))
         
     def get(self):

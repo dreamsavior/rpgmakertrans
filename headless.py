@@ -11,9 +11,9 @@ class Headless(CoreProtocol):
     def __init__(self, *args, **kwargs):
         super(Headless, self).__init__(*args, **kwargs)
         self.patchManager = PatchManager()
-        self.patchManager.start()
+        self.patchManager.start(self.errout)
         self.mtimesManager = MTimesHandlerManager()
-        self.mtimesManager.start()
+        self.mtimesManager.start(self.errout)
         self.progress = defaultdict(lambda: [0, 1])
         self.progressVal = 0
         
@@ -36,7 +36,7 @@ class Headless(CoreProtocol):
         
     def go(self, indir, patchpath, outdir):
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
-        patcher = getPatcher(self.patchManager, patchpath, self.inputcoms)
+        patcher = getPatcher(self.patchManager, patchpath, self.inputcoms, self.errout)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
         translatorRet = self.submit('patcher', makeTranslator, patcher, self.inputcoms)
         self.comboTrigger('startTranslation', ['translatorReady', 'mtimesReady'])
