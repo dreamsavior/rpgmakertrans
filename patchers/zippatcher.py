@@ -17,6 +17,9 @@ class ZIPPatcher(BasePatch):
         self.mtime = os.path.getmtime(path)
         super(ZIPPatcher, self).__init__(path, *args, **kwargs)
     
+    def patchIsWritable(self):
+        return False
+    
     def loadPatchData(self):
         data = {}
         for fn in self.patchDataFiles:

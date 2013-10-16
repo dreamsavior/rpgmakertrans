@@ -4,7 +4,7 @@ from patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, 
 from filecopier2 import copyfilesAndTrigger
 from collections import defaultdict
 from twokpatcher import process2kgame
-from coreprotocol import CoreProtocol, CoreRunner
+from coreprotocol import CoreProtocol
 from mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class Headless(CoreProtocol):
@@ -72,12 +72,4 @@ class Headless(CoreProtocol):
         self.going = False
         self.outputcoms.send('finishedPatching')
 
-if __name__ == '__main__':
-    indir = '/home/habisain/tr/cr'
-    patchpath = '/home/habisain/tr/cr_p'
-    outdir = '/home/habisain/tr/cr_t'
-    x = Headless()
-    z = CoreRunner([x])
-    x.go(indir, patchpath, outdir)
-    z.run()
     

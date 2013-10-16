@@ -21,6 +21,9 @@ class BasePatch(object):
         
     def setPath(self, path):
         self.path = path
+        
+    def patchIsWriteable(self):
+        return True
     
     def loadPatchData(self):
         raise Exception('loading patch data not implemented')
@@ -32,8 +35,9 @@ class BasePatch(object):
         raise Exception('This method must be overridden')
 
     def writeTranslator(self, translator):
-        data = translator.getPatchData()
-        self.writePatchData(data)
+        if self.patchIsWriteable():
+            data = translator.getPatchData()
+            self.writePatchData(data)
         
     def makeTranslator(self):
         data, mtime = self.loadPatchData()
