@@ -35,9 +35,9 @@ def SniffedTypeCons(name, maintypeN, subtypeN):
     SniffedTypeB.__name__ = name
     return SniffedTypeB
 
-RPG2k = SniffedTypeCons('RPG2k', 'GAME', 'RPG2k')
-TransLoc = SniffedTypeCons('TransLoc', 'TRANS', 'overwrite')
-NewDirTransLoc = SniffedTypeCons('NewDirTntransLoc', 'TRANS', 'create')
+class RPG2k(SniffedType): maintype, subtype = 'GAME', 'RPG2k'
+class TransLoc(SniffedType): maintype, subtype = 'TRANS', 'overwrite'
+class NewDirTransLoc(SniffedType): maintype, subtype = 'TRANS', 'create'
 
 class Sniffer(object):
     __metaclass__ = ErrorMeta

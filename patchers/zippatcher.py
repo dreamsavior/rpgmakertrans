@@ -115,7 +115,7 @@ def sniffzipv2(path):
             f = z.open(transpatches[0])
             x = f.read()
             if not x.strip():
-                return True
+                return path
     return False
      
 if __name__ == '__main__':

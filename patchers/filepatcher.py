@@ -93,6 +93,6 @@ def sniffv2(path):
         with open(path, 'r') as f:
             versionString = f.read()
         if not versionString.strip():
-            return True
+            return path
     return False         
     
