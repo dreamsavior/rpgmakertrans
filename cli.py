@@ -28,6 +28,11 @@ class CLIMode(CoreProtocol):
         self.runner.attach(self.headless)
         self.headless.go(cargs.input, cargs.patch, cargs.output)
         
+    def errorMsgQuit(self, string):
+        sys.stderr.write(string)
+        sys.stderr.flush()
+        sys.exit(1)
+        
     def normalPrint(self, string):
         if not self.quiet:
             print string
@@ -46,7 +51,7 @@ class CLIMode(CoreProtocol):
         self.normalPrint('\nPatching finished')
         self.going = False
 
-def CLIBackend(runner):
+def useCLIBackend():
     longargs = set()
     shortargs = set()
     for x in sys.argv:
@@ -56,17 +61,23 @@ def CLIBackend(runner):
             shortargs.add(x)
     
     if '--cli' in longargs or any('c' in x for x in shortargs):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-c', '--cli', help='Enable CLI mode', action='store_true')
-        parser.add_argument("input", help="Path of input game to patch")
-        parser.add_argument("patch", help="Path of patch (directory or zip)")
-        parser.add_argument("output", help="Path to output directory (will create missing directories)")
-        parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
-        args = parser.parse_args()
-        x = runner.initialise(CLIMode, args)
-        return x
+        return True
+    else:
+        return False
+        
+def CLIBackend(runner):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--cli', help='Enable CLI mode', action='store_true')
+    parser.add_argument("input", help="Path of input game to patch")
+    parser.add_argument("patch", help="Path of patch (directory or zip)")
+    parser.add_argument("output", help="Path to output directory (will create missing directories)")
+    parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
+    args = parser.parse_args()
+    x = runner.initialise(CLIMode, args)
+    return x
 
 if __name__ == '__main__':
-    z = CoreRunner([])
-    CLIBackend(z)
-    z.run()
+    if useCLIBackend():
+        z = CoreRunner([])
+        CLIBackend(z)
+        z.run()
