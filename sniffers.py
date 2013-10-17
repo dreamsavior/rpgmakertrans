@@ -5,16 +5,18 @@ Created on 8 Oct 2013
 '''
 
 import os.path
-from collections import namedtuple
-from errorhook import errorWrap
+from errorhook import ErrorMeta
 
-SNIFFERS = {}
+SNIFFERS = set()
 
 class SniffedType(object):
-    def __init__(self, maintype, subtype, canonicalpath=None):
-        self.maintype = maintype
-        self.subtype = subtype
+    maintype = None
+    subtype = None
+    def __init__(self, canonicalpath=None):
         self.canonicalpath = canonicalpath
+        
+    def __str__(self):
+        return '<%s:%s:%s>' % (type(self).maintype, type(self).subtype, self.canonicalpath)
         
     def __getitem__(self, item):
         if isinstance(item, str):
@@ -26,17 +28,48 @@ class SniffedType(object):
         else:
             raise Exception('Invalid index %s' % str(item))
 
-RPG2k = SniffedType('GAME', 'RPG2k')
-TransLoc = SniffedType('TRANS', 'overwrite')
-NewDirTransLoc = SniffedType('TRANS', 'create')
+def SniffedTypeCons(name, maintypeN, subtypeN):
+    class SniffedTypeB(SniffedType):
+        maintype = maintypeN
+        subtype = subtypeN
+    SniffedTypeB.__name__ = name
+    return SniffedTypeB
 
-def sniffer(name):
-    global SNIFFERS
+RPG2k = SniffedTypeCons('RPG2k', 'GAME', 'RPG2k')
+TransLoc = SniffedTypeCons('TransLoc', 'TRANS', 'overwrite')
+NewDirTransLoc = SniffedTypeCons('NewDirTntransLoc', 'TRANS', 'create')
+
+class Sniffer(object):
+    __metaclass__ = ErrorMeta
+    def __init__(self, sniffedType, func):
+        self.sniffedType = sniffedType
+        self.func = func
+        global SNIFFERS
+        SNIFFERS.add(self)
+        self.maintype = self.sniffedType.maintype
+        
+    def __call__(self, path):
+        path = self.func(path)
+        if path: return self.sniffedType(path)
+        else: return False
+        
+def sniffer(sniffedType):
     def f(func):
-        func = errorWrap(func)
-        SNIFFERS[name] = func
-        return func
+        return Sniffer(sniffedType, func)
     return f
+
+#def sniffer(sniffedType, func):
+#    global SNIFFERS
+#    class Sniffer(object):
+#        
+#        sniffedType = sniffedType
+#        def __call__(self, path):
+#            path = func(path)
+#            if path: return type(self).sniffedType(path)
+#            else: return False
+#    x = Sniffer()
+#    SNIFFERS.add(x)
+#    return func
 
 def checkForFiles(path, req):
     if not os.path.isdir(path): 
@@ -45,7 +78,10 @@ def checkForFiles(path, req):
     for fn in subdirlist:
         fn = fn.upper()
         if fn in req: req[fn] = not req[fn]
-    return all([req[x] for x in req])
+    if all([req[x] for x in req]):
+        return path
+    else:
+        return False 
 
 @sniffer(RPG2k)
 def sniff2kGame(path):
@@ -63,16 +99,15 @@ def sniffTransLoc(path):
 
 @sniffer(NewDirTransLoc)
 def sniffNewDirTransLoc(path):
-    if os.path.isdir(path) and len(os.listdir(path)) == 0:
-        return True
-    elif not os.path.exists(path):
-        return True
+    if (os.path.isdir(path) and len(os.listdir(path)) == 0) or (not os.path.exists(path)):
+        return path
     return False
 
 def sniff(path):
-    for name, sniffer in SNIFFERS.items():
-        if sniffer(path): 
-            return name
+    for sniffer in SNIFFERS:
+        result = sniffer(path)
+        if result is not False: 
+            return result
     return False
 
 def sniffAll(path):
