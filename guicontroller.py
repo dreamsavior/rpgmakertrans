@@ -89,8 +89,7 @@ class GUIController(CoreProtocol):
         else:
             tid = idstore[path]
             if select:
-                self.outputcoms.send('select%s' % signalSuffix, tid)
-        
+                self.outputcoms.send('select%s' % signalSuffix, tid) 
     
     def addItemFromPath(self, path, sniffDataTypes, idStore, signalSuffix, select=False, prefix=None):
         sniffData = sniff(path)#, positives=sniffDataTypes)
@@ -114,15 +113,31 @@ class GUIController(CoreProtocol):
     
     def addTransFromPath(self, transpath, select=False):
         self.addItemFromPath(transpath, ['TRANS'], self.transDB, 'Trans', select, prefix='[%s]')
-    
+        
+    def selectDefaultPatch(self):
+        if self.currentState['gameloc'] is None: return
+        gamepath = self.gameDB.reverse[self.currentState['gameloc']]
+        defaultpatchpath = gamepath + '_patch'
+        sniffData = sniff(defaultpatchpath, positives=['PATCH'])
+        if self.currentState['create'] is False:
+            sniffData = [x for x in sniffData if x.subtype != 'create']
+        for item in sniffData:
+            self.addPatch(item, select=True)
+        
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid
+        if idtoken == 'gameloc':
+            self.selectDefaultPatch()
+        elif idtoken == 'patchloc':
+            if self.currentState['gameloc'] is not None:
+                gamepath = self.gameDB.reverse[self.currentState['gameloc']]
+                defaulttranspath = gamepath + '_translated'
+                self.addTransFromPath(defaulttranspath, select=True)
         
     def optionChanged(self, option, value):
-        print option, value
         self.currentState[option] = value
         if option == 'create':
-            print 'create option detected'
+            self.selectDefaultPatch()
             self.outputcoms.send('setBrowsePatchDirs', value)
         
     def enableUI(self):
