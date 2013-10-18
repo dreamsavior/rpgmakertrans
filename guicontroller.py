@@ -67,6 +67,7 @@ class GUIController(CoreProtocol):
                 self.addPatch(item, select=False)
             elif item.maintype == 'TRANS':
                 self.addTrans(item, select=False)
+        self.outputcoms.send('setMessage', 'Ready')
                 
     def addItem(self, sniffData, sniffDataTypes, idstore, signalSuffix, select, prefix=None):
         # Take care of stuff where we can't do anything...

@@ -83,16 +83,14 @@ class FilePatcherv2(FilePatcher):
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
     if os.path.isdir(path):
-        cands = os.listdir(path)
-        for cand in cands:
-            if cand.lower() == 'rpgmktranspatch':
-                path = os.path.join(path, cand)
-                break
+        cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
+        if len(cands) == 1:
+            path = os.path.join(path, cands[0])
         
     if os.path.isfile(path):
         with open(path, 'r') as f:
             versionString = f.read()
         if not versionString.strip():
-            return path
+            return os.path.split(path)[0]
     return False         
     
