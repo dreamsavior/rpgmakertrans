@@ -4,7 +4,7 @@ Created on 20 Sep 2013
 @author: habisain
 '''
 
-import multiprocessing, time
+import multiprocessing, time, signal
 from collections import defaultdict
 from sender import SenderManager
 from errorhook import setErrorOut, ErrorMeta
@@ -20,6 +20,12 @@ class CoreRunner(object):
         self.errorHandler = None
         self.running = []
         setErrorOut(self.errors)
+        self.signalquit = False
+        signal.signal(signal.SIGINT, self.sigint)
+        
+    def sigint(self, signal, frame):
+        for runner in self.running:
+            runner.terminate()        
         
     def initialise(self, cls, **kwargs):
         newinstance = cls(runner=self, errout=self.errors, **kwargs)
