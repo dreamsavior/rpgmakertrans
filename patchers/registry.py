@@ -25,7 +25,9 @@ def newDirSniffer(path):
     return path if not os.path.exists(path) else False
 
 def getClassName(path):
-    pathtype = sniff(path)
+    pathtype = sniff(path, positives=['PATCH'])
+    if len(pathtype) == 1: pathtype = pathtype[0]
+    else: raise Exception('Could not work out an ambiguous patcher format')
     if pathtype is not False and pathtype.maintype in patchers:
         return patchers[pathtype.maintype]
     else:
