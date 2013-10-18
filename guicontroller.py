@@ -116,13 +116,11 @@ class GUIController(CoreProtocol):
             
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid
-        #self.enableUI()
         
     def optionChanged(self, option, value):
         self.currentState[option] = value
         if option == 'create':
             print 'create option detected'
-        #self.enableUI()
         
     def enableUI(self):
         state = self.currentState['enabled']

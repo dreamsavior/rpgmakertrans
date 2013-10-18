@@ -20,7 +20,6 @@ class CoreRunner(object):
         self.errorHandler = None
         self.running = []
         setErrorOut(self.errors)
-        self.signalquit = False
         signal.signal(signal.SIGINT, self.sigint)
         
     def sigint(self, signal, frame):

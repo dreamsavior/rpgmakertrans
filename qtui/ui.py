@@ -6,8 +6,7 @@ Created on 3 Feb 2013
 
 import sys
 from PySide import QtGui, QtCore
-from errorhook import errorWrap, ErrorClass, ErrorMeta
-from sender import Sender
+from errorhook import ErrorClass, ErrorMeta
 
 labelString = ''.join([
     "RPGMaker Trans (C) Habisain 2011-2013\n",
