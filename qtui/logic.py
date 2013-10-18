@@ -18,6 +18,7 @@ class QTLogic(CoreProtocol):
         self.app = QtGui.QApplication([])
         self.window = MainWindow(self.inputcoms)
         self.timer = Timer(100, self.update)
+        self.browsePatchDirs = False
         
     def start(self):
         self.app.exec_()
@@ -41,12 +42,19 @@ class QTLogic(CoreProtocol):
         newpatchloc = self.window.fileDialog('Choose patch', 'RPGMaker Trans Patches (*.zip RPGMKTRANSPATCH')
         self.outputcoms.send('addPatchFromPath', newpatchloc, select=True)
         
+    def browsePatchDir(self):
+        newpatchloc = self.window.dirDialog('Choose patch directory')
+        self.outputcoms.send('addPatchFromPath', newpatchloc, select=True)
+        
     def browseTrans(self):
         newtransloc = self.window.dirDialog('Choose translation directory')
         self.outputcoms.send('addTransFromPath', newtransloc, select=True)
         
     def changeSelected(self, *args, **kwargs):
         self.outputcoms.send('changeSelected', *args, **kwargs)
+        
+    def setBrowsePatchDirs(self, state):
+        self.browsePatchDirs = state
         
     def optionChanged(self, *args, **kwargs):
         self.outputcoms.send('optionChanged', *args, **kwargs)
@@ -98,7 +106,10 @@ class QTLogic(CoreProtocol):
         elif button == 'transloc':
             self.browseTrans()
         elif button == 'patchloc':
-            self.browsePatch()
+            if self.browsePatchDirs:
+                self.browsePatchDir()
+            else:
+                self.browsePatch()
         elif button == 'go':
             self.outputcoms.send('go', **self.window.getTransParams())
         else:

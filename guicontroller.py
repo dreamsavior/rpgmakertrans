@@ -119,9 +119,11 @@ class GUIController(CoreProtocol):
         self.currentState[idtoken] = newid
         
     def optionChanged(self, option, value):
+        print option, value
         self.currentState[option] = value
         if option == 'create':
             print 'create option detected'
+            self.outputcoms.send('setBrowsePatchDirs', value)
         
     def enableUI(self):
         state = self.currentState['enabled']
