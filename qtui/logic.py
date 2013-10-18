@@ -35,15 +35,15 @@ class QTLogic(CoreProtocol):
     
     def browseGame(self):
         newgameloc = self.window.fileDialog('Choose game', 'RPGMaker Game Files (RPG_RT.EXE)')
-        self.outputcoms.send('addGame', newgameloc, select=True)
+        self.outputcoms.send('addGameFromPath', newgameloc, select=True)
         
     def browsePatch(self):
         newpatchloc = self.window.fileDialog('Choose patch', 'RPGMaker Trans Patches (*.zip RPGMKTRANSPATCH')
-        self.outputcoms.send('addPatch', newpatchloc, select=True)
+        self.outputcoms.send('addPatchFromPath', newpatchloc, select=True)
         
     def browseTrans(self):
         newtransloc = self.window.dirDialog('Choose translation directory')
-        self.outputcoms.send('addTrans', newtransloc, select=True)
+        self.outputcoms.send('addTransFromPath', newtransloc, select=True)
         
     def changeSelected(self, *args, **kwargs):
         self.outputcoms.send('changeSelected', *args, **kwargs)
@@ -59,6 +59,15 @@ class QTLogic(CoreProtocol):
         
     def addTrans(self, tokenName, tokenID, select=False):
         self.window.comboBoxAdd('transloc', tokenName, tokenID, select)
+        
+    def selectGame(self, tokenID):
+        self.window.comboBoxSelect('gameloc', tokenID)
+        
+    def selectPatch(self, tokenID):
+        self.window.comboBoxSelect('patchloc', tokenID)
+        
+    def selectTrans(self, tokenID):
+        self.window.comboBoxSelect('transloc', tokenID)
         
     def setProgress(self, amount):
         self.window.setProgress(int(amount * 100))

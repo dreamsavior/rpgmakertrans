@@ -62,41 +62,58 @@ class GUIController(CoreProtocol):
             if item is False:
                 pass
             elif item.maintype == 'GAME':
-                self.addGame(item.canonicalpath, item, select=False)
+                self.addGame(item, select=False)
             elif item.maintype == 'PATCH':
-                self.addPatch(item.canonicalpath, item, select=False)
+                self.addPatch(item, select=False)
             elif item.maintype == 'TRANS':
-                self.addTrans(item.canonicalpath, item, select=False)
+                self.addTrans(item, select=False)
                 
-    def addItem(self, path, sniffData, sniffDataTypes, idstore, sendSignal, select, prefix=None):
+    def addItem(self, sniffData, sniffDataTypes, idstore, signalSuffix, select, prefix=None):
         # Take care of stuff where we can't do anything...
-        if sniffData is None: 
-            sniffData = sniff(path, positives=sniffDataTypes)
-            for item in sniffData:
-                self.addItem(path, item, sniffDataTypes, idstore, sendSignal, select, prefix)
-            return
-        if sniffData is False: return 
+        #if sniffData is None: 
+        #    sniffData = sniff(path, positives=sniffDataTypes)
+        #    for item in sniffData:
+        #        self.addItem(path, item, sniffDataTypes, idstore, sendSignal, select, prefix)
+        #    return
+        #if sniffData is False: return 
         if sniffData.maintype not in sniffDataTypes: return 
-        
+        path = sniffData.canonicalpath
         name = os.path.split(path)[1]
         if prefix is not None:
             prefix = prefix % sniffData.subtype
             name = '%s %s' % (prefix, name)
         if path not in idstore:
             tid = idstore.add(path)
+            self.outputcoms.send('add%s' % signalSuffix, name, tid, select=select)
         else:
             tid = idstore[path]
-        self.outputcoms.send(sendSignal, name, tid, select=select)
+            if select:
+                self.outputcoms.send('select%s' % signalSuffix, tid)
+        
     
-    def addGame(self, gamepath, sniffData=None, select=False):
-        self.addItem(gamepath, sniffData, ['GAME', 'TRANS'], self.gameDB, 'addGame', select, prefix='[%s]')
+    def addItemFromPath(self, path, sniffDataTypes, idStore, signalSuffix, select=False, prefix=None):
+        sniffData = sniff(path)#, positives=sniffDataTypes)
+        for item in sniffData: 
+            self.addItem(item, sniffDataTypes, idStore, signalSuffix, select, prefix)
+    
+    def addGame(self, sniffData, select=False):
+        self.addItem(sniffData, ['GAME', 'TRANS'], self.gameDB, 'Game', select, prefix='[%s]')
+                
+    def addGameFromPath(self, gamepath, select=False):
+        self.addItemFromPath(gamepath, ['GAME', 'TRANS'], self.gameDB, 'Game', select, prefix='[%s]')
         
-    def addPatch(self, patchpath, sniffData=None, select=False):
-        self.addItem(patchpath, sniffData, ['PATCH'], self.patchDB, 'addPatch', select, prefix='[%s]')
-        
-    def addTrans(self, transpath, sniffData=None, select=False):
-        self.addItem(transpath, sniffData, ['TRANS'], self.transDB, 'addTrans', select, prefix='[%s]')
-        
+    def addPatch(self, sniffData, select=False):
+        self.addItem(sniffData, ['PATCH'], self.patchDB, 'Patch', select, prefix='[%s]')
+    
+    def addPatchFromPath(self, patchpath, select=False):
+        self.addItemFromPath(patchpath, ['PATCH'], self.patchDB, 'Patch', select, prefix='[%s]')
+            
+    def addTrans(self, sniffData, select=False):
+        self.addItem(sniffData, ['TRANS'], self.transDB, 'Trans', select, prefix='[%s]')
+    
+    def addTransFromPath(self, transpath, select=False):
+        self.addItemFromPath(transpath, ['TRANS'], self.transDB, 'Trans', select, prefix='[%s]')
+            
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid
         #self.enableUI()

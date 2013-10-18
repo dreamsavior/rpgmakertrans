@@ -14,7 +14,12 @@ class SniffedType(object):
     maintype = None
     subtype = None
     def __init__(self, canonicalpath=None):
-        self.canonicalpath = canonicalpath
+        if isinstance(canonicalpath, type(self)):
+            self.canonicalpath = canonicalpath.canonicalpath
+        elif isinstance(canonicalpath, (str, unicode)):
+            self.canonicalpath = canonicalpath
+        else:
+            raise Exception('Could not work out sniffed type data from a %s' % str(type(canonicalpath)))
         
     def __str__(self):
         return '<%s:%s>' % (type(self).__name__, self.canonicalpath)
@@ -37,7 +42,7 @@ def SniffedTypeCons(name, maintypeN, subtypeN):
     return SniffedTypeB
 
 class RPG2k(SniffedType): maintype, subtype = 'GAME', 'RPG2k'
-class TransLoc(SniffedType): maintype, subtype = 'TRANS', 'overwrite'
+class TransLoc(SniffedType): maintype, subtype = 'TRANS', 'RPG2k][translated'
 class NewDirTransLoc(SniffedType): maintype, subtype = 'TRANS', 'create'
 
 class Sniffer(object):
@@ -91,12 +96,24 @@ def sniff2kGame(path):
            'RPGMKTRANSLATED': True,}
     return checkForFiles(path, req)
 
+@sniffer(RPG2k)
+def sniff2kGameFile(path):
+    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
+        return sniff2kGame(os.path.split(path)[0])
+    return False
+
 @sniffer(TransLoc)
 def sniffTransLoc(path):
     req = {'RPG_RT.LDB': False,
            'RPGMKTRANSPATCH': True,
            'RPGMKTRANSLATED': False,}
     return checkForFiles(path, req)
+
+@sniffer(TransLoc)
+def sniffTransLocFile(path):
+    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
+        return sniffTransLoc(os.path.split(path)[0])
+    return False
 
 @sniffer(NewDirTransLoc)
 def sniffNewDirTransLoc(path):
