@@ -58,22 +58,26 @@ class GUIController(CoreProtocol):
         
     def setUpSniffedData(self, sniffDataRet):
         sniffData = sniffDataRet.get()
-        for item, path in sniffData:
+        for item in sniffData:
             if item is False:
                 pass
             elif item.maintype == 'GAME':
-                self.addGame(path, item)
+                self.addGame(item.canonicalpath, item, select=False)
             elif item.maintype == 'PATCH':
-                self.addPatch(path, item)
+                self.addPatch(item.canonicalpath, item, select=False)
             elif item.maintype == 'TRANS':
-                self.addTrans(path, item)
+                self.addTrans(item.canonicalpath, item, select=False)
                 
     def addItem(self, path, sniffData, sniffDataTypes, idstore, sendSignal, select, prefix=None):
-        if sniffData is None: sniffData = sniff(path)
-        if sniffData is False: return False
-        if sniffData.maintype not in sniffDataTypes:
-            return 
-            #raise Exception('Bad data item of type %s, expected %s' % (sniffData.maintype, sniffDataType))
+        # Take care of stuff where we can't do anything...
+        if sniffData is None: 
+            sniffData = sniff(path, positives=sniffDataTypes)
+            for item in sniffData:
+                self.addItem(path, item, sniffDataTypes, idstore, sendSignal, select, prefix)
+            return
+        if sniffData is False: return 
+        if sniffData.maintype not in sniffDataTypes: return 
+        
         name = os.path.split(path)[1]
         if prefix is not None:
             prefix = prefix % sniffData.subtype

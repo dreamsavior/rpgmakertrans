@@ -4,7 +4,8 @@ Created on 8 Oct 2013
 @author: habisain
 '''
 
-import os.path
+import os.path, itertools
+from collections import defaultdict
 from errorhook import ErrorMeta
 
 SNIFFERS = set()
@@ -16,7 +17,7 @@ class SniffedType(object):
         self.canonicalpath = canonicalpath
         
     def __str__(self):
-        return '<%s:%s:%s>' % (type(self).maintype, type(self).subtype, self.canonicalpath)
+        return '<%s:%s>' % (type(self).__name__, self.canonicalpath)
         
     def __getitem__(self, item):
         if isinstance(item, str):
@@ -103,25 +104,39 @@ def sniffNewDirTransLoc(path):
         return path
     return False
 
-def sniff(path):
+def sniff(path, positives=None, negatives=None, conflicts=None):
+    if positives is None:
+        positives = 'GAME', 'PATCH', 'TRANS'
+    if negatives is None:
+        negatives = ()
+    if conflicts is None:
+        conflicts = {'GAME': ['TRANS']}
+    results = defaultdict(list)
     for sniffer in SNIFFERS:
-        result = sniffer(path)
-        if result is not False: 
-            return result
-    return False
+        if sniffer.maintype in negatives:
+            result = sniffer(path)
+            if result: return []
+        elif sniffer.maintype in positives:
+            result = sniffer(path)
+            if result is not False:
+                results[sniffer.maintype].append(result)
+    for maintype in conflicts:
+        if maintype in results:
+            delBases = [x.canonicalpath for x in results[maintype]]
+            for conflicttype in conflicts[maintype]:
+                results[conflicttype] = [x for x in results[conflicttype] if x.canonicalpath not in delBases]
+    return list(itertools.chain(*results.values()))
 
 def sniffAll(path):
     if os.path.isdir(path):
-        return [x for x in ((sniff(path2), path2) for path2 in 
-                (os.path.join(path, fn) for fn in os.listdir(path)))
-                if x[0] is not False]
+        return list(itertools.chain(*[sniff(path2) for path2 in (os.path.join(path, fn) for fn in os.listdir(path))]))
     elif os.path.isfile(path):
-        return [x for x in ((sniff(path), path)) if x[0] is not False]
+        return sniff(path)
     else:
         return []
             
 
 if __name__ == '__main__':
     import sys
-    print sniff(sys.argv[-1])
+    print ','.join(str(x) for x in sniff(sys.argv[-1]))
     
