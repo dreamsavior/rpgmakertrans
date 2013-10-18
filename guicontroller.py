@@ -114,7 +114,7 @@ class GUIController(CoreProtocol):
     
     def addTransFromPath(self, transpath, select=False):
         self.addItemFromPath(transpath, ['TRANS'], self.transDB, 'Trans', select, prefix='[%s]')
-            
+    
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid
         
@@ -138,10 +138,10 @@ class GUIController(CoreProtocol):
         states['go'] = state
         self.outputcoms.send('setUI', states)
         
-    def go(self, gameid, patchid, transid):
-        gamepath = self.gameDB.reverse[gameid]
-        patchpath = self.patchDB.reverse[patchid]
-        transpath = self.transDB.reverse[transid]
+    def go(self):
+        gamepath = self.gameDB.reverse[self.currentState['gameloc']]
+        patchpath = self.patchDB.reverse[self.currentState['patchloc']]
+        transpath = self.transDB.reverse[self.currentState['transloc']]
         headless = self.runner.initialise(Headless, outputcoms=self.inputcoms)
         headless.go(gamepath, patchpath, transpath)
         self.currentState['enabled'] = False

@@ -111,7 +111,7 @@ class QTLogic(CoreProtocol):
             else:
                 self.browsePatch()
         elif button == 'go':
-            self.outputcoms.send('go', **self.window.getTransParams())
+            self.outputcoms.send('go')
         else:
             print 'Unknown button press %s' % str(button)
 
