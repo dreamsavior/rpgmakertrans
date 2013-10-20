@@ -18,7 +18,11 @@ class Headless(CoreProtocol):
         self.progressVal = 0
         
     def setProgressDiv(self, key, div):
-        self.progress[key][1] = div
+        if div != 0:
+            self.progress[key][1] = div
+        else:
+            if key in self.progress:
+                del self.progress[key]
         
     def setProgress(self, key, progress):
         self.progress[key][0] = progress
@@ -61,7 +65,6 @@ class Headless(CoreProtocol):
                             translator, mtimesManager, indir, patchpath, outdir)
         
     def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir):
-        patcher.setPath(patchpath + '_2') # Debug only
         self.submit('patcher', writeTranslator, patcher, translator, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])

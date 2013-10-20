@@ -121,8 +121,15 @@ class GUIController(CoreProtocol):
         sniffData = sniff(defaultpatchpath, positives=['PATCH'])
         if self.currentState['create'] is False:
             sniffData = [x for x in sniffData if x.subtype != 'create']
-        for item in sniffData:
-            self.addPatch(item, select=True)
+        if len(sniffData) > 0:
+            for item in sniffData:
+                self.addPatch(item, select=True)
+        else:
+            defaultzippath = defaultpatchpath + '.zip'
+            zipSniff = [x for x in sniff(defaultzippath, positives=['PATCH']) if x.subtype != 'create']
+            for item in zipSniff:
+                self.addPatch(item, select=True)
+        
         
     def changeSelected(self, idtoken, newid):
         self.currentState[idtoken] = newid

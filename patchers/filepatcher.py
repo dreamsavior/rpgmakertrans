@@ -29,6 +29,12 @@ class FilePatcher(BasePatch):
     def writePatchData(self, data):
         if not os.path.exists(self.path):
             os.mkdir(self.path)
+        patchmarkerfn = os.path.join(self.path, 'RPGMKTRANSPATCH')
+        if not os.path.exists(patchmarkerfn):
+            if os.path.isdir(patchmarkerfn):
+                raise Exception('Can\'t create patch marker file due to directory name conflict')
+            with open(patchmarkerfn, 'w') as f:
+                f.write('')
         for name in data:
             fn = name + '.txt'
             fullfn = os.path.join(self.path, fn)
@@ -39,8 +45,9 @@ class FilePatcher(BasePatch):
         for dr, _, files in os.walk(self.path):
             if dr != self.path: yield dr
             for fn in files:
-                fpath = os.path.join(dr, fn)
-                yield fpath
+                if not fn.endswith('RPGMKTRANSPATCH'):
+                    fpath = os.path.join(dr, fn)
+                    yield fpath
                 
     def fileDirs(self):
         for dr, _, _ in os.walk(self.path):
@@ -52,7 +59,7 @@ class FilePatcher(BasePatch):
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
         self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles, 
             indir=self.path, outdir=outpath, ignoredirs=[], ignoreexts=[], 
-            ignorefiles=self.patchDataFiles, comsout='comsout', translator=translator,
+            ignorefiles=self.patchDataFiles, comsout='outputcoms', translator=translator,
             mtimes=mtimes, newmtimes=newmtimes, progresssig='patchdata',
             dirssig=None 
             )

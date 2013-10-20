@@ -15,20 +15,24 @@ patchers = {}
 def patcherSniffer(sniffedtype, patcherclassname):
     def f(func):
         func = sniffer(sniffedtype)(func)
-        name = func.maintype
+        name = sniffedtype
+        if name in patchers: raise Exception('Clashsed name %s' % name)
         patchers[name] = patcherclassname
         return func
     return f
 
 @patcherSniffer(NewDir, None)
 def newDirSniffer(path):
-    return path if not os.path.exists(path) else False
+    if not os.path.exists(path) or (os.path.isdir(path) and len(os.listdir(path) == 0)):
+        return path
+    else:
+        return False
 
 def getClassName(path):
     pathtype = sniff(path, positives=['PATCH'])
     if len(pathtype) == 1: pathtype = pathtype[0]
     else: raise Exception('Could not work out an ambiguous patcher format')
-    if pathtype is not False and pathtype.maintype in patchers:
-        return patchers[pathtype.maintype]
+    if pathtype is not False and type(pathtype) in patchers:
+        return patchers[type(pathtype)]
     else:
         return None
