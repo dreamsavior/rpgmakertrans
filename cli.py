@@ -72,7 +72,10 @@ def CLIBackend(runner):
     parser.add_argument("patch", help="Path of patch (directory or zip)")
     parser.add_argument("output", help="Path to output directory (will create missing directories)")
     parser.add_argument('-q','--quiet', help='Suppress all output', action='store_true')
+    t = sys.stderr
+    sys.stderr = sys.__stderr__
     args = parser.parse_args()
+    sys.stderr = t
     x = runner.initialise(CLIMode, args)
     return x
 
