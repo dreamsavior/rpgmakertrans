@@ -23,7 +23,7 @@ def patcherSniffer(sniffedtype, patcherclassname):
 
 @patcherSniffer(NewDir, None)
 def newDirSniffer(path):
-    if not os.path.exists(path) or (os.path.isdir(path) and len(os.listdir(path) == 0)):
+    if not os.path.exists(path) or (os.path.isdir(path) and len(os.listdir(path)) == 0):
         return path
     else:
         return False

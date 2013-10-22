@@ -110,7 +110,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         for x in self.game, self.patch, self.trans, self.patchopts, self.progress, self.comms, self.gobutton, label:
             vbox.addWidget(x)
         self.setLayout(vbox)    
-        self.setWindowTitle('RPGMaker Trans QTUI Experiment')
+        self.setWindowTitle('RPGMaker Trans v2')
         self.gobutton.released.connect(lambda: self.outputComs.send('button', 'go'))
         hint = self.sizeHint()
         height = hint.height()
