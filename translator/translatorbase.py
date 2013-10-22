@@ -4,10 +4,10 @@ Created on 15 Aug 2013
 @author: habisain
 '''
 
-from errorhook import ErrorMeta
-from metamanager import makeMetaManager
+from metamanager import CustomManager, MetaCustomManager
 
-TranslatorManager, TranslatorMeta = makeMetaManager('Translator', ErrorMeta)
+class TranslatorManager(CustomManager): pass
+class TranslatorMeta(MetaCustomManager): customManagerClass = TranslatorManager
 
 class Translator(object):
     __metaclass__ = TranslatorMeta

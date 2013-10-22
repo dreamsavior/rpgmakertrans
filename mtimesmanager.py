@@ -3,13 +3,14 @@ Created on 3 Oct 2013
 
 @author: habisain
 '''
-from errorhook import errorWrap, ErrorMeta
+from errorhook import errorWrap
 import os.path
 import cPickle
-from metamanager import makeMetaManager
+from metamanager import CustomManager, MetaCustomManager
 import multiprocessing
 
-MTimesHandlerManager, MetaMTimesManager = makeMetaManager('MTimesHandlerManager', ErrorMeta)
+class MTimesHandlerManager(CustomManager): pass
+class MetaMTimesManager(MetaCustomManager): customManagerClass = MTimesHandlerManager 
 
 class MTimesHandler(object):
     __metaclass__ = MetaMTimesManager

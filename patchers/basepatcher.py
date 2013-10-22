@@ -3,11 +3,11 @@ Created on 19 Sep 2013
 
 @author: habisain
 '''
-from errorhook import ErrorMeta
-from metamanager import makeMetaManager
+from metamanager import CustomManager, MetaCustomManager
 from translator import TranslatorManager
 
-PatchManager, PatchMeta = makeMetaManager('Patch', ErrorMeta)
+class PatchManager(CustomManager): pass
+class PatchMeta(MetaCustomManager): customManagerClass = PatchManager
 
 class BasePatch(object):
     __metaclass__ = PatchMeta
