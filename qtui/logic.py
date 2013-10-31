@@ -111,6 +111,7 @@ class QTLogic(CoreProtocol):
             else:
                 self.browsePatch()
         elif button == 'go':
+            self.window.gobutton.setEnabled(False)
             self.outputcoms.send('go')
         else:
             print 'Unknown button press %s' % str(button)

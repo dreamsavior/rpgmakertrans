@@ -10,6 +10,9 @@ from basepatcher import BasePatch
 from filecopier2 import copyfiles
 from registry import patcherSniffer, FilePatchv2
 
+def listdir(path):
+    return [os.path.normcase(x) for x in os.listdir(path)]
+
 class FilePatcher(BasePatch):
     def __init__(self, path, *args, **kwargs):
         super(FilePatcher, self).__init__(path, *args, **kwargs)
@@ -46,7 +49,7 @@ class FilePatcher(BasePatch):
             if dr != self.path: yield dr
             for fn in files:
                 if not fn.endswith('RPGMKTRANSPATCH'):
-                    fpath = os.path.join(dr, fn)
+                    fpath = os.path.normcase(os.path.join(dr, fn))
                     yield fpath
                 
     def fileDirs(self):
@@ -56,10 +59,13 @@ class FilePatcher(BasePatch):
     def getAssetNames(self):
         return [os.path.relpath(fn, self.path) for fn in self.assetFiles]
     
+    def getNonCopyNames(self):
+        return [os.path.relpath(fn, self.path) for fn in self.patchDataFiles] + ['rpgmktranspatch']
+    
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
         self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles, 
             indir=self.path, outdir=outpath, ignoredirs=[], ignoreexts=[], 
-            ignorefiles=self.patchDataFiles, comsout='outputcoms', translator=translator,
+            ignorefiles=self.getNonCopyNames(), comsout='outputcoms', translator=translator,
             mtimes=mtimes, newmtimes=newmtimes, progresssig='patchdata',
             dirssig=None 
             )
@@ -70,13 +76,14 @@ class FilePatcherv2(FilePatcher):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
         self.patchDataFiles = []
-        rootls = set(os.listdir(self.path))
+        rootls = set(listdir(self.path))
         for fn in self.allPaths():
-            if fn.lower().endswith('.txt') and fn in rootls and os.path.isfile(fn):
+            if fn.lower().endswith('.txt') and os.path.normcase(os.path.split(fn)[1]) in rootls and os.path.isfile(fn):
                 try:
                     with codecs.open(fn, 'r', encoding='utf-8') as f:
                         header = '# RPGMAKER TRANS PATCH'
                         x = f.read(len(header))
+                        x = x.replace('\r', '')
                         if x.startswith(header):
                             self.patchDataFiles.append(fn)
                         else:
@@ -90,7 +97,7 @@ class FilePatcherv2(FilePatcher):
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
     if os.path.isdir(path):
-        cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
+        cands = [x for x in listdir(path) if x.lower() == 'rpgmktranspatch']
         if len(cands) == 1:
             path = os.path.join(path, cands[0])
         
@@ -100,4 +107,10 @@ def sniffv2(path):
         if not versionString.strip():
             return os.path.split(path)[0]
     return False         
+
+if __name__ == '__main__':
+    from sender import Sender
+    errout, coms = Sender(), Sender()
+    tp = """C:\\tr\\RyonaRPG_patch"""
+    x = FilePatcherv2(tp, coms, errout)
     

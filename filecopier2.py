@@ -79,7 +79,6 @@ class FileCopier(object):
                 transdirname = self.changeDir(dirname, indir, outdir)
                 if not os.path.exists(transdirname): 
                     self.dirs.append(transdirname)
-                                    
             for fname in files:
                 origfile = os.path.normcase(os.path.join(path, fname))
                 fid = origfile.replace(indir + os.path.sep, '', 1)
