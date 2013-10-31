@@ -9,6 +9,7 @@ from coreprotocol import CoreRunner, CoreProtocol
 from sniffers import sniffAll, sniff
 from headless import Headless
 from qtui import startView, errorMsg
+from version import versionCheck
 
 class IDStore(dict):
     def __init__(self, reverse=True, *args, **kwargs):
@@ -51,10 +52,14 @@ class GUIController(CoreProtocol):
                                   'create': False, 'enabled': True})
 
         self.headless = None
+        
         self.outputcoms.send('setMessage', 'Loading games, patches...')
         sniffDataRet = self.submit('worker', sniffAllTrigger, path=os.getcwd(), coms=self.inputcoms)
+        self.submit('dbg', versionCheck, coms=self.inputcoms)
         self.localWaitUntil('sniffingDone', self.setUpSniffedData, sniffDataRet)
         
+    def newVerAvailable(self, version):
+        self.outputcoms.send('displayOKKill', 'New Version Available', 'Version %s of RPGMaker Trans is available.\nPlease visit http://habisain.blogspot.co.uk to download it.\nPress OK to close RPGMaker Trans' % str(round(version, 2)))
         
     def setUpSniffedData(self, sniffDataRet):
         sniffData = sniffDataRet.get()
