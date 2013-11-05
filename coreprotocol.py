@@ -9,6 +9,7 @@ from collections import defaultdict
 from sender import SenderManager
 from errorhook import setErrorOut, ErrorMeta
 import sys
+import collections
 
 class CoreRunner(object):
     def __init__(self, runners=None, errors=None):
@@ -65,12 +66,11 @@ class CoreRunner(object):
                 if msg[0] == 'ERROR':
                     self.doError(*msg[1], **msg[2])
                 else:
-                    print 'Unknown code on error bus %s' % str(msg)
+                    print('Unknown code on error bus %s' % str(msg))
                 sys.exit(1)
             time.sleep(0.1)
 
-class CoreProtocol(object):
-    __metaclass__ = ErrorMeta
+class CoreProtocol(object, metaclass=ErrorMeta):
     def __init__(self, runner=None, inputcoms=None, outputcoms=None, errout=None):
         if runner is None and errout is not None:
             raise Exception('%s: Must supply runner and errout arguments as a pair or not at all' % str(type(self)))
@@ -123,7 +123,7 @@ class CoreProtocol(object):
             args = list(args)
             args[args.index('outputcoms')] = self.inputcoms
         else:
-            for (key, value) in kwargs.items():
+            for (key, value) in list(kwargs.items()):
                 if value == 'outputcoms':
                     kwargs[key] = self.inputcoms
         ret = self.pools[pool].apply_async(fn, args=args, kwds=kwargs)
@@ -153,19 +153,19 @@ class CoreProtocol(object):
                 
     def shutdown(self):
         for ret in self.results: ret.get
-        for pool in self.pools.values(): pool.join()
+        for pool in list(self.pools.values()): pool.join()
         
     def terminate(self):
-        for pool in self.pools.values(): pool.terminate()
+        for pool in list(self.pools.values()): pool.terminate()
         self.going = False
                     
     def update(self, coms=None):
         events = self.inputcoms.get()
         while events:
             code, args, kwargs = events.pop(0)
-            if hasattr(self, code) and callable(getattr(self, code)):
+            if hasattr(self, code) and isinstance(getattr(self, code), collections.Callable):
                 getattr(self, code)(*args, **kwargs)
             else:
-                print 'Got an unknown code'
-                print code, args, kwargs
+                print('Got an unknown code')
+                print(code, args, kwargs)
         #self.checkResults()

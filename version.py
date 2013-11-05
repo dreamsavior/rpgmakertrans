@@ -4,12 +4,13 @@ Created on 31 Oct 2013
 @author: habisain
 '''
 
-from urllib2 import urlopen
-from BeautifulSoup import BeautifulSoup
+from urllib.request import urlopen
+#from BeautifulSoup import BeautifulSoup
 
 version = 2.0
 
 def versionCheck(coms):
+    return 
     try:
         blogPage = urlopen('http://habisain.blogspot.com')
         blogData = blogPage.read()

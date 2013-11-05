@@ -1,6 +1,6 @@
 import os.path
 from struct import unpack, Struct
-from speedy2kconstants import schemas, containerTypes
+from .speedy2kconstants import schemas, containerTypes
 from errorhook import ErrorClass
 
 # TODO LIST:
@@ -200,7 +200,7 @@ class RPGFile(ErrorClass):
                         self.output.append(None)
                         startIndex = len(self.output)
                         self.parseScript(newSchemaDict, end)
-                        length = sum((len(self.output[x]) for x in xrange(startIndex, len(self.output))))
+                        length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
                         lengthRaw = ''.join(self.rpgintw(length))
                         self.output[startIndex-1] = lengthRaw
                         if scriptLenPos is not None:
@@ -209,17 +209,17 @@ class RPGFile(ErrorClass):
                         else:
                             raise Exception('Script without preceding script length')
                         if self.index != end:
-                            print 'weirdness', newSchemaType
+                            print('weirdness', newSchemaType)
                     elif newSchemaType in self.schemaToFunc:
                         length = self.rpgint()
                         end = self.index + length
                         self.output.append(None)
                         startIndex = len(self.output)
                         self.schemaToFunc[newSchemaType](newSchemaDict, end)
-                        length = sum((len(self.output[x]) for x in xrange(startIndex, len(self.output))))
+                        length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
                         self.output[startIndex-1] = ''.join(self.rpgintw(length))
                         if self.index != end:
-                            print 'weirdness', newSchemaType
+                            print('weirdness', newSchemaType)
                     else:
                         raise Exception('Dunno what to do')
                 else:
@@ -274,7 +274,7 @@ class RPGFile(ErrorClass):
                 lineTrans = lineTrans.replace(part, translation)
             textLS.append(lineTrans)
         if translated:
-            for x in xrange(len(cmdList)):
+            for x in range(len(cmdList)):
                 opc, args, line = cmdList[x]
                 lineTrans = textLS[x]
                 self.output.extend(self.rpgintw(opc))
@@ -392,12 +392,12 @@ class RPGFile(ErrorClass):
                 
                 newSchemaType, newSchemaDict = schema[id]
                 self.schemaToFunc[newSchemaType](newSchemaDict, end, id)
-                length = sum((len(self.output[x]) for x in xrange(startIndex, len(self.output))))
+                length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
 
                 self.output[startIndex-1] = ''.join(self.rpgintw(length))
                 
                 if end != self.index:
-                    print hex(id), 'weirdness', newSchemaType
+                    print(hex(id), 'weirdness', newSchemaType)
                 self.index = end
             elif id != 0:
                 self.bytesrw()        
@@ -416,9 +416,9 @@ def hexdiff(str, other):
     while x < (min(len(str), len(other))) and breaks < 10:
         if str[x] != other[x]:
             breaks += 1
-            print 'break', breaks, 'pos', x
-            print binascii.hexlify(str[x-10:x+10])
-            print binascii.hexlify(other[x-10:x+10])
+            print('break', breaks, 'pos', x)
+            print(binascii.hexlify(str[x-10:x+10]))
+            print(binascii.hexlify(other[x-10:x+10]))
             x+=10
         else:
             x+=1 

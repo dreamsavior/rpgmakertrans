@@ -196,8 +196,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         """Return a UTF string of the selected directory"""
         return QtGui.QFileDialog.getExistingDirectory(parent=self, caption=title)
 
-class Timer(object):
-    __metaclass__ = ErrorMeta
+class Timer(object, metaclass=ErrorMeta):
     def __init__(self, period, connectTo):
         self.timer = QtCore.QTimer()
         self.timer.start(period)

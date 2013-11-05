@@ -9,9 +9,7 @@ from translator import TranslatorManager
 class PatchManager(CustomManager): pass
 class PatchMeta(MetaCustomManager): customManagerClass = PatchManager
 
-class BasePatch(object):
-    __metaclass__ = PatchMeta
-    
+class BasePatch(object, metaclass=PatchMeta):
     def __init__(self, path, coms, errout):
         self.path = path
         self.coms = coms

@@ -5,16 +5,14 @@ Created on 3 Oct 2013
 '''
 from errorhook import errorWrap
 import os.path
-import cPickle
+import pickle
 from metamanager import CustomManager, MetaCustomManager
 import multiprocessing
 
 class MTimesHandlerManager(CustomManager): pass
 class MetaMTimesManager(MetaCustomManager): customManagerClass = MTimesHandlerManager 
 
-class MTimesHandler(object):
-    __metaclass__ = MetaMTimesManager
-    
+class MTimesHandler(object, metaclass=MetaMTimesManager):
     def __init__(self, outpath):
         self.mtimespath = os.path.join(outpath, 'mtimes')
         self.manager = multiprocessing.Manager()
@@ -24,7 +22,7 @@ class MTimesHandler(object):
     def loadMTimes(self):
         try:
             with open(self.mtimespath) as f:
-                loadedmtimes = cPickle.load(f)
+                loadedmtimes = pickle.load(f)
         except:
             loadedmtimes = {}
         self.mtimes.update(loadedmtimes)
@@ -33,7 +31,7 @@ class MTimesHandler(object):
         dumpmtimes = {}
         dumpmtimes.update(self.newmtimes)
         with open(self.mtimespath, 'w') as f:
-            cPickle.dump(dumpmtimes, f)
+            pickle.dump(dumpmtimes, f)
             
     def getMTimes(self):
         return self.mtimes

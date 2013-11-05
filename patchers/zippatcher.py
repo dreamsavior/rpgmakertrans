@@ -4,10 +4,10 @@ Created on 4 Oct 2013
 @author: habisain
 '''
 
-from basepatcher import BasePatch
+from .basepatcher import BasePatch
 import zipfile
 import os.path
-from registry import patcherSniffer, ZipPatchv2
+from .registry import patcherSniffer, ZipPatchv2
 
 SEPERATORS = '\\/' 
 
@@ -120,7 +120,7 @@ def sniffzipv2(path):
      
 if __name__ == '__main__':
     zipfn = '/home/habisain/tr/cr_p.zip'
-    print sniffzipv2(zipfn)
+    print(sniffzipv2(zipfn))
     x = ZIPPatcherv2(zipfn, None)
     x.doFullPatches('/home/habisain/tr/cr_pzip_test', None, {}, {})
     

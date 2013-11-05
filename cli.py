@@ -35,11 +35,11 @@ class CLIMode(CoreProtocol):
         
     def normalPrint(self, string):
         if not self.quiet:
-            print string
+            print(string)
             
     def progressPrint(self, string):
         if not self.quiet:
-            print string.ljust(CLI_LENGTH) + '\r', 
+            print(string.ljust(CLI_LENGTH) + '\r', end=' ') 
             sys.stdout.flush()
         
     def setProgress(self, progress):

@@ -1,12 +1,11 @@
-from __future__ import division
+
 
 import os
 
-from speedy2k import TwoKRPGFile
+from .speedy2k import TwoKRPGFile
 from errorhook import ErrorMeta, errorWrap
 
-class TwoKGame(object):
-    __metaclass__ = ErrorMeta
+class TwoKGame(object, metaclass=ErrorMeta):
     def __init__(self, inpath, outpath, translator, mtimes, newmtimes, comsout, *args, **kwargs):
         super(TwoKGame, self).__init__(*args, **kwargs)
         self.inpath = inpath

@@ -6,9 +6,9 @@ Created on 18 Apr 2013
 
 import os, os.path
 import codecs
-from basepatcher import BasePatch
+from .basepatcher import BasePatch
 from filecopier2 import copyfiles
-from registry import patcherSniffer, FilePatchv2
+from .registry import patcherSniffer, FilePatchv2
 
 def listdir(path):
     return [os.path.normcase(x) for x in os.listdir(path)]

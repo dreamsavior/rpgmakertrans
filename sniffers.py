@@ -16,7 +16,7 @@ class SniffedType(object):
     def __init__(self, canonicalpath=None):
         if isinstance(canonicalpath, type(self)):
             self.canonicalpath = canonicalpath.canonicalpath
-        elif isinstance(canonicalpath, (str, unicode)):
+        elif isinstance(canonicalpath, str):
             self.canonicalpath = canonicalpath
         else:
             raise Exception('Could not work out sniffed type data from a %s' % str(type(canonicalpath)))
@@ -45,8 +45,7 @@ class RPG2k(SniffedType): maintype, subtype = 'GAME', 'RPG2k'
 class TransLoc(SniffedType): maintype, subtype = 'TRANS', 'RPG2k][translated'
 class NewDirTransLoc(SniffedType): maintype, subtype = 'TRANS', 'create'
 
-class Sniffer(object):
-    __metaclass__ = ErrorMeta
+class Sniffer(object, metaclass=ErrorMeta):
     def __init__(self, sniffedType, func):
         self.sniffedType = sniffedType
         self.func = func
@@ -142,7 +141,7 @@ def sniff(path, positives=None, negatives=None, conflicts=None):
             delBases = [x.canonicalpath for x in results[maintype]]
             for conflicttype in conflicts[maintype]:
                 results[conflicttype] = [x for x in results[conflicttype] if x.canonicalpath not in delBases]
-    return list(itertools.chain(*results.values()))
+    return list(itertools.chain(*list(results.values())))
 
 def sniffAll(path):
     if os.path.isdir(path):
@@ -155,5 +154,5 @@ def sniffAll(path):
 
 if __name__ == '__main__':
     import sys
-    print ','.join(str(x) for x in sniff(sys.argv[-1]))
+    print(','.join(str(x) for x in sniff(sys.argv[-1])))
     

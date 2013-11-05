@@ -1,2 +1,2 @@
-from logic import startView
-from error import errorMsg
+from .logic import startView
+from .error import errorMsg

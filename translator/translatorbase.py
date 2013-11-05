@@ -9,8 +9,7 @@ from metamanager import CustomManager, MetaCustomManager
 class TranslatorManager(CustomManager): pass
 class TranslatorMeta(MetaCustomManager): customManagerClass = TranslatorManager
 
-class Translator(object):
-    __metaclass__ = TranslatorMeta
+class Translator(object, metaclass=TranslatorMeta):
     def __init__(self, mtime, *args, **kwargs):
         self.mtime = mtime
         

@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 from patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
 from filecopier2 import copyfilesAndTrigger
@@ -33,7 +33,7 @@ class Headless(CoreProtocol):
         self.updateProgress()
             
     def updateProgress(self):
-        newProgressVal = min((x[0] / x[1] for x in self.progress.values()))
+        newProgressVal = min((x[0] / x[1] for x in list(self.progress.values())))
         if newProgressVal != self.progressVal: 
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal

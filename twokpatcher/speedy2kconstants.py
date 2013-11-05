@@ -1,5 +1,5 @@
 ## BEGIN INLINE BLOCK
-from nameDict import names, opcodes, stringDataDict
+from .nameDict import names, opcodes, stringDataDict
 ## END INLINE BLOCK
 
 blockTypes = {# LDB File blocks
@@ -30,7 +30,7 @@ scriptContainerSpecialKeys = {'commonEventContainer': (names['ComEventScriptLeng
 'mapEventPageContainer': (names['MapScriptLength'], names['MapScript'])
 }
 
-containerTypes = scriptContainerSpecialKeys.keys() + ['container']
+containerTypes = list(scriptContainerSpecialKeys.keys()) + ['container']
 
 lmuScripts = [
  ('MapScripts', ['MapScript'])
@@ -116,7 +116,7 @@ ldbschemaDict[blockTypes['Strings']] = ('stringData', {'defaultStringData':strin
 
 lmuschemaDict = {
  blockTypes['EventsLayer']: ('container', {
-    05: ('mapEventPageContainer', {
+    0o5: ('mapEventPageContainer', {
       names['MapScriptLength']: ('scriptLength', {}),
       names['MapScript']: ('script', scriptSchemaDict)
     })

@@ -1,8 +1,8 @@
 import os.path
-import filepatcher
-import zippatcher
-from basepatcher import PatchManager, makeTranslator, writeTranslator
-from registry import getClassName
+from . import filepatcher
+from . import zippatcher
+from .basepatcher import PatchManager, makeTranslator, writeTranslator
+from .registry import getClassName
 DEFAULT = 'FilePatcherv2'
 
 def getPatcher(manager, path, coms, errout):

@@ -9,7 +9,7 @@ if __name__ == '__main__':
     sys.path.append('..')
 
 from coreprotocol import CoreProtocol
-from ui import MainWindow, Timer
+from .ui import MainWindow, Timer
 from PySide import QtGui, QtCore
 
 class QTLogic(CoreProtocol):
@@ -31,7 +31,7 @@ class QTLogic(CoreProtocol):
         self.outputcoms.send('shutdown')
         
     def setUI(self, states):
-        for element, state in states.items():
+        for element, state in list(states.items()):
             self.window.enableElement(element, state)
     
     def browseGame(self):
@@ -114,7 +114,7 @@ class QTLogic(CoreProtocol):
             self.window.gobutton.setEnabled(False)
             self.outputcoms.send('go')
         else:
-            print 'Unknown button press %s' % str(button)
+            print('Unknown button press %s' % str(button))
 
 def startView(*args, **kwargs):
     x = QTLogic(*args, **kwargs)

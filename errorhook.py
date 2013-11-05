@@ -6,7 +6,8 @@ Created on 3 Feb 2013
 
 import traceback, functools
 import sys
-import StringIO
+import io
+import collections
 errorOut = None
 
 def setErrorOut(comsout):
@@ -15,7 +16,7 @@ def setErrorOut(comsout):
     if errorOut is None:
         sys.stderr = sys.__stderr__
     else:
-        sys.stderr = StringIO.StringIO() 
+        sys.stderr = io.StringIO() 
 
 def errorWrap(func):
     @functools.wraps(func)
@@ -37,7 +38,7 @@ class ErrorClass(object):
         super(ErrorClass, self).__init__(*args, **kwargs)
         for x in type(self).__dict__:
             f = getattr(self, x)
-            if callable(f):
+            if isinstance(f, collections.Callable):
                 setattr(self, x, errorWrap(f))
 #        print self.__init__
         
@@ -46,14 +47,14 @@ class ErrorMeta(type):
         super(ErrorMeta, cls).__init__(a,b,c)
         for x in cls.__dict__:
             f = getattr(cls, x)
-            if callable(f):
+            if isinstance(f, collections.Callable):
 #                print f
                 setattr(cls, x, errorWrap(f))
 @errorWrap  
 def testExcept():
-    print 'called'
+    print('called')
     raise Exception('Something went wrong, natch')
-    print 'hmm'
+    print('hmm')
     
     
 

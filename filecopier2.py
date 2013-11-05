@@ -3,14 +3,13 @@ Created on 3 Sep 2013
 
 @author: habisain
 '''
-from __future__ import division
+
 
 import os.path, shutil
 from errorhook import ErrorMeta, errorWrap
 
-class FileCopier(object):
+class FileCopier(object, metaclass=ErrorMeta):
     """Handles copying files from orig directory to target. Does *not* copy patch files."""
-    __metaclass__ = ErrorMeta
     def __init__(self, indir, outdir,
                  ignoredirs, ignoreexts, ignorefiles, 
                  comsout, translator, mtimes, newmtimes,
