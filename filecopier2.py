@@ -29,6 +29,13 @@ class FileCopier(object, metaclass=ErrorMeta):
         self.progresssig = progresssig
         self.dirssig = dirssig
         
+    def doCopyDirs(self):
+        for directory in self.dirs:
+            if os.path.exists(directory):
+                if os.path.isfile(directory):
+                    os.remove(directory)
+                os.mkdir(directory)
+        
     def run(self):
         self.getLists()
         if not os.path.exists(self.outdir):
@@ -37,8 +44,7 @@ class FileCopier(object, metaclass=ErrorMeta):
         if not os.path.exists(patchmarkerfn):
             with open(patchmarkerfn, 'w') as f:
                 f.write('RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
-        for directory in self.dirs:
-            os.mkdir(directory)
+        self.doCopyDirs()
         if self.dirssig: 
             self.comsout.send('trigger', self.dirssig)
         if self.progresssig: 
