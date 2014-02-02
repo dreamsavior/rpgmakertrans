@@ -6,6 +6,7 @@ Created on 3 Sep 2013
 
 
 import os.path, shutil
+from fileops import (getmtime, pathexists, isfile, remove, mkdir, walk)
 from errorhook import ErrorMeta, errorWrap
 
 class FileCopier(object, metaclass=ErrorMeta):
@@ -31,17 +32,17 @@ class FileCopier(object, metaclass=ErrorMeta):
         
     def doCopyDirs(self):
         for directory in self.dirs:
-            if os.path.exists(directory):
-                if os.path.isfile(directory):
-                    os.remove(directory)
-                os.mkdir(directory)
+            if pathexists(directory):
+                if isfile(directory):
+                    remove(directory)
+                mkdir(directory)
         
     def run(self):
         self.getLists()
-        if not os.path.exists(self.outdir):
-            os.mkdir(self.outdir)
+        if not pathexists(self.outdir):
+            mkdir(self.outdir)
         patchmarkerfn = os.path.join(self.outdir, 'rpgmktranslated')
-        if not os.path.exists(patchmarkerfn):
+        if not pathexists(patchmarkerfn):
             with open(patchmarkerfn, 'w') as f:
                 f.write('RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
         self.doCopyDirs()
@@ -55,7 +56,7 @@ class FileCopier(object, metaclass=ErrorMeta):
                 self.comsout.send('incProgress', self.progresssig)
             
     def doCopyFile(self, fid, infn, outfn):
-        infnmtime = os.path.getmtime(infn)
+        infnmtime = getmtime(infn)
         #self.testFile(infn)
         outfnmtime = self.mtimes.get(outfn, None)
         if infnmtime != outfnmtime:
@@ -75,14 +76,14 @@ class FileCopier(object, metaclass=ErrorMeta):
     def getLists(self):
         indir, outdir = self.indir, self.outdir
         
-        for path, subdirs, files in os.walk(indir):
+        for path, subdirs, files in walk(indir):
             for rm in self.ignoredirs:
                 if rm in subdirs: subdirs.remove(rm)
             
             for subdir in subdirs:
                 dirname = os.path.normcase(os.path.join(path, subdir))
                 transdirname = self.changeDir(dirname, indir, outdir)
-                if not os.path.exists(transdirname): 
+                if not pathexists(transdirname): 
                     self.dirs.append(transdirname)
             for fname in files:
                 origfile = os.path.normcase(os.path.join(path, fname))

@@ -5,6 +5,7 @@ Created on 8 Oct 2013
 '''
 
 import os.path, itertools
+from fileops import (isdir, listdir, isfile, pathexists)
 from collections import defaultdict
 from errorhook import ErrorMeta
 
@@ -77,9 +78,9 @@ def sniffer(sniffedType):
 #    return func
 
 def checkForFiles(path, req):
-    if not os.path.isdir(path): 
+    if not isdir(path): 
         return False
-    subdirlist = os.listdir(path)
+    subdirlist = listdir(path)
     for fn in subdirlist:
         fn = fn.upper()
         if fn in req: req[fn] = not req[fn]
@@ -97,7 +98,7 @@ def sniff2kGame(path):
 
 @sniffer(RPG2k)
 def sniff2kGameFile(path):
-    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
+    if isfile(path) and path.upper().endswith('RPG_RT.EXE'):
         return sniff2kGame(os.path.split(path)[0])
     return False
 
@@ -110,13 +111,13 @@ def sniffTransLoc(path):
 
 @sniffer(TransLoc)
 def sniffTransLocFile(path):
-    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
+    if isfile(path) and path.upper().endswith('RPG_RT.EXE'):
         return sniffTransLoc(os.path.split(path)[0])
     return False
 
 @sniffer(NewDirTransLoc)
 def sniffNewDirTransLoc(path):
-    if (os.path.isdir(path) and len(os.listdir(path)) == 0) or (not os.path.exists(path)):
+    if (isdir(path) and len(listdir(path)) == 0) or (not pathexists(path)):
         return path
     return False
 
@@ -144,9 +145,9 @@ def sniff(path, positives=None, negatives=None, conflicts=None):
     return list(itertools.chain(*list(results.values())))
 
 def sniffAll(path):
-    if os.path.isdir(path):
-        return list(itertools.chain(*[sniff(path2) for path2 in (os.path.join(path, fn) for fn in os.listdir(path))]))
-    elif os.path.isfile(path):
+    if isdir(path):
+        return list(itertools.chain(*[sniff(path2) for path2 in (os.path.join(path, fn) for fn in listdir(path))]))
+    elif isfile(path):
         return sniff(path)
     else:
         return []
