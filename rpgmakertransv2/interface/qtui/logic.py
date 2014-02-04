@@ -8,7 +8,7 @@ if __name__ == '__main__':
     import sys
     sys.path.append('..')
 
-from coreprotocol import CoreProtocol
+from ...controllers.coreprotocol import CoreProtocol
 from .ui import MainWindow, Timer
 from PySide import QtGui, QtCore
 

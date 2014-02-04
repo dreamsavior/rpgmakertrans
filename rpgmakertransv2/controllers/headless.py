@@ -1,11 +1,11 @@
 
 
-from patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
-from filecopier2 import copyfilesAndTrigger
+from ..workers.patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
+from ..workers.filecopier2 import copyfilesAndTrigger
 from collections import defaultdict
-from twokpatcher import process2kgame
-from coreprotocol import CoreProtocol
-from mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
+from ..workers.twokpatcher import process2kgame
+from .coreprotocol import CoreProtocol
+from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class Headless(CoreProtocol):
     def __init__(self, *args, **kwargs):
@@ -69,7 +69,6 @@ class Headless(CoreProtocol):
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish)
-
         
     def finish(self):
         self.going = False

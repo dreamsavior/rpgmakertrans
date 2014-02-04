@@ -4,7 +4,7 @@ Created on 20 Sep 2013
 @author: habisain
 '''
 from multiprocessing.managers import BaseManager
-from errorhook import ErrorMeta, setErrorOut
+from .errorhook import ErrorMeta, setErrorOut
 
 class CustomManager(BaseManager):
     def start(self, errout=None):

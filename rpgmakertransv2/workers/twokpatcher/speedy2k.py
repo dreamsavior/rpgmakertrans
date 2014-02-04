@@ -1,7 +1,7 @@
 import os.path
 from struct import unpack, Struct
 from .speedy2kconstants import schemas, containerTypes
-from errorhook import ErrorClass
+from ...errorhook import ErrorClass
 
 # TODO LIST:
 # Convert to rPython->cPython extension module - some variables overloaded

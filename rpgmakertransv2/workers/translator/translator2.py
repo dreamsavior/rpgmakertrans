@@ -1,8 +1,8 @@
 import random
-from twokpatcher.speedy2kconstants import contextDict, rtsubsections
+from ..twokpatcher.speedy2kconstants import contextDict, rtsubsections
 from .translatorbase import Translator
 from collections import defaultdict
-from errorhook import ErrorMeta
+from ...errorhook import ErrorMeta
 
 ###########!######! TRANSLATED TEXT #############!###!
 shopMenu = '49 char limit'

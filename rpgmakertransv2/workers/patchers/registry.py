@@ -4,7 +4,7 @@ Created on 5 Oct 2013
 @author: habisain
 '''
 import os.path
-from sniffers import sniffer, sniff, SniffedType
+from ..sniffers import sniffer, sniff, SniffedType
 
 class FilePatchv2(SniffedType): maintype, subtype = 'PATCH', 'v2][update'
 class ZipPatchv2(SniffedType): maintype, subtype = 'PATCH', 'v2][use'

@@ -4,7 +4,7 @@ Created on 15 Aug 2013
 @author: habisain
 '''
 
-from metamanager import CustomManager, MetaCustomManager
+from ...metamanager import CustomManager, MetaCustomManager
 
 class TranslatorManager(CustomManager): pass
 class TranslatorMeta(MetaCustomManager): customManagerClass = TranslatorManager

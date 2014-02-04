@@ -6,8 +6,8 @@ Created on 20 Sep 2013
 
 import multiprocessing, time, signal
 from collections import defaultdict
-from sender import SenderManager
-from errorhook import setErrorOut, ErrorMeta
+from .sender import SenderManager
+from ..errorhook import setErrorOut, ErrorMeta
 import sys
 import collections
 

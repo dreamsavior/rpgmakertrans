@@ -6,8 +6,8 @@ Created on 3 Sep 2013
 
 
 import os.path, shutil
-from fileops import (getmtime, pathexists, isfile, remove, mkdir, walk)
-from errorhook import ErrorMeta, errorWrap
+from .fileops import (getmtime, pathexists, isfile, remove, mkdir, walk)
+from ..errorhook import ErrorMeta, errorWrap
 
 class FileCopier(object, metaclass=ErrorMeta):
     """Handles copying files from orig directory to target. Does *not* copy patch files."""

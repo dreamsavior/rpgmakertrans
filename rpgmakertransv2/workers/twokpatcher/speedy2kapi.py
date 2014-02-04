@@ -3,7 +3,7 @@
 import os
 
 from .speedy2k import TwoKRPGFile
-from errorhook import ErrorMeta, errorWrap
+from ...errorhook import ErrorMeta, errorWrap
 
 class TwoKGame(object, metaclass=ErrorMeta):
     def __init__(self, inpath, outpath, translator, mtimes, newmtimes, comsout, *args, **kwargs):

@@ -7,8 +7,8 @@ Created on 3 Oct 2013
 
 import sys
 import argparse
-from coreprotocol import CoreRunner, CoreProtocol
-from headless import Headless
+from ..controllers.coreprotocol import CoreRunner, CoreProtocol
+from ..controllers.headless import Headless
 
 VERSION = 2.0
 CLI_LENGTH = 79    

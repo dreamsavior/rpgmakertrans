@@ -4,10 +4,10 @@ Created on 18 Apr 2013
 @author: habisain
 '''
 
-import os, os.path
+import os.path
 import codecs
 from .basepatcher import BasePatch
-from filecopier2 import copyfiles
+from ..filecopier2 import copyfiles
 from .registry import patcherSniffer, FilePatchv2
 
 def listdir(path):
@@ -109,7 +109,7 @@ def sniffv2(path):
     return False         
 
 if __name__ == '__main__':
-    from sender import Sender
+    from ...controllers.sender import Sender
     errout, coms = Sender(), Sender()
     tp = """C:\\tr\\RyonaRPG_patch"""
     x = FilePatcherv2(tp, coms, errout)

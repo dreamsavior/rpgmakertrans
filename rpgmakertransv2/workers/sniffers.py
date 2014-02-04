@@ -5,9 +5,9 @@ Created on 8 Oct 2013
 '''
 
 import os.path, itertools
-from fileops import (isdir, listdir, isfile, pathexists)
+from .fileops import (isdir, listdir, isfile, pathexists)
 from collections import defaultdict
-from errorhook import ErrorMeta
+from ..errorhook import ErrorMeta
 
 SNIFFERS = set()
 

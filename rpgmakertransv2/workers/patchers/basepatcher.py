@@ -3,8 +3,8 @@ Created on 19 Sep 2013
 
 @author: habisain
 '''
-from metamanager import CustomManager, MetaCustomManager
-from translator import TranslatorManager
+from ...metamanager import CustomManager, MetaCustomManager
+from ..translator import TranslatorManager
 
 class PatchManager(CustomManager): pass
 class PatchMeta(MetaCustomManager): customManagerClass = PatchManager

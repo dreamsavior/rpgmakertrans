@@ -7,7 +7,6 @@ accursed Windows long paths.
 
 import os.path
 import sys
-import io
 
 LONGPATH = '\\\\?\\'
 

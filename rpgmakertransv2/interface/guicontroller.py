@@ -5,11 +5,11 @@ Created on 7 Oct 2013
 '''
 import os
 
-from coreprotocol import CoreRunner, CoreProtocol
-from sniffers import sniffAll, sniff
-from headless import Headless
-from qtui import startView, errorMsg
-from version import versionCheck
+from ..controllers.coreprotocol import CoreRunner, CoreProtocol
+from ..workers.sniffers import sniffAll, sniff
+from ..controllers.headless import Headless
+from .qtui import startView, errorMsg
+from ..version import versionCheck
 
 class IDStore(dict):
     def __init__(self, reverse=True, *args, **kwargs):
