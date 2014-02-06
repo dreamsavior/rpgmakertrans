@@ -2,6 +2,7 @@ import os.path
 from struct import unpack, Struct
 from .speedy2kconstants import schemas, containerTypes
 from ...errorhook import ErrorClass
+from ..fileops import WinOpen
 
 # TODO LIST:
 # Convert to rPython->cPython extension module - some variables overloaded
@@ -45,9 +46,8 @@ class RPGFile(ErrorClass):
         return self.translator.translate(string, (self.name, context))
             
     def outputfile(self, fn):
-        f = open(fn, 'wb')
-        f.write(b''.join(self.output))
-        f.close()
+        with WinOpen(fn, 'wb') as f:
+            f.write(b''.join(self.output))
             
     def getPacker(self, n):
         if n not in self.packers:
@@ -417,9 +417,8 @@ class RPGFile(ErrorClass):
 
 class TwoKRPGFile(RPGFile):
     def __init__(self, name, infn, translator):
-        f = open(infn, 'rb')
-        x = f.read()
-        f.close()
+        with WinOpen(infn, 'rb') as f:
+            x = f.read()
         super(TwoKRPGFile, self).__init__(name, x, schemas, translator)
 
 def hexdiff(str, other):

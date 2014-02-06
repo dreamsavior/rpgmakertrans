@@ -6,7 +6,7 @@ Created on 3 Sep 2013
 
 
 import os.path, shutil
-from .fileops import (getmtime, pathexists, isfile, remove, mkdir, walk)
+from .fileops import (getmtime, pathexists, isfile, remove, mkdir, walk, WinOpen, copy)
 from ..errorhook import ErrorMeta, errorWrap
 
 class FileCopier(object, metaclass=ErrorMeta):
@@ -43,7 +43,7 @@ class FileCopier(object, metaclass=ErrorMeta):
             mkdir(self.outdir)
         patchmarkerfn = os.path.join(self.outdir, 'rpgmktranslated')
         if not pathexists(patchmarkerfn):
-            with open(patchmarkerfn, 'w') as f:
+            with WinOpen(patchmarkerfn, 'w') as f:
                 f.write('RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
         self.doCopyDirs()
         if self.dirssig: 
@@ -61,7 +61,7 @@ class FileCopier(object, metaclass=ErrorMeta):
         outfnmtime = self.mtimes.get(outfn, None)
         if infnmtime != outfnmtime:
             try:
-                shutil.copy(infn, outfn)
+                copy(infn, outfn)
             except IOError:
                 raise Exception('Could not copy %s to %s' % (infn, outfn))
         self.newmtimes[outfn] = infnmtime

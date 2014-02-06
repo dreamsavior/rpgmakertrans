@@ -8,13 +8,13 @@ from .basepatcher import BasePatch
 import zipfile
 import os.path
 from .registry import patcherSniffer, ZipPatchv2
-
+from ..fileops import winescape, getmtime, WinOpen
 SEPERATORS = '\\/' 
 
 class ZIPPatcher(BasePatch):
     def __init__(self, path, *args, **kwargs):
-        self.zip = zipfile.ZipFile(path)
-        self.mtime = os.path.getmtime(path)
+        self.zip = zipfile.ZipFile(winescape(path))
+        self.mtime = getmtime(path)
         super(ZIPPatcher, self).__init__(path, *args, **kwargs)
     
     def patchIsWritable(self):
@@ -63,7 +63,7 @@ class ZIPPatcher(BasePatch):
                 self.makeDir(dirname)
                 z = self.zip.open(fn)
                 data = z.read(2**20)
-                with open(outfn, 'wb') as f:
+                with WinOpen(outfn, 'wb') as f:
                     while data:
                         f.write(data)
                         data = z.read(2**20)
@@ -108,7 +108,7 @@ class ZIPPatcherv2(ZIPPatcher):
 @patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
 def sniffzipv2(path):
     if os.path.isfile(path) and zipfile.is_zipfile(path):
-        z = zipfile.ZipFile(path)
+        z = zipfile.ZipFile(winescape(path))
         contents = z.namelist()
         transpatches = [x for x in contents if x.endswith('RPGMKTRANSPATCH')]
         if len(transpatches) == 1:

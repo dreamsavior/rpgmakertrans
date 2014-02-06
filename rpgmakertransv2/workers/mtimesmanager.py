@@ -8,6 +8,7 @@ import os.path
 import pickle
 from ..metamanager import CustomManager, MetaCustomManager
 import multiprocessing
+from .fileops import WinOpen
 
 class MTimesHandlerManager(CustomManager): pass
 class MetaMTimesManager(MetaCustomManager): customManagerClass = MTimesHandlerManager 
@@ -21,7 +22,7 @@ class MTimesHandler(object, metaclass=MetaMTimesManager):
     
     def loadMTimes(self):
         try:
-            with open(self.mtimespath) as f:
+            with WinOpen(self.mtimespath) as f:
                 loadedmtimes = pickle.load(f)
         except:
             loadedmtimes = {}
@@ -30,7 +31,7 @@ class MTimesHandler(object, metaclass=MetaMTimesManager):
     def dumpMTimes(self):
         dumpmtimes = {}
         dumpmtimes.update(self.newmtimes)
-        with open(self.mtimespath, 'wb') as f:
+        with WinOpen(self.mtimespath, 'wb') as f:
             pickle.dump(dumpmtimes, f)
             
     def getMTimes(self):

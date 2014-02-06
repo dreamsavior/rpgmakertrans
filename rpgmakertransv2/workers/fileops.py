@@ -7,6 +7,7 @@ accursed Windows long paths.
 
 import os.path
 import sys
+import shutil
 
 LONGPATH = '\\\\?\\'
 
@@ -25,6 +26,7 @@ def remove(path): os.remove(winescape(path))
 def isdir(path): return os.path.isdir(winescape(path))
 def listdir(path): return os.listdir(winescape(path))
 def walk(path): return os.walk(winescape(path))
+def copy(infn, outfn): return shutil.copy(infn, outfn)
 
 class WinOpen:
     """A minimal replacement for builtin open which escapes the filename
