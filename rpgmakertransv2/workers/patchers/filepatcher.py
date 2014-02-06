@@ -100,7 +100,8 @@ def sniffv2(path):
         cands = [x for x in listdir(path) if x.lower() == 'rpgmktranspatch']
         if len(cands) == 1:
             path = os.path.join(path, cands[0])
-        
+    elif not path.lower().endswith('rpgmktranspatch'):
+        return False
     if os.path.isfile(path):
         with open(path, 'r') as f:
             versionString = f.read()

@@ -7,6 +7,18 @@ from ...errorhook import ErrorClass
 # Convert to rPython->cPython extension module - some variables overloaded
 #              but I don't think there's anything major that needs changing.
 
+class BytesOrNoneList(list):
+    def append(self, item):
+        if isinstance(item, bytes) or item is None:
+            return super().append(item)
+        else:
+            raise Exception('Appended something dodgy')
+        
+    
+    def extend(self, ls):
+        for x in ls:
+            self.append(x)
+            
 class RPGFile(ErrorClass):
     def __init__(self, name, string, schemas, translator, *args, **kwargs):
         super(RPGFile, self).__init__(*args, **kwargs)
@@ -14,7 +26,7 @@ class RPGFile(ErrorClass):
         self.string = string
         self.intstring = unpack('B'*len(string), self.string)
         self.index = 0
-        self.output = []
+        self.output = BytesOrNoneList() #[]
         self.translator = translator
         
         self.schemaToFunc = {'script': self.parseScript, 'blocks': self.parseBlocks,
@@ -167,7 +179,7 @@ class RPGFile(ErrorClass):
             translated, string = self.translate(string, 'stringData/' + defaultStrings[cntAttribID])
             self.bytesw(string)
             cntAttribID = self.rpgint()
-        self.output.append('\x00')
+        self.output.append(b'\x00')
         
     def parseContainer(self, schema, currentLen, contextInfo=0):
         cntNoOfItems = self.rpgint()
@@ -237,14 +249,14 @@ class RPGFile(ErrorClass):
         if translated:
             x = 0
             message, messageNextLine = schema['message'], schema['messageNextLine']
-            for line in text.split('\n'):
+            for line in text.split(b'\n'):
                 opcode = message if x == 0 else messageNextLine
                 x = (x + 1) % 4
                 self.output.extend(self.rpgintw(opcode))
                 self.output.extend(self.rpgintw(depth))
                 self.output.extend(self.rpgintw(len(line)))
                 self.output.append(line)
-                self.output.append('\x00')
+                self.output.append(b'\x00')
         else:
             self.output.append(self.string[collStart:collEnd])
     
