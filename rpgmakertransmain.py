@@ -15,6 +15,6 @@ if __name__ == '__main__':
     if useCLIBackend():
         CLIBackend(runner)
     else:
-        runner.initialise()
+        runner.initialise(GUIController)
     runner.run()
         
