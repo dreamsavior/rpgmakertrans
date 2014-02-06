@@ -34,7 +34,7 @@ class RPGFile(ErrorClass):
             
     def outputfile(self, fn):
         f = open(fn, 'wb')
-        f.write(''.join(self.output))
+        f.write(b''.join(self.output))
         f.close()
             
     def getPacker(self, n):
@@ -201,10 +201,10 @@ class RPGFile(ErrorClass):
                         startIndex = len(self.output)
                         self.parseScript(newSchemaDict, end)
                         length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
-                        lengthRaw = ''.join(self.rpgintw(length))
+                        lengthRaw = b''.join(self.rpgintw(length))
                         self.output[startIndex-1] = lengthRaw
                         if scriptLenPos is not None:
-                            self.output[scriptLenPos] = ''.join(self.rpgintw(len(lengthRaw))) + lengthRaw
+                            self.output[scriptLenPos] = b''.join(self.rpgintw(len(lengthRaw))) + lengthRaw
                             scriptLenPos = None
                         else:
                             raise Exception('Script without preceding script length')
@@ -217,7 +217,7 @@ class RPGFile(ErrorClass):
                         startIndex = len(self.output)
                         self.schemaToFunc[newSchemaType](newSchemaDict, end)
                         length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
-                        self.output[startIndex-1] = ''.join(self.rpgintw(length))
+                        self.output[startIndex-1] = b''.join(self.rpgintw(length))
                         if self.index != end:
                             print('weirdness', newSchemaType)
                     else:
@@ -231,7 +231,7 @@ class RPGFile(ErrorClass):
             cntNoOfItems -= 1 
                 
     def translateMessage(self, cmdList, schema, depth, translator, collStart, collEnd):
-        text = '\n'.join((x[2] for x in cmdList))
+        text = b'\n'.join((x[2] for x in cmdList))
         
         translated, text = self.translate(text, 'Dialogue/Message/FaceUnknown')
         if translated:
@@ -268,7 +268,7 @@ class RPGFile(ErrorClass):
         textLS = []
         for opc, args, line in cmdList:
             lineTrans = line
-            for part in line.split('/'):
+            for part in line.split(b'/'):
                 partTranslated, translation = self.translate(part, 'Dialogue/Choice')
                 translated |= partTranslated
                 lineTrans = lineTrans.replace(part, translation)
@@ -290,28 +290,29 @@ class RPGFile(ErrorClass):
         changeName, changeClass = schema['changename'], schema['changeclass']
         for opc, args, string in cmdList:
             if opc == changeName:
-                textLS.append('\\n[')
+                textLS.append(b'\\n[')
             elif opc == changeClass:
-                textLS.append('\\c[')
+                textLS.append(b'\\c[')
             else:
                 raise Exception('Something bad happened')
-            textLS.append(str(args[0]))
-            textLS.append(']:')
+            #print(args[0], type(args[0]), bytes(args[0]))
+            textLS.append(str(args[0]).encode(encoding='ascii'))
+            textLS.append(b']:')
             textLS.append(string)
-            textLS.append('\n')
-        textStr = ''.join(textLS).strip('\n')
+            textLS.append(b'\n')
+        textStr = b''.join(textLS).strip(b'\n')
         translated, transString = self.translate(textStr, 'Dialogue/SetHeroName')
         if translated:
-            for line in transString.split('\n'):
+            for line in transString.split(b'\n'):
                 if line.strip():
-                    p1, colon, string = line.partition(':')
-                    code, bracket, intPart = p1.partition('[')
-                    code = code.strip('\\')
-                    intPart = intPart.strip(']')
-                    args = [int(intPart)]
-                    if code == 'c':
+                    p1, colon, string = line.partition(b':')
+                    code, bracket, intPart = p1.partition(b'[')
+                    code = code.strip(b'\\')
+                    intPart = intPart.strip(b']')
+                    args = [int(intPart.decode(encoding='ascii'))]
+                    if code == b'c':
                         opcode = changeClass
-                    elif code == 'n':
+                    elif code == b'n':
                         opcode = changeName
                     else:
                         raise Exception('A different problem')
@@ -394,7 +395,7 @@ class RPGFile(ErrorClass):
                 self.schemaToFunc[newSchemaType](newSchemaDict, end, id)
                 length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
 
-                self.output[startIndex-1] = ''.join(self.rpgintw(length))
+                self.output[startIndex-1] = b''.join(self.rpgintw(length))
                 
                 if end != self.index:
                     print(hex(id), 'weirdness', newSchemaType)

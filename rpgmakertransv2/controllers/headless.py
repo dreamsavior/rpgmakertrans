@@ -1,4 +1,15 @@
+"""
+headless
+========
 
+:author: habisain
+
+The Headless implementation is a completely blind patching engine, which
+communicates progress/errors etc to an interface, and coordinates the
+worker processes.
+
+Obviously, the primary use for Headless is paired with an interface.
+"""
 
 from ..workers.patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
 from ..workers.filecopier2 import copyfilesAndTrigger
@@ -8,7 +19,9 @@ from .coreprotocol import CoreProtocol
 from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class Headless(CoreProtocol):
+    """Headless Class"""
     def __init__(self, *args, **kwargs):
+        """Initialise Headless; for arguments see CoreProtocol"""
         super(Headless, self).__init__(*args, **kwargs)
         self.patchManager = PatchManager()
         self.patchManager.start(self.errout)
@@ -18,6 +31,8 @@ class Headless(CoreProtocol):
         self.progressVal = 0
         
     def setProgressDiv(self, key, div):
+        """Set the divisor of a given key on the progress reporter; 
+        typically a notion of the size of the complete job for the key"""
         if div != 0:
             self.progress[key][1] = div
         else:
@@ -25,20 +40,24 @@ class Headless(CoreProtocol):
                 del self.progress[key]
         
     def setProgress(self, key, progress):
+        """Set the progress of a given key"""
         self.progress[key][0] = progress
         self.updateProgress()
             
     def incProgress(self, key):
+        """Increment the progress for a given key"""
         self.progress[key][0] += 1
         self.updateProgress()
             
     def updateProgress(self):
+        """Update the progress value; communicate if necessary"""
         newProgressVal = min((x[0] / x[1] for x in list(self.progress.values())))
         if newProgressVal != self.progressVal: 
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
         
     def go(self, indir, patchpath, outdir):
+        """Initiate the patching"""
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
         patcher = getPatcher(self.patchManager, patchpath, self.inputcoms, self.errout)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
@@ -48,6 +67,7 @@ class Headless(CoreProtocol):
                             translatorRet, mtimesManager, indir, patchpath, outdir)
         
     def beginTranslation(self, patcher, translatorRet, mtimesManager, indir, patchpath, outdir):
+        """Begin the translation phase of patching"""
         translator = translatorRet.get()
         dontcopy = patcher.getAssetNames()
         mtimes = mtimesManager.getMTimes()
@@ -65,12 +85,14 @@ class Headless(CoreProtocol):
                             translator, mtimesManager, indir, patchpath, outdir)
         
     def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir):
+        """Finalise the translation; write the patch and get mtimes"""
         self.submit('patcher', writeTranslator, patcher, translator, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish)
         
     def finish(self):
+        """End Headless"""
         self.going = False
         self.outputcoms.send('finishedPatching')
 

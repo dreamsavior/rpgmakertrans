@@ -30,7 +30,7 @@ class MTimesHandler(object, metaclass=MetaMTimesManager):
     def dumpMTimes(self):
         dumpmtimes = {}
         dumpmtimes.update(self.newmtimes)
-        with open(self.mtimespath, 'w') as f:
+        with open(self.mtimespath, 'wb') as f:
             pickle.dump(dumpmtimes, f)
             
     def getMTimes(self):

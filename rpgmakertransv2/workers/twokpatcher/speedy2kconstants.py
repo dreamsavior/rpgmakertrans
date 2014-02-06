@@ -127,8 +127,8 @@ lmuschema = ('blocks', lmuschemaDict)
 
 ldbschema = ('blocks', ldbschemaDict)
 
-schemas = {'\x0bLcfDataBase': ldbschema,
-           '\x0aLcfMapUnit': lmuschema
+schemas = {b'\x0bLcfDataBase': ldbschema,
+           b'\x0aLcfMapUnit': lmuschema
 }
 
 if __name__ == '__main__':

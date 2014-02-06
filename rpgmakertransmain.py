@@ -5,16 +5,16 @@ Created on 3 Feb 2013
 '''
 
 from multiprocessing import freeze_support
-from guicontroller import GUIController
-from coreprotocol import CoreRunner
-from cli import useCLIBackend, CLIBackend
-
+from rpgmakertransv2.interface.guicontroller import GUIController
+from rpgmakertransv2.controllers.coreprotocol import CoreRunner
+from rpgmakertransv2.interface.cli import useCLIBackend, CLIBackend
+import sys
 if __name__ == '__main__':
     freeze_support()
     runner = CoreRunner()
     if useCLIBackend():
         CLIBackend(runner)
     else:
-        runner.initialise(GUIController)
+        runner.initialise()
     runner.run()
         

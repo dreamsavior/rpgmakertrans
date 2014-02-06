@@ -23,12 +23,12 @@ def errorWrap(func):
     def wrap(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception as e:
+        except Exception:
             global errorOut, caught
             if errorOut is not None:
-                errorOut.send('ERROR', traceback.format_exc(e))
+                errorOut.send('ERROR', traceback.format_exc())
             else:
-                sys.stderr.write(traceback.format_exc(e))
+                sys.stderr.write(traceback.format_exc())
                 sys.stderr.flush()
             #raise
     return wrap

@@ -76,7 +76,7 @@ def CLIBackend(runner):
     sys.stderr = sys.__stderr__
     args = parser.parse_args()
     sys.stderr = t
-    x = runner.initialise(CLIMode, args)
+    x = runner.initialise(CLIMode, cargs=args)
     return x
 
 if __name__ == '__main__':

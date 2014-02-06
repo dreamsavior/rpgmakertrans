@@ -35,7 +35,7 @@ class FileCopier(object, metaclass=ErrorMeta):
             if pathexists(directory):
                 if isfile(directory):
                     remove(directory)
-                mkdir(directory)
+            mkdir(directory)
         
     def run(self):
         self.getLists()
