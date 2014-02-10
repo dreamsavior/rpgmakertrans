@@ -12,10 +12,10 @@ import shutil
 LONGPATH = '\\\\?\\'
 
 def winescape(path):
-    if sys.platform == 'win32':
-        abspath = os.path.abspath(path)
-        return '\\\\?\\%s' % abspath
-    else:
+    #if sys.platform == 'win32':
+    #    abspath = os.path.abspath(path)
+    #    return '\\\\?\\%s' % abspath
+    #else:
         return path
 
 def getmtime(path): return os.path.getmtime(winescape(path))

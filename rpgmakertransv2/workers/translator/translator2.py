@@ -213,7 +213,7 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
             try:
                 return True, self.stringTrans[(ustring, contextStr)].encode(self.outcodec)
             except UnicodeError:
-                return True, 'Untranslated'
+                return True, 'Untranslated'.encode(self.outcodec)
         else:
             return False, string
     
