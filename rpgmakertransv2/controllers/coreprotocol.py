@@ -151,12 +151,14 @@ class CoreProtocol(object, metaclass=ErrorMeta):
         for removal in remove:
             self.results.remove(removal)
                 
-    def shutdown(self):
+    def shutdown(self, pools=None):
+        if pools is None: pools = list(self.pools.values())
         for ret in self.results: ret.get
-        for pool in list(self.pools.values()): pool.join()
+        for pool in pools: pool.join()
         
-    def terminate(self):
-        for pool in list(self.pools.values()): pool.terminate()
+    def terminate(self, pools=None):
+        if pools is None: pools = list(self.pools.values())
+        for pool in pools: pool.terminate()
         self.going = False
                     
     def update(self, coms=None):

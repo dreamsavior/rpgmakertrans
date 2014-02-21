@@ -95,5 +95,7 @@ class Headless(CoreProtocol):
         """End Headless"""
         self.going = False
         self.outputcoms.send('finishedPatching')
-
+        self.shutdown(['patcher', 'copier'])
+        del self.patchManager
+        del self.mtimesManager
     
