@@ -43,7 +43,13 @@ class RPGFile(ErrorClass):
         
     def translate(self, string, context):
         """Wrapper function to convert old calls into new global translator calls"""
-        return self.translator.translate(string, (self.name, context))
+        r = None
+        while r is None:
+            try:
+                r = self.translator.translate(string, (self.name, context))
+            except TypeError:
+                pass
+        return r
             
     def outputfile(self, fn):
         with WinOpen(fn, 'wb') as f:
