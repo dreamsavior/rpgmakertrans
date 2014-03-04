@@ -88,6 +88,7 @@ class Headless(CoreProtocol):
         
     def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir):
         """Finalise the translation; write the patch and get mtimes"""
+        self.outputcoms.send('finalisingPatch')
         self.submit('patcher', writeTranslator, patcher, translator, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])

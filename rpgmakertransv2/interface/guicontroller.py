@@ -175,6 +175,9 @@ class GUIController(CoreProtocol):
         headless.go(gamepath, patchpath, transpath)
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
+    
+    def finalisingPatch(self):
+        self.outputcoms.send('setMessage', 'Finalising Patch')
         
     def finishedPatching(self):
         self.currentState['enabled'] = True

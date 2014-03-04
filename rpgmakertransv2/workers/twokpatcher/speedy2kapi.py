@@ -25,7 +25,7 @@ class TwoKGame(object, metaclass=ErrorMeta):
                 infn = os.path.join(self.inpath, fn)
                 outfn = os.path.join(self.outpath, fn)
                 jobs.append((process2kfile, (infn, outfn, self.mtimes, self.newmtimes, self.translator, 'outputcoms')))
-        self.jobsTotal = len(jobs)
+        self.jobsTotal = len(jobs) - 1
         return jobs
     
     def callback(self, res):
@@ -36,7 +36,7 @@ class TwoKGame(object, metaclass=ErrorMeta):
         if self.pool is not None:
             raise Exception('Trying to run the same TwoKGame Translator twice')
         jobs = self.jobs()
-        self.comsout.send('setProgressDiv', 'patching', len(jobs))
+        self.comsout.send('setProgressDiv', 'patching', self.jobsTotal)
         for fn, args in jobs:
             self.comsout.send('waitUntil', 'dirsCopied', 'patcher', fn, *args)
             
