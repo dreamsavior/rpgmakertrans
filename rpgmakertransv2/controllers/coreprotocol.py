@@ -84,7 +84,7 @@ class CoreProtocol(object, metaclass=ErrorMeta):
         self.outputcoms = outputcoms
         self.waiting = defaultdict(list)
         self.dispatched = set()
-        self.pools = defaultdict(lambda: multiprocessing.Pool(initializer=setErrorOut, initargs=[errout]))
+        self.pools = {} 
         self.results = set()
         self.going = True
         self.localWaiting = defaultdict(list)
@@ -114,7 +114,6 @@ class CoreProtocol(object, metaclass=ErrorMeta):
     def localWaitUntil(self, signal, fn, *args, **kwargs):
         if signal in self.dispatched: fn(*args, **kwargs)
         else: self.localWaiting[signal].append((fn, args, kwargs))
-        
         
     def submit(self, pool, fn, *args, **kwargs):
         if pool == 'dbg':
@@ -150,15 +149,29 @@ class CoreProtocol(object, metaclass=ErrorMeta):
                 remove.add(ret)
         for removal in remove:
             self.results.remove(removal)
+            
+    def setupPool(self, pool, processes=None):
+        if processes is None: 
+            processes = multiprocessing.cpu_count()
+        self.pools[pool] = multiprocessing.Pool(
+                            processes=processes,
+                            initializer=setErrorOut, 
+                            initargs=[self.errout])
                 
     def shutdown(self, pools=None):
-        if pools is None: pools = list(self.pools.values())
-        for ret in self.results: ret.get
-        for pool in pools: pool.join()
+        if pools is None: poolobjs = list(self.pools.values())
+        else: poolobjs = [self.pools[pool] for pool in pools]
+        for ret in self.results: ret.get()
+        for pool in poolobjs: 
+            pool.close()
+        for pool in poolobjs:
+            pool.join()
+        self.going = False
         
     def terminate(self, pools=None):
-        if pools is None: pools = list(self.pools.values())
-        for pool in pools: pool.terminate()
+        if pools is None: poolobjs = list(self.pools.values())
+        else: poolobjs = [self.pools[pool] for pool in pools]
+        for pool in poolobjs: pool.terminate()
         self.going = False
                     
     def update(self, coms=None):

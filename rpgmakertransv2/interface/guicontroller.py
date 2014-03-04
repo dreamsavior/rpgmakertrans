@@ -42,6 +42,7 @@ class UpdaterDict(dict):
 class GUIController(CoreProtocol):
     def __init__(self, *args, **kwargs):
         super(GUIController, self).__init__(*args, **kwargs)
+        self.setupPool('gui', processes=1)
         self.submit('gui', startView, inputcoms=self.outputcoms, outputcoms=self.inputcoms)
         self.runner.setErrorHandler(errorMsg)
         self.gameDB = IDStore()
@@ -54,8 +55,9 @@ class GUIController(CoreProtocol):
         self.headless = None
         
         self.outputcoms.send('setMessage', 'Loading games, patches...')
+        self.setupPool('worker', processes=1)
         sniffDataRet = self.submit('worker', sniffAllTrigger, path=os.getcwd(), coms=self.inputcoms)
-        self.submit('dbg', versionCheck, coms=self.inputcoms)
+        self.submit('worker', versionCheck, coms=self.inputcoms)
         self.localWaitUntil('sniffingDone', self.setUpSniffedData, sniffDataRet)
         
     def newVerAvailable(self, version):

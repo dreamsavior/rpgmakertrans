@@ -17,5 +17,3 @@ if __name__ == '__main__':
     else:
         runner.initialise(GUIController)
     runner.run()
-    runner.shutdown()
-    

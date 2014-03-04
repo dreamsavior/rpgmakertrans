@@ -12,6 +12,7 @@ errorOut = None
 
 def setErrorOut(comsout):
     global errorOut
+    comsout = None
     errorOut = comsout
     if errorOut is None:
         sys.stderr = sys.__stderr__

@@ -58,6 +58,8 @@ class Headless(CoreProtocol):
         
     def go(self, indir, patchpath, outdir):
         """Initiate the patching"""
+        self.setupPool('patcher')
+        self.setupPool('copier', processes=1)
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
         patcher = getPatcher(self.patchManager, patchpath, self.inputcoms, self.errout)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
