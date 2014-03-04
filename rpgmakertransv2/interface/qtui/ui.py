@@ -9,7 +9,7 @@ from PySide import QtGui, QtCore
 from ...errorhook import ErrorClass, ErrorMeta
 
 labelString = ''.join([
-    "RPGMaker Trans (C) Habisain 2011-2013\n",
+    "RPGMaker Trans (C) Habisain 2011-2014\n",
     "Redistributing a game patched by RPGMaker Trans ",
     "will likely breach copyright on that game, and ",
     "so you should not do so without the original ",
