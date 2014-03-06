@@ -104,10 +104,13 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
         self.comms = QtGui.QLabel('Waiting for backend..')
+        self.errorLog = QtGui.QPlainTextEdit()
+        self.errorLog.setReadOnly(True)
+        self.errorLog.hide()
         self.gobutton = QtGui.QPushButton('Go!')
         label = QtGui.QLabel(labelString)
         label.setWordWrap(True)
-        for x in self.game, self.patch, self.trans, self.patchopts, self.progress, self.comms, self.gobutton, label:
+        for x in self.game, self.patch, self.trans, self.patchopts, self.progress, self.comms, self.errorLog, self.gobutton, label:
             vbox.addWidget(x)
         self.setLayout(vbox)    
         self.setWindowTitle('RPGMaker Trans v2')
@@ -126,6 +129,14 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         
     def enableElement(self, element, state):
         self.enableElements[element](state)
+        
+    def nonfatalError(self, msg):
+        self.errorLog.show()
+        self.errorLog.appendPlainText(msg)
+        
+    def resetNonfatalErrors(self):
+        self.errorLog.setPlainText('')
+        self.errorLog.hide()
         
     def closeEvent(self, event):
         self.outputComs.send('stop')

@@ -68,6 +68,12 @@ class QTLogic(CoreProtocol):
     def addTrans(self, tokenName, tokenID, select=False):
         self.window.comboBoxAdd('transloc', tokenName, tokenID, select)
         
+    def nonfatalError(self, msg):
+        self.window.nonfatalError(msg)
+        
+    def resetNonfatalError(self):
+        self.window.resetNonfatalErrors()
+        
     def selectGame(self, tokenID):
         self.window.comboBoxSelect('gameloc', tokenID)
         
