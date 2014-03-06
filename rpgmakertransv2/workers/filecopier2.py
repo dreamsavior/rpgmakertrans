@@ -62,9 +62,11 @@ class FileCopier(object, metaclass=ErrorMeta):
         if infnmtime != outfnmtime:
             try:
                 copy(infn, outfn)
+                self.newmtimes[outfn] = infnmtime
             except IOError:
-                raise Exception('Could not copy %s to %s' % (infn, outfn))
-        self.newmtimes[outfn] = infnmtime
+                self.comsout.send('nonfatalError', 'Could not copy %s to %s' % (infn, outfn))
+        else:
+            self.newmtimes[outfn] = infnmtime
 
     def changeDir(self, path, partA, partB): 
         if path.startswith(partA):

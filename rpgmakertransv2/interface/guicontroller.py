@@ -168,6 +168,7 @@ class GUIController(CoreProtocol):
         self.outputcoms.send('setUI', states)
         
     def go(self):
+        self.outputcoms.send('resetNonfatalError')
         gamepath = self.gameDB.reverse[self.currentState['gameloc']]
         patchpath = self.patchDB.reverse[self.currentState['patchloc']]
         transpath = self.transDB.reverse[self.currentState['transloc']]
@@ -175,6 +176,9 @@ class GUIController(CoreProtocol):
         headless.go(gamepath, patchpath, transpath)
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
+        
+    def nonfatalError(self, msg):
+        self.outputcoms.send('nonfatalError', msg)
     
     def finalisingPatch(self):
         self.outputcoms.send('setMessage', 'Finalising Patch')

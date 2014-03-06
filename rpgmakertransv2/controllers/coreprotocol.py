@@ -66,6 +66,7 @@ class CoreRunner(object):
                 if msg[0] == 'ERROR':
                     self.doError(*msg[1], **msg[2])
                 else:
+                    self.doError('Unknown code on error bus %s' % str(msg))
                     print('Unknown code on error bus %s' % str(msg))
                 sys.exit(1)
             time.sleep(0.1)
@@ -181,6 +182,5 @@ class CoreProtocol(object, metaclass=ErrorMeta):
             if hasattr(self, code) and isinstance(getattr(self, code), collections.Callable):
                 getattr(self, code)(*args, **kwargs)
             else:
-                print('Got an unknown code')
-                print(code, args, kwargs)
+                self.errout.send('ERROR', 'Got an unknown code: %s ' % str(code))
         #self.checkResults()

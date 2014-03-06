@@ -30,6 +30,10 @@ class Headless(CoreProtocol):
         self.progress = defaultdict(lambda: [0, 1])
         self.progressVal = 0
         
+    def nonfatalError(self, msg):
+        """Sends a nonfatal error message to the controller of headless"""
+        self.outputcoms.send('nonfatalError', msg)
+        
     def setProgressDiv(self, key, div):
         """Set the divisor of a given key on the progress reporter; 
         typically a notion of the size of the complete job for the key"""
@@ -99,6 +103,6 @@ class Headless(CoreProtocol):
         self.going = False
         self.outputcoms.send('finishedPatching')
         self.shutdown(['patcher', 'copier'])
-        del self.patchManager
-        del self.mtimesManager
+        self.patchManager.shutdown()
+        self.mtimesManager.shutdown()
     
