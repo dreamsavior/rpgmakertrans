@@ -43,12 +43,16 @@ class RPGFile(ErrorClass):
         
     def translate(self, string, context):
         """Wrapper function to convert old calls into new global translator calls"""
+        retries = 100
         r = None
-        while r is None:
+        while r is None and retries != 0:
             try:
                 r = self.translator.translate(string, (self.name, context))
             except TypeError:
-                pass
+                retries -= 1
+        if r is None:
+            #TODO: Nonfatal error
+            r = string
         return r
             
     def outputfile(self, fn):
@@ -182,8 +186,8 @@ class RPGFile(ErrorClass):
         while cntAttribID and self.index < currentLen:
             self.output.extend(self.rpgintw(cntAttribID))
             string = self.bytes()
-            translated, string = self.translate(string, 'stringData/' + defaultStrings[cntAttribID])
-            self.bytesw(string)
+            transString = self.translate(string, 'stringData/' + defaultStrings[cntAttribID])
+            self.bytesw(transString)
             cntAttribID = self.rpgint()
         self.output.append(b'\x00')
         
@@ -203,8 +207,8 @@ class RPGFile(ErrorClass):
                     if newSchemaType == 'string':
                         string = self.bytes()
                         contextData = (contextInfo, cntAttribID, cntItemID)
-                        translated, string = self.translate(string, contextData)
-                        self.bytesw(string)
+                        transString = self.translate(string, contextData)
+                        self.bytesw(transString)
                             
                     elif newSchemaType == 'bytes':
                         self.bytesrw()
@@ -251,11 +255,11 @@ class RPGFile(ErrorClass):
     def translateMessage(self, cmdList, schema, depth, translator, collStart, collEnd):
         text = b'\n'.join((x[2] for x in cmdList))
         
-        translated, text = self.translate(text, 'Dialogue/Message/FaceUnknown')
-        if translated:
+        transText = self.translate(text, 'Dialogue/Message/FaceUnknown')
+        if transText != text:
             x = 0
             message, messageNextLine = schema['message'], schema['messageNextLine']
-            for line in text.split(b'\n'):
+            for line in transText.split(b'\n'):
                 opcode = message if x == 0 else messageNextLine
                 x = (x + 1) % 4
                 self.output.extend(self.rpgintw(opcode))
@@ -268,11 +272,11 @@ class RPGFile(ErrorClass):
     
     def translateChoice(self, cmdList, schema, depth, translator, collStart, collEnd):
         cmd = cmdList[0]
-        translated, text = self.translate(cmd[2], 'Dialogue/Choice')
-        if translated:
+        transText = self.translate(cmd[2], 'Dialogue/Choice')
+        if transText != cmd[2]:
             choiceCode = schema['nextChoice']
             args = cmd[1]
-            line = text
+            line = transText
             self.output.extend(self.rpgintw(choiceCode))
             self.output.extend(self.rpgintw(depth))
             self.output.extend(self.rpgintw(len(line)))
@@ -287,8 +291,8 @@ class RPGFile(ErrorClass):
         for opc, args, line in cmdList:
             lineTrans = line
             for part in line.split(b'/'):
-                partTranslated, translation = self.translate(part, 'Dialogue/Choice')
-                translated |= partTranslated
+                translation = self.translate(part, 'Dialogue/Choice')
+                translated |= part != translation
                 lineTrans = lineTrans.replace(part, translation)
             textLS.append(lineTrans)
         if translated:
@@ -319,8 +323,8 @@ class RPGFile(ErrorClass):
             textLS.append(string)
             textLS.append(b'\n')
         textStr = b''.join(textLS).strip(b'\n')
-        translated, transString = self.translate(textStr, 'Dialogue/SetHeroName')
-        if translated:
+        transString = self.translate(textStr, 'Dialogue/SetHeroName')
+        if transString != textStr:
             for line in transString.split(b'\n'):
                 if line.strip():
                     p1, colon, string = line.partition(b':')

@@ -109,9 +109,4 @@ def sniffv2(path):
             return os.path.split(path)[0]
     return False         
 
-if __name__ == '__main__':
-    from ...controllers.sender import Sender
-    errout, coms = Sender(), Sender()
-    tp = """C:\\tr\\RyonaRPG_patch"""
-    x = FilePatcherv2(tp, coms, errout)
     

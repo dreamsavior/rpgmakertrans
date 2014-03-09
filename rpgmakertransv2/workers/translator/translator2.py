@@ -211,11 +211,12 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
             self.stringOrder.append((ustring, contextStr))
         if (ustring, contextStr) in self.stringTrans:
             try:
-                return True, self.stringTrans[(ustring, contextStr)].encode(self.outcodec)
+                return self.stringTrans[(ustring, contextStr)].encode(self.outcodec)
             except UnicodeError:
-                return True, 'Untranslated'.encode(self.outcodec)
+                #TODO: Nonfatal error
+                return 'Untranslated'.encode(self.outcodec)
         else:
-            return False, string
+            return string
     
     def escapeString(self, string):
         ret = []
