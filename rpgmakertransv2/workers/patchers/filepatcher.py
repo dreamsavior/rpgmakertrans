@@ -8,10 +8,8 @@ import os.path
 from .basepatcher import BasePatch
 from ..filecopier2 import copyfiles
 from .registry import patcherSniffer, FilePatchv2
-from ..fileops import WinOpen, getmtime, walk
+from ..fileops import WinOpen, getmtime, walk, listdir
 
-def listdir(path):
-    return [os.path.normcase(x) for x in os.listdir(path)]
 
 class FilePatcher(BasePatch):
     def __init__(self, path, *args, **kwargs):

@@ -17,6 +17,9 @@ class BasePatch(object, metaclass=PatchMeta):
         self.translatorManager = TranslatorManager()
         self.translatorManager.start(errout)
         
+    def quit(self):
+        self.translatorManager.shutdown()
+        
     def setPath(self, path):
         self.path = path
         

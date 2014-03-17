@@ -27,13 +27,14 @@ def remove(path):
     os.chmod(path, stat.S_IWRITE)
     os.remove(path)
 def isdir(path): return os.path.isdir(winescape(path))
-def listdir(path): return os.listdir(winescape(path))
 def walk(path): return os.walk(winescape(path))
 def copy(infn, outfn): 
     woutfn = winescape(outfn)
     if isfile(outfn):
         os.chmod(outfn, stat.S_IWRITE)
     shutil.copy(winescape(infn), woutfn)
+def listdir(path):
+    return [os.path.normcase(x) for x in os.listdir(path)]
 
 class WinOpen:
     """A minimal replacement for builtin open which escapes the filename

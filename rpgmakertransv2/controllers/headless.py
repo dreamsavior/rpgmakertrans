@@ -96,13 +96,14 @@ class Headless(CoreProtocol):
         self.submit('patcher', writeTranslator, patcher, translator, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
-        self.localWaitUntil('finish', self.finish)
+        self.localWaitUntil('finish', self.finish, patcher)
         
-    def finish(self):
+    def finish(self, patcher):
         """End Headless"""
         self.going = False
         self.outputcoms.send('finishedPatching')
         self.shutdown(['patcher', 'copier'])
+        patcher.quit()
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()
     
