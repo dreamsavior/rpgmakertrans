@@ -6,10 +6,15 @@ Created on 31 Oct 2013
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+import datetime
 
 version = 2.02
+expiry = datetime.date(2015, 1, 1)
 
-def versionCheck(coms): 
+def versionCheck(coms):
+    if expiry < datetime.date.today():
+        coms.send('expired')
+        return
     try:
         blogPage = urlopen('http://habisain.blogspot.com')
         blogData = blogPage.read()

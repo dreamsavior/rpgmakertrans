@@ -62,6 +62,9 @@ class GUIController(CoreProtocol):
         
     def newVerAvailable(self, version):
         self.outputcoms.send('displayOKKill', 'New Version Available', 'Version %s of RPGMaker Trans is available.\nPlease visit http://habisain.blogspot.co.uk to download it.\nPress OK to close RPGMaker Trans' % str(round(version, 2)))
+    
+    def expired(self):
+        self.outputcoms.send('displayOKKill', 'Expired Version', 'This version of RPGMaker Trams has expired.\nPlease visit http://habisain.blogspot.co.uk to download a new version.\nPress OK to close RPGMaker Trans')
         
     def setUpSniffedData(self, sniffDataRet):
         sniffData = sniffDataRet.get()
