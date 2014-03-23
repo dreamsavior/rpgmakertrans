@@ -189,6 +189,11 @@ class GUIController(CoreProtocol):
         self.outputcoms.send('setMessage', 'Finished patching')
         #self.enableUI()
         
+    def abortPatching(self):
+        self.currentState['enabled'] = True
+        self.currentState['gameloc'] = None
+        self.outputcoms.send('setMessage', 'Patching aborted')
+        
     def setProgress(self, amount):
         self.outputcoms.send('setProgress', amount)
         
@@ -200,13 +205,10 @@ class GUIController(CoreProtocol):
                                  'Patching in progress', 
                                  'Patching is still in progress.\n'
                                  'Really quit?', yes='reallyStop')
-            
+
     def reallyStop(self):
         self.outputcoms.send('quit')
         
-    def shutdown(self):
-        self.terminate()
-        self.going = False
         
 def sniffAllTrigger(path, coms):
     ret = sniffAll(path)
