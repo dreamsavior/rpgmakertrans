@@ -7,6 +7,7 @@ Created on 3 Feb 2013
 import sys
 from PySide import QtGui, QtCore
 from ...errorhook import ErrorClass, ErrorMeta
+from ...version import version
 
 labelString = ''.join([
     "RPGMaker Trans (C) Habisain 2011-2014\n",
@@ -113,7 +114,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         for x in self.game, self.patch, self.trans, self.patchopts, self.progress, self.comms, self.errorLog, self.gobutton, label:
             vbox.addWidget(x)
         self.setLayout(vbox)    
-        self.setWindowTitle('RPGMaker Trans v2')
+        self.setWindowTitle('RPGMaker Trans v%s' % str(version))
         self.gobutton.released.connect(lambda: self.outputComs.send('button', 'go'))
         hint = self.sizeHint()
         height = hint.height()
