@@ -5,12 +5,11 @@ Created on 31 Oct 2013
 '''
 
 from urllib.request import urlopen
-#from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
-version = 2.0
+version = 2.02
 
-def versionCheck(coms):
-    return 
+def versionCheck(coms): 
     try:
         blogPage = urlopen('http://habisain.blogspot.com')
         blogData = blogPage.read()
@@ -26,5 +25,5 @@ def versionCheck(coms):
         pass
     
 if __name__ == '__main__':
-    import sender
-    versionCheck(sender.Sender())
+    from .controllers.sender import Sender
+    versionCheck(Sender())
