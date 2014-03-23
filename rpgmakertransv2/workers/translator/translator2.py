@@ -160,9 +160,10 @@ compatRewrite['itemAttr/ItemDescription'] = 'itemAttr/Description'
 compatRewrite['skillAttr/SkillDescription'] = 'skillAttr/Description'
 
 class Translator2kv2f(object, metaclass=ErrorMeta):
-    def __init__(self, incodec='cp932', outcodec='cp932'):
+    def __init__(self, coms, incodec='cp932', outcodec='cp932'):
         d = {30441: [123, 107, 49, 41, 91, 51, 115, 114, 123, 41, 100, 97, 125, 50, 112, 97, 102, 93, 36, 100, 125, 91, 93, 115, 125, 51, 125], 30123: [48, 49, 52, 124, 35, 80, 35, 92, 53, 35, 95, 124, 95, 48, 124, 112, 124, 49, 35], 30001: [83, 84, 73, 66, 69, 71, 79, 69, 83, 80, 65, 76, 65, 70, 73, 83, 83, 73, 83, 83, 76, 76, 75, 80], 38102: [112, 107, 97, 97, 112, 115, 36, 115, 111, 107, 115, 97, 97, 50, 111, 36, 52, 100, 112, 48, 106, 111, 105, 100, 119], 23994: [124, 117, 105, 124, 124, 47, 92, 94, 38, 36, 124, 52, 53, 92, 92, 124, 94, 47, 53, 38, 124, 45], 42911: [65, 84, 82, 77, 65, 76, 78, 64, 75, 75, 73, 126, 126, 69, 64, 80, 76, 82, 82, 83, 71]}
         self.keys = []
+        self.coms = coms
         for k in d:
             l = len(d[k])
             random.seed(k)
@@ -185,7 +186,11 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
     def translateString(self, string, context):
         if string in self.keys: 
             raise Exception('Found kill switch; not translating this game')
-        ustring = string.decode(self.incodec)
+        try:
+            ustring = string.decode(self.incodec)
+        except UnicodeError:
+            self.coms.send('nonfatalError', 'Could not decode %s using %s' % (string, self.incodec))
+            return string
         if isinstance(context, tuple):
             context = context[:2]
             search = contextDict
@@ -196,25 +201,24 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
                     if 'name' in search:
                         contextStrL.append(search['name'])
                 else:
-                    print(contextDict)
-                    print(context, ustring)
-                    raise Exception('Unrecognised context' + str(context) )
+                    self.coms.send('nonfatalError', 'Unrecognised context: %s, string: %s' % (str(context), ustring))
             contextStr = '/'.join(contextStrL)
         elif isinstance(context, str):
             contextStr = context
         else:
-            raise Exception('Internal error #912')
+            self.coms.send('fatalError', 'Opt-out detected, stopping translation')
         if contextStr in compatRewrite:
             contextStr = compatRewrite[contextStr]
         if (ustring, contextStr) not in self.strings:
             self.strings[(ustring, contextStr)] = True
             self.stringOrder.append((ustring, contextStr))
         if (ustring, contextStr) in self.stringTrans:
+            translation = self.stringTrans[(ustring, contextStr)]
             try:
-                return self.stringTrans[(ustring, contextStr)].encode(self.outcodec)
+                return translation.encode(self.outcodec)
             except UnicodeError:
-                #TODO: Nonfatal error
-                return 'Untranslated'.encode(self.outcodec)
+                self.coms.send('nonfatalError', 'Could not encode %s using %s' % (translation, self.outcodec))
+                return string
         else:
             return string
     
@@ -293,9 +297,9 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
                 self.loadTranslatable(translation.strip())
                 
 class Translator2kv2(Translator):
-    def __init__(self, data, mtime):
+    def __init__(self, data, mtime, coms):
         super(Translator2kv2, self).__init__(mtime)
-        self.translators = defaultdict(Translator2kv2f)
+        self.translators = defaultdict(lambda: Translator2kv2f(coms))
         for name in data:
             uname = name.upper()
             if uname.startswith('RPG_RT'):

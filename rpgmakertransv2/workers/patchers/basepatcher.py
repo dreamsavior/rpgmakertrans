@@ -40,9 +40,9 @@ class BasePatch(object, metaclass=PatchMeta):
             data = translator.getPatchData()
             self.writePatchData(data)
         
-    def makeTranslator(self):
+    def makeTranslator(self, coms):
         data, mtime = self.loadPatchData()
-        return getattr(self.translatorManager, type(self).translatorClass)(data, mtime)
+        return getattr(self.translatorManager, type(self).translatorClass)(data, mtime, coms)
     
     def getAssetFiles(self):
         return self.assetFiles
@@ -57,7 +57,7 @@ class BasePatch(object, metaclass=PatchMeta):
         raise Exception('FullPatching not implemented')
     
 def makeTranslator(patcher, coms):
-    ret = patcher.makeTranslator()
+    ret = patcher.makeTranslator(coms)
     coms.send('trigger', 'translatorReady')
     return ret
     

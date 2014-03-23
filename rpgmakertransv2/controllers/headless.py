@@ -34,6 +34,15 @@ class Headless(CoreProtocol):
         """Sends a nonfatal error message to the controller of headless"""
         self.outputcoms.send('nonfatalError', msg)
         
+    def fatalError(self, msg):
+        """Sends a nonfatal error message and kills the patcher"""
+        self.outputcoms.send('nonfatalError', msg)
+        self.going = False
+        self.outputcoms.send('abortPatching')
+        self.terminate(['patcher', 'copier'])
+        self.patchManager.shutdown()
+        self.mtimesManager.shutdown()
+        
     def setProgressDiv(self, key, div):
         """Set the divisor of a given key on the progress reporter; 
         typically a notion of the size of the complete job for the key"""
@@ -97,7 +106,7 @@ class Headless(CoreProtocol):
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish, patcher)
-        
+    
     def finish(self, patcher):
         """End Headless"""
         self.going = False
