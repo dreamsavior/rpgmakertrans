@@ -70,6 +70,7 @@ class CoreRunner(object):
                     print('Unknown code on error bus %s' % str(msg))
                 sys.exit(1)
             time.sleep(0.1)
+        self.errorManager.shutdown()
 
 class CoreProtocol(object, metaclass=ErrorMeta):
     def __init__(self, runner=None, inputcoms=None, outputcoms=None, errout=None):
@@ -167,6 +168,8 @@ class CoreProtocol(object, metaclass=ErrorMeta):
             pool.close()
         for pool in poolobjs:
             pool.join()
+        if hasattr(self, 'senderManager'):
+            self.senderManager.shutdown()
         self.going = False
         
     def terminate(self, pools=None):
