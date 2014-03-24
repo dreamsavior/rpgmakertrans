@@ -1,0 +1,8 @@
+RPGMAKER TRANS v2.x LICENSE
+(C) Habisain 2014
+
+1) Do not redistribute RPGMaker Trans
+2) Do not dissassemble RPGMaker Trans without permission from Habisain
+3) Ensure that RPGMaker Trans is always at its latest version
+4) Habisain is not liable for any consequence arising from the use of
+RPGMaker Trans, to the maximum extent permitted by law.
