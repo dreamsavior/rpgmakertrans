@@ -46,7 +46,7 @@ class FilePatcher(BasePatch):
         for dr, _, files in walk(self.path):
             if dr != self.path: yield dr
             for fn in files:
-                if not fn.endswith('RPGMKTRANSPATCH'):
+                if not fn.upper().endswith('RPGMKTRANSPATCH'):
                     fpath = os.path.normcase(os.path.join(dr, fn))
                     yield fpath
                 
@@ -58,7 +58,7 @@ class FilePatcher(BasePatch):
         return [os.path.relpath(fn, self.path) for fn in self.assetFiles]
     
     def getNonCopyNames(self):
-        return [os.path.relpath(fn, self.path) for fn in self.patchDataFiles] + ['rpgmktranspatch']
+        return [os.path.relpath(fn, self.path) for fn in self.patchDataFiles] + ['RPGMKTRANSPATCH']
     
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
         self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles, 
@@ -89,7 +89,7 @@ class FilePatcherv2(FilePatcher):
                 except UnicodeError:
                     self.assetFiles.append(fn)
             else:
-                if not fn.endswith('RPGMKTRANSPATCH'):
+                if not fn.upper().endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
                 
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
