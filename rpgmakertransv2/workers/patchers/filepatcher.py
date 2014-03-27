@@ -27,7 +27,7 @@ class FilePatcher(BasePatch):
                 data[name] = f.read()
         return data, mtime
         
-    def writePatchData(self, data):
+    def writePatchData(self, data, encoding='utf-8'):
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         patchmarkerfn = os.path.join(self.path, 'RPGMKTRANSPATCH')
@@ -39,7 +39,7 @@ class FilePatcher(BasePatch):
         for name in data:
             fn = name + '.txt'
             fullfn = os.path.join(self.path, fn)
-            with WinOpen(fullfn, 'w', encoding='utf-8') as f:
+            with WinOpen(fullfn, 'w', encoding=encoding) as f:
                 f.write(data[name])
                     
     def allPaths(self):
@@ -77,16 +77,19 @@ class FilePatcherv2(FilePatcher):
         rootls = set(listdir(self.path))
         for fn in self.allPaths():
             if fn.lower().endswith('.txt') and os.path.normcase(os.path.split(fn)[1]) in rootls and os.path.isfile(fn):
-                try:
-                    with WinOpen(fn, 'r', encoding='utf-8') as f:
-                        header = '# RPGMAKER TRANS PATCH'
-                        x = f.read(len(header))
-                        x = x.replace('\r', '')
-                        if x.startswith(header):
-                            self.patchDataFiles.append(fn)
-                        else:
-                            self.assetFiles.append(fn)
-                except UnicodeError:
+                matched = False
+                header = '# RPGMAKER TRANS PATCH'
+                for encoding in 'utf-8', 'utf-8-sig':
+                    try:
+                        with WinOpen(fn, 'r', encoding=encoding) as f:                            
+                            x = f.read(len(header))
+                            x = x.replace('\r', '')
+                            matched |= x.startswith(header)
+                    except UnicodeError:
+                        pass
+                if matched:
+                    self.patchDataFiles.append(fn)
+                else:
                     self.assetFiles.append(fn)
             else:
                 if not fn.upper().endswith('RPGMKTRANSPATCH'):

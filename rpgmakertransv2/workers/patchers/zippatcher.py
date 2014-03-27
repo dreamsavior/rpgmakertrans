@@ -90,16 +90,19 @@ class ZIPPatcherv2(ZIPPatcher):
         self.patchDataFiles = []
         for fn in patchfiles:
             if fn.lower().endswith('.txt') and fn in rootfiles:
-                try:
-                    header = '# RPGMAKER TRANS PATCH'
-                    z = self.zip.open(fn)
-                    raw = z.read(2**22)
-                    dec = raw.decode('utf-8')
-                    if dec.startswith(header):
-                        self.patchDataFiles.append(fn)
-                    else:
-                        self.assetFiles.append(fn)
-                except UnicodeError:                
+                matched = False
+                header = '# RPGMAKER TRANS PATCH'
+                for encoding in 'utf-8', 'utf-8-sig':
+                    try:
+                        z = self.zip.open(fn)
+                        raw = z.read(2**22)
+                        dec = raw.decode(encoding)
+                        matched |= dec.startswith(header)
+                    except UnicodeError:                
+                        pass
+                if matched:
+                    self.patchDataFiles.append(fn)
+                else:
                     self.assetFiles.append(fn)
             else:
                 if not fn.endswith('RPGMKTRANSPATCH'):
