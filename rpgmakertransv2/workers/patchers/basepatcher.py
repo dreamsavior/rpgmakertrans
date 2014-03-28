@@ -20,6 +20,16 @@ class BasePatch(object, metaclass=PatchMeta):
     def quit(self):
         self.translatorManager.shutdown()
         
+    def tryDecodePatchFile(self, header, data, errors='strict'):
+        for encoding in 'utf-8', 'utf-8-sig':
+            try:
+                decoded = data.decode(encoding, errors=errors)
+                if decoded.startswith(header):
+                    return True, decoded
+            except UnicodeError:
+                pass
+        return False, data
+        
     def setPath(self, path):
         self.path = path
         
@@ -29,7 +39,7 @@ class BasePatch(object, metaclass=PatchMeta):
     def loadPatchData(self):
         raise Exception('loading patch data not implemented')
     
-    def writePatchData(self, data):
+    def writePatchData(self, data, encoding='utf-8'):
         raise Exception('Writing patch data not implemented')
     
     def categorisePatchFiles(self):

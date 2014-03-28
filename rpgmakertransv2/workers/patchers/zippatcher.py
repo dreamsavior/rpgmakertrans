@@ -25,12 +25,12 @@ class ZIPPatcher(BasePatch):
         for fn in self.patchDataFiles:
             zfile = self.zip.open(fn)
             raw = zfile.read(2**22)
-            dec = raw.decode('utf-8')
+            matched, dec = self.tryDecodePatchFile(type(self).header, raw)
             name = fn.partition(self.root)[2].strip(SEPERATORS).rpartition('.')[0].lower()
             data[name] = dec
         return data, self.mtime
 
-    def writePatchData(self, data):
+    def writePatchData(self, data, encoding='utf-8'):
         pass
     
     def toOSFileStyle(self, path):
@@ -62,7 +62,7 @@ class ZIPPatcher(BasePatch):
                 dirname = os.path.split(outfn)[0]
                 self.makeDir(dirname)
                 z = self.zip.open(fn)
-                data = z.read(2**20)
+                data = z.read(2**22)
                 with WinOpen(outfn, 'wb') as f:
                     while data:
                         f.write(data)
@@ -72,6 +72,7 @@ class ZIPPatcher(BasePatch):
     
 class ZIPPatcherv2(ZIPPatcher):
     translatorClass = 'Translator2kv2'
+    header = '# RPGMAKER TRANS PATCH'
     def categorisePatchFiles(self):
         
         contents = self.zip.namelist()
@@ -91,15 +92,10 @@ class ZIPPatcherv2(ZIPPatcher):
         for fn in patchfiles:
             if fn.lower().endswith('.txt') and fn in rootfiles:
                 matched = False
-                header = '# RPGMAKER TRANS PATCH'
-                for encoding in 'utf-8', 'utf-8-sig':
-                    try:
-                        z = self.zip.open(fn)
-                        raw = z.read(2**22)
-                        dec = raw.decode(encoding)
-                        matched |= dec.startswith(header)
-                    except UnicodeError:                
-                        pass
+                header = type(self).header
+                z = self.zip.open(fn)
+                raw = z.read(2**22)
+                matched, decoded = self.tryDecodePatchFile(header, raw, errors='ignore')
                 if matched:
                     self.patchDataFiles.append(fn)
                 else:

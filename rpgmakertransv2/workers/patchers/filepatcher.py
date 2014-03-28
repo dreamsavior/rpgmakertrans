@@ -23,8 +23,12 @@ class FilePatcher(BasePatch):
         for fn in self.patchDataFiles:
             name = os.path.split(fn)[1].rpartition('.')[0].lower()
             mtime = max(mtime, getmtime(fn))
-            with WinOpen(fn, 'r', encoding='utf-8') as f:
-                data[name] = f.read()
+            with WinOpen(fn, 'rb') as f:
+                raw = f.read()
+                matched, decoded = self.tryDecodePatchFile(type(self).header, raw)
+                if not matched:
+                    raise Exception('Could not decode file %s' % fn)
+                data[name] = decoded
         return data, mtime
         
     def writePatchData(self, data, encoding='utf-8'):
@@ -70,6 +74,7 @@ class FilePatcher(BasePatch):
                 
 class FilePatcherv2(FilePatcher):
     translatorClass = 'Translator2kv2'
+    header = '# RPGMAKER TRANS PATCH'
     def categorisePatchFiles(self):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
@@ -77,16 +82,10 @@ class FilePatcherv2(FilePatcher):
         rootls = set(listdir(self.path))
         for fn in self.allPaths():
             if fn.lower().endswith('.txt') and os.path.normcase(os.path.split(fn)[1]) in rootls and os.path.isfile(fn):
-                matched = False
-                header = '# RPGMAKER TRANS PATCH'
-                for encoding in 'utf-8', 'utf-8-sig':
-                    try:
-                        with WinOpen(fn, 'r', encoding=encoding) as f:                            
-                            x = f.read(len(header))
-                            x = x.replace('\r', '')
-                            matched |= x.startswith(header)
-                    except UnicodeError:
-                        pass
+                header = type(self).header
+                with WinOpen(fn, 'rb') as f:
+                    data = f.read(len(header) + 3)
+                matched, _ = self.tryDecodePatchFile(header, data, 'ignore')
                 if matched:
                     self.patchDataFiles.append(fn)
                 else:
