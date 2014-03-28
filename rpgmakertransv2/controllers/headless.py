@@ -69,7 +69,7 @@ class Headless(CoreProtocol):
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
         
-    def go(self, indir, patchpath, outdir):
+    def go(self, indir, patchpath, outdir, useBOM):
         """Initiate the patching"""
         self.setupPool('patcher')
         self.setupPool('copier', processes=1)
@@ -79,9 +79,9 @@ class Headless(CoreProtocol):
         translatorRet = self.submit('patcher', makeTranslator, patcher, self.inputcoms)
         self.comboTrigger('startTranslation', ['translatorReady', 'mtimesReady'])
         self.localWaitUntil('startTranslation', self.beginTranslation, patcher, 
-                            translatorRet, mtimesManager, indir, patchpath, outdir)
+                            translatorRet, mtimesManager, indir, patchpath, outdir, useBOM)
         
-    def beginTranslation(self, patcher, translatorRet, mtimesManager, indir, patchpath, outdir):
+    def beginTranslation(self, patcher, translatorRet, mtimesManager, indir, patchpath, outdir, useBOM):
         """Begin the translation phase of patching"""
         translator = translatorRet.get()
         dontcopy = patcher.getAssetNames()
@@ -97,12 +97,12 @@ class Headless(CoreProtocol):
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher, outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.comboTrigger('patchingFinished', ['fileCopyDone', 'gamePatchingDone', 'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation, patcher, 
-                            translator, mtimesManager, indir, patchpath, outdir)
+                            translator, mtimesManager, indir, patchpath, outdir, useBOM)
         
-    def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir):
+    def finaliseTranslation(self, patcher, translator, mtimesManager, indir, patchpath, outdir, useBOM):
         """Finalise the translation; write the patch and get mtimes"""
         self.outputcoms.send('finalisingPatch')
-        self.submit('patcher', writeTranslator, patcher, translator, self.inputcoms)
+        self.submit('patcher', writeTranslator, patcher, translator, useBOM, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish, patcher)

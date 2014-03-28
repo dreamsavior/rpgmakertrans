@@ -50,7 +50,7 @@ class GUIController(CoreProtocol):
         self.transDB = IDStore()
         self.currentState = UpdaterDict(self.enableUI)
         self.currentState.update({'gameloc': None, 'patchloc': None, 'transloc': None, 
-                                  'create': False, 'enabled': True})
+                                  'create': False, 'enabled': True, 'bom': False})
 
         self.headless = None
         
@@ -175,8 +175,9 @@ class GUIController(CoreProtocol):
         gamepath = self.gameDB.reverse[self.currentState['gameloc']]
         patchpath = self.patchDB.reverse[self.currentState['patchloc']]
         transpath = self.transDB.reverse[self.currentState['transloc']]
+        useBOM = self.currentState['bom']
         headless = self.runner.initialise(Headless, outputcoms=self.inputcoms)
-        headless.go(gamepath, patchpath, transpath)
+        headless.go(gamepath, patchpath, transpath, useBOM)
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
         

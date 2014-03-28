@@ -71,19 +71,25 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
         self.create = QtGui.QCheckBox('Create patch', self)
         self.create.setToolTip('When first starting a translation project,\n'
                                'select this to create the initial patch')
+        self.useBOM = QtGui.QCheckBox('Use UTF-8 BOM', self)
+        self.useBOM.setToolTip('Some editors will only recognise UTF-8 files\n'
+                               'with a BOM, although this will break other editors.\n'
+                               'Enabling this option will cause RPGMaker Trans files\n'
+                               'to have a UTF-8 BOM.')
         #self.inplace = QtGui.QCheckBox('Patch in place', self)
         #self.inplace.setToolTip('In-place patching is faster, but the\n'
         #                        'results can\'t be updated with either\n'
         #                        'new game data or a new translation\n'
         #                        'If you won\'t want to update the game\n'
         #                        'or the translation, select this.')
-        self.widgets = [self.create]#, self.inplace]
+        self.widgets = [self.create, self.useBOM]#, self.inplace]
         for x in self.widgets:
             hbox.addWidget(x)
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
         self.setLayout(vbox)
         self.create.toggled.connect(lambda: self.toggle('create', self.create.isChecked()))
+        self.useBOM.toggled.connect(lambda: self.toggle('bom', self.useBOM.isChecked()))
         #self.inplace.toggled.connect(lambda: self.toggle('inplace', self.inplace.isChecked()))
         
     def toggle(self, signal, val):

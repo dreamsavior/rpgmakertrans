@@ -45,10 +45,10 @@ class BasePatch(object, metaclass=PatchMeta):
     def categorisePatchFiles(self):
         raise Exception('This method must be overridden')
 
-    def writeTranslator(self, translator):
+    def writeTranslator(self, translator, encoding):
         if self.patchIsWriteable():
             data = translator.getPatchData()
-            self.writePatchData(data)
+            self.writePatchData(data, encoding)
         
     def makeTranslator(self, coms):
         data, mtime = self.loadPatchData()
@@ -71,7 +71,8 @@ def makeTranslator(patcher, coms):
     coms.send('trigger', 'translatorReady')
     return ret
     
-def writeTranslator(patcher, translator, coms):
-    patcher.writeTranslator(translator)
+def writeTranslator(patcher, translator, useBOM, coms):
+    encoding = 'utf-8-sig' if useBOM else 'utf-8'
+    patcher.writeTranslator(translator, encoding)
     coms.send('trigger', 'translatorWritten')
         
