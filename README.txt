@@ -15,6 +15,13 @@ Simply select the game directory, patch and target directory. If you are
 starting a translation, select the 'create patch' checkbox to create an empty
 patch which can then be translated.
 
+If you are translating, checking the "Use UTF-8 BOM" checkbox will cause
+all patch files to have a UTF-8 BOM. This is needed for some editors to
+recognise UTF-8 files. However, it will break other editors, and is
+specifically not recommended by the UTF-8 Standard. If you are patching
+a game, then this checkbox has no effect; RPGMaker Trans will recognise
+patches with and without the UTF-8 BOM.
+
 RPGMaker Trans will attempt to automatically select appropriately named
 patches and target directories. 
 
@@ -36,3 +43,10 @@ supported eventually.
 Will infringe copyright, so only do this with permission from the original
 creator. Otherwise, distribute the patch. Whilst this still technically
 infringes copyright, it is more 'acceptable' than the alternative.
+
+3) I get a "cannot get ZipImporter instance" error.
+
+Not a question, but due to bugs in cx_freeze (the component I use to turn
+Python scripts into an EXE), RPGMaker Trans cannot be run from a directory
+containing non-ASCII characters. Solution is to run RPGMaker Trans
+from a directory whose path only contains ASCII characters.

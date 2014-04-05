@@ -8,8 +8,8 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import datetime
 
-version = 2.02
-expiry = datetime.date(2015, 1, 1)
+version = 2.05
+expiry = datetime.date(2015, 4, 1)
 
 def versionCheck(coms):
     if expiry < datetime.date.today():
