@@ -83,9 +83,12 @@ class ZIPPatcherv2(ZIPPatcher):
         patchbits = [x for x in contents if x.startswith(self.root)]
         patchfiles = [x for x in patchbits if not any(x.endswith(sep) for sep in SEPERATORS)]
         self.patchdirs = [x for x in patchbits if x not in patchfiles]
-         
-        rootfiles = [x for x in patchfiles if 
-            all([y not in x.partition(self.root)[2] for y in SEPERATORS])]
+        
+        if self.root.strip():
+            rootfiles = [x for x in patchfiles if 
+                all([y not in x.partition(self.root)[2] for y in SEPERATORS])]
+        else:
+            rootfiles = [x for x in patchfiles if all(sep not in x for sep in SEPERATORS)]
         
         self.assetFiles = []
         self.patchDataFiles = []
