@@ -10,14 +10,16 @@ class ErrorMsg(QtGui.QDialog):
         self.textArea = QtGui.QPlainTextEdit()
         self.msg = ''
         self.textArea.setReadOnly(True)
-        button = QtGui.QPushButton('Copy to clipboard')
+        button = QtGui.QPushButton('Copy to clipboard and open Bug Reports page')
+        button2 = QtGui.QPushButton('Close RPGMaker Trans')
         vbox = QtGui.QVBoxLayout()
-        for x in (label, self.textArea, button):
+        for x in (label, self.textArea, button, button2):
             vbox.addWidget(x)
          
         self.setLayout(vbox)    
         self.setWindowTitle('RPGMaker Trans Error')
-        button.released.connect(lambda: clip.setText(self.msg))
+        button.released.connect(lambda: (clip.setText(self.msg), QtGui.QDesktopServices.openUrl('http://habisain.blogspot.co.uk/p/bug-reporting.html')))
+        button2.released.connect(lambda: self.done(0))
         
     def setMsg(self, msg):
         self.textArea.setPlainText(msg)
@@ -30,3 +32,6 @@ def errorMsg(msg):
     dlg.setMsg(msg)
     dlg.exec_()
     dlg.destroy()
+
+if __name__ == '__main__':
+    test = errorMsg('This is a test in place of an actual traceback.')
