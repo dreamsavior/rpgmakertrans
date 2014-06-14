@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rpgmakertransv2</name>
+	<name>rpgmakertrans</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -16,7 +16,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1384437096437</id>
+			<id>0</id>
 			<name></name>
 			<type>26</type>
 			<matcher>
