@@ -16,11 +16,13 @@ metaclasses etc, because I'd be able to put in additional hooks to get things
 like arguments passed into the API.
 """
 
-import traceback, functools
+import traceback
+import functools
 import sys
 import io
 import collections
 errorOut = None
+
 
 def setErrorOut(comsout):
     global errorOut
@@ -28,7 +30,8 @@ def setErrorOut(comsout):
     if errorOut is None:
         sys.stderr = sys.__stderr__
     else:
-        sys.stderr = io.StringIO() 
+        sys.stderr = io.StringIO()
+
 
 def errorWrap(func):
     @functools.wraps(func)
@@ -42,10 +45,12 @@ def errorWrap(func):
             else:
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.flush()
-            #raise
+            # raise
     return wrap
 
+
 class ErrorClass(object):
+
     def __init__(self, *args, **kwargs):
         super(ErrorClass, self).__init__(*args, **kwargs)
         for x in type(self).__dict__:
@@ -53,22 +58,21 @@ class ErrorClass(object):
             if isinstance(f, collections.Callable):
                 setattr(self, x, errorWrap(f))
 #        print self.__init__
-        
+
+
 class ErrorMeta(type):
-    def __init__(cls, a,b,c):
-        super(ErrorMeta, cls).__init__(a,b,c)
+
+    def __init__(cls, a, b, c):
+        super(ErrorMeta, cls).__init__(a, b, c)
         for x in cls.__dict__:
             f = getattr(cls, x)
             if isinstance(f, collections.Callable):
-#                print f
+                #                print f
                 setattr(cls, x, errorWrap(f))
-@errorWrap  
+
+
+@errorWrap
 def testExcept():
     print('called')
     raise Exception('Something went wrong, natch')
     print('hmm')
-    
-    
-
-    
-            

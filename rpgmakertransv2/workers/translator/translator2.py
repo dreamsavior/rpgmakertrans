@@ -15,7 +15,7 @@ from .translatorbase import Translator
 from collections import defaultdict
 from ...errorhook import ErrorMeta
 
-###########!######! TRANSLATED TEXT #############!###!
+# !######! TRANSLATED TEXT #############!###!
 shopMenu = '49 char limit'
 battleStuff = '49 char limit'
 shortLimit = '2 char limt'
@@ -87,7 +87,7 @@ adviceDict['stringData/Exit game message'] = menuTextLine
 adviceDict['stringData/Exit to windows'] = mainMenuThing
 adviceDict['stringData/Experience (short)'] = shortLimit
 adviceDict['stringData/Experience received'] = battleStuff
-adviceDict['stringData/File name'] = '?'+menuTextLine
+adviceDict['stringData/File name'] = '?' + menuTextLine
 adviceDict['stringData/Gathering energy'] = battleStuff
 adviceDict['stringData/General yes'] = '4 char limit'
 adviceDict['stringData/General no'] = '4 char limit'
@@ -170,9 +170,155 @@ compatRewrite = {}
 compatRewrite['itemAttr/ItemDescription'] = 'itemAttr/Description'
 compatRewrite['skillAttr/SkillDescription'] = 'skillAttr/Description'
 
+
 class Translator2kv2f(object, metaclass=ErrorMeta):
+
     def __init__(self, coms, incodec='cp932', outcodec='cp932'):
-        d = {30441: [123, 107, 49, 41, 91, 51, 115, 114, 123, 41, 100, 97, 125, 50, 112, 97, 102, 93, 36, 100, 125, 91, 93, 115, 125, 51, 125], 30123: [48, 49, 52, 124, 35, 80, 35, 92, 53, 35, 95, 124, 95, 48, 124, 112, 124, 49, 35], 30001: [83, 84, 73, 66, 69, 71, 79, 69, 83, 80, 65, 76, 65, 70, 73, 83, 83, 73, 83, 83, 76, 76, 75, 80], 38102: [112, 107, 97, 97, 112, 115, 36, 115, 111, 107, 115, 97, 97, 50, 111, 36, 52, 100, 112, 48, 106, 111, 105, 100, 119], 23994: [124, 117, 105, 124, 124, 47, 92, 94, 38, 36, 124, 52, 53, 92, 92, 124, 94, 47, 53, 38, 124, 45], 42911: [65, 84, 82, 77, 65, 76, 78, 64, 75, 75, 73, 126, 126, 69, 64, 80, 76, 82, 82, 83, 71]}
+        d = {
+            30441: [
+                123,
+                107,
+                49,
+                41,
+                91,
+                51,
+                115,
+                114,
+                123,
+                41,
+                100,
+                97,
+                125,
+                50,
+                112,
+                97,
+                102,
+                93,
+                36,
+                100,
+                125,
+                91,
+                93,
+                115,
+                125,
+                51,
+                125],
+            30123: [
+                48,
+                49,
+                52,
+                124,
+                35,
+                80,
+                35,
+                92,
+                53,
+                35,
+                95,
+                124,
+                95,
+                48,
+                124,
+                112,
+                124,
+                49,
+                35],
+            30001: [
+                83,
+                84,
+                73,
+                66,
+                69,
+                71,
+                79,
+                69,
+                83,
+                80,
+                65,
+                76,
+                65,
+                70,
+                73,
+                83,
+                83,
+                73,
+                83,
+                83,
+                76,
+                76,
+                75,
+                80],
+            38102: [
+                112,
+                107,
+                97,
+                97,
+                112,
+                115,
+                36,
+                115,
+                111,
+                107,
+                115,
+                97,
+                97,
+                50,
+                111,
+                36,
+                52,
+                100,
+                112,
+                48,
+                106,
+                111,
+                105,
+                100,
+                119],
+            23994: [
+                124,
+                117,
+                105,
+                124,
+                124,
+                47,
+                92,
+                94,
+                38,
+                36,
+                124,
+                52,
+                53,
+                92,
+                92,
+                124,
+                94,
+                47,
+                53,
+                38,
+                124,
+                45],
+            42911: [
+                65,
+                84,
+                82,
+                77,
+                65,
+                76,
+                78,
+                64,
+                75,
+                75,
+                73,
+                126,
+                126,
+                69,
+                64,
+                80,
+                76,
+                82,
+                82,
+                83,
+                71]}
         self.keys = []
         self.coms = coms
         for k in d:
@@ -190,17 +336,20 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
         self.stringContexts = {}
         self.incodec = incodec
         self.outcodec = outcodec
-        
+
     def __str__(self):
-        return '%s containing %i entries' % (type(self).__name__, len(self.stringTrans)) 
-        
+        return '%s containing %i entries' % (
+            type(self).__name__, len(self.stringTrans))
+
     def translateString(self, string, context):
-        if string in self.keys: 
+        if string in self.keys:
             raise Exception('Found kill switch; not translating this game')
         try:
             ustring = string.decode(self.incodec)
         except UnicodeError:
-            self.coms.send('nonfatalError', 'Could not decode %s using %s' % (string, self.incodec))
+            self.coms.send(
+                'nonfatalError', 'Could not decode %s using %s' %
+                (string, self.incodec))
             return string
         if isinstance(context, tuple):
             context = context[:2]
@@ -212,12 +361,16 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
                     if 'name' in search:
                         contextStrL.append(search['name'])
                 else:
-                    self.coms.send('nonfatalError', 'Unrecognised context: %s, string: %s' % (str(context), ustring))
+                    self.coms.send(
+                        'nonfatalError', 'Unrecognised context: %s, string: %s' %
+                        (str(context), ustring))
             contextStr = '/'.join(contextStrL)
         elif isinstance(context, str):
             contextStr = context
         else:
-            self.coms.send('fatalError', 'Opt-out detected, stopping translation')
+            self.coms.send(
+                'fatalError',
+                'Opt-out detected, stopping translation')
         if contextStr in compatRewrite:
             contextStr = compatRewrite[contextStr]
         if (ustring, contextStr) not in self.strings:
@@ -228,49 +381,59 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
             try:
                 return translation.encode(self.outcodec)
             except UnicodeError:
-                self.coms.send('nonfatalError', 'Could not encode %s using %s' % (translation, self.outcodec))
+                self.coms.send(
+                    'nonfatalError', 'Could not encode %s using %s' %
+                    (translation, self.outcodec))
                 return string
         else:
             return string
-    
+
     def escapeString(self, string):
         ret = []
         for line in string.split('\n'):
-            if line.startswith('#'): ret.append('\\' + line)
-            else: ret.append(line)
+            if line.startswith('#'):
+                ret.append('\\' + line)
+            else:
+                ret.append(line)
         return '\n'.join(ret)
-        
+
     def dumpTranslatable(self, string, context):
         ret = []
         ret.append('# TEXT STRING')
-        if (string, context) not in self.stringTrans: ret.append('# UNTRANSLATED')
+        if (string, context) not in self.stringTrans:
+            ret.append('# UNTRANSLATED')
         ret.append('# CONTEXT : ' + str(context))
         if adviceDict.get(context, ''):
             ret.append('# ADVICE : ' + adviceDict[context])
         ret.append(self.escapeString(string))
         ret.append('# TRANSLATION ')
-        ret.append(self.escapeString(self.stringTrans.get((string, context), '')))
+        ret.append(
+            self.escapeString(
+                self.stringTrans.get(
+                    (string, context), '')))
         ret.append('# END STRING\n')
         return '\n'.join(ret)
-        
+
     def dumpTranslatables(self, contexts=None):
         ret = []
         for x, c in self.stringOrder:
             if not contexts or c.startswith(contexts):
                 ret.append(self.dumpTranslatable(x, c))
         if contexts is None:
-            unused = sorted([x for x in self.stringTrans if x not in self.stringOrder])
+            unused = sorted(
+                [x for x in self.stringTrans if x not in self.stringOrder])
         else:
-            unused = sorted([x for x in self.stringTrans if x not in self.stringOrder if x[1].startswith(contexts)])
+            unused = sorted([x for x in self.stringTrans if x not in self.stringOrder if x[
+                            1].startswith(contexts)])
         if unused:
             ret.append('# UNUSED TRANSLATABLES')
             for x, c in unused:
-            #    if not contexts or c.startswith(contexts):
+                #    if not contexts or c.startswith(contexts):
                 ret.append(self.dumpTranslatable(x, c))
         if ret:
             ret = ['# RPGMAKER TRANS PATCH FILE VERSION 2.0'] + ret
-        return '\n'.join(ret)#.encode('utf-8')
-                
+        return '\n'.join(ret)  # .encode('utf-8')
+
     def loadTranslatable(self, string):
         lines = string.split('\n')
         raw = []
@@ -291,23 +454,28 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
         originalString = '\n'.join(raw)
         if translationString.strip() != '':
             self.stringTrans[(originalString, context)] = translationString
-    
+
     def loadTranslatables(self, string):
-        if not string: return
+        if not string:
+            return
         string = string.replace('\r', '')
-        if string.partition('\n')[0].upper().strip() != '# RPGMAKER TRANS PATCH FILE VERSION 2.0':
+        if string.partition(
+                '\n')[0].upper().strip() != '# RPGMAKER TRANS PATCH FILE VERSION 2.0':
             raise ValueError('Patch file not recognised')
         brk = False
         while not brk:
             p1 = string.find('\n# TEXT STRING')
             p2 = string.find('\n# END STRING')
-            if p1 >= p2: brk = True
+            if p1 >= p2:
+                brk = True
             else:
                 head, t, t2 = string.partition('\n# TEXT STRING')
                 translation, t, string = t2.partition('\n# END STRING')
                 self.loadTranslatable(translation.strip())
-                
+
+
 class Translator2kv2(Translator):
+
     def __init__(self, data, mtime, coms):
         super(Translator2kv2, self).__init__(mtime)
         self.translators = defaultdict(lambda: Translator2kv2f(coms))
@@ -316,12 +484,12 @@ class Translator2kv2(Translator):
             if uname.startswith('RPG_RT'):
                 uname = 'RPG_RT'
             self.translators[uname].loadTranslatables(data[name])
-            
+
     def translate(self, string, context):
         name, ocontext = context
         name = name.upper()
         return self.translators[name].translateString(string, ocontext)
-    
+
     def getPatchData(self):
         ret = {}
         for name, translator in list(self.translators.items()):
@@ -329,14 +497,14 @@ class Translator2kv2(Translator):
                 for subsection in rtsubsections:
                     secname = (name + '_' + subsection).upper()
                     translations = translator.dumpTranslatables(
-                                    contexts=rtsubsections[subsection])
+                        contexts=rtsubsections[subsection])
                     if translations:
-                        ret[secname] = translations    
+                        ret[secname] = translations
             else:
                 translations = translator.dumpTranslatables()
                 if translations:
-                    ret[name.capitalize()] = translations 
+                    ret[name.capitalize()] = translations
         return ret
-    
+
 if __name__ == '__main__':
     pass

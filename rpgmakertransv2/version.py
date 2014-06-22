@@ -16,6 +16,7 @@ import datetime
 version = 2.05
 expiry = datetime.date(2015, 4, 1)
 
+
 def versionCheck(coms):
     if expiry < datetime.date.today():
         coms.send('expired')
@@ -25,15 +26,17 @@ def versionCheck(coms):
         blogData = blogPage.read()
         blogPage.close()
         blogSoup = BeautifulSoup(blogData)
-        tags = blogSoup.findAll(attrs = {'class': 'rpgmaker-trans-latest-version-tag'})
-        if len(tags) > 1: raise Exception
+        tags = blogSoup.findAll(
+            attrs={'class': 'rpgmaker-trans-latest-version-tag'})
+        if len(tags) > 1:
+            raise Exception
         tag = tags[0]
         webver = float(tag['versiondata'])
         if webver > version:
             coms.send('newVerAvailable', webver)
     except:
         pass
-    
+
 if __name__ == '__main__':
     from .controllers.sender import Sender
     versionCheck(Sender())

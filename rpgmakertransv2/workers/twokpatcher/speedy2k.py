@@ -20,39 +20,46 @@ from ..fileops import WinOpen
 # Convert to rPython->cPython extension module - some variables overloaded
 #              but I don't think there's anything major that needs changing.
 
+
 class BytesOrNoneList(list):
+
     def append(self, item):
         if isinstance(item, bytes) or item is None:
             return super().append(item)
         else:
             raise Exception('Appended something dodgy')
-        
-    
+
     def extend(self, ls):
         for x in ls:
             self.append(x)
-            
+
+
 class RPGFile(ErrorClass):
+
     def __init__(self, name, string, schemas, translator, *args, **kwargs):
         super(RPGFile, self).__init__(*args, **kwargs)
         self.name = name
         self.string = string
-        self.intstring = unpack('B'*len(string), self.string)
+        self.intstring = unpack('B' * len(string), self.string)
         self.index = 0
-        self.output = BytesOrNoneList() #[]
+        self.output = BytesOrNoneList()  # []
         self.translator = translator
-        
-        self.schemaToFunc = {'script': self.parseScript, 'blocks': self.parseBlocks,
-                             'stringData': self.parseStrings}
+
+        self.schemaToFunc = {
+            'script': self.parseScript,
+            'blocks': self.parseBlocks,
+            'stringData': self.parseStrings}
         global containerTypes
         for containerType in containerTypes:
             self.schemaToFunc[containerType] = self.parseContainer
         self.schemas = schemas
         self.packers = {}
-        self.contextToTranslator = {'Message': self.translateMessage,
-            'Choice': self.translateChoice, 'SetStringVars': self.translateStringData,
+        self.contextToTranslator = {
+            'Message': self.translateMessage,
+            'Choice': self.translateChoice,
+            'SetStringVars': self.translateStringData,
             'ChoiceStarter': self.translateChoiceStarter}
-        
+
     def translate(self, string, context):
         """Wrapper function to convert old calls into new global translator calls"""
         retries = 100
@@ -63,19 +70,19 @@ class RPGFile(ErrorClass):
             except TypeError:
                 retries -= 1
         if r is None:
-            #TODO: Nonfatal error
+            # TODO: Nonfatal error
             r = string
         return r
-            
+
     def outputfile(self, fn):
         with WinOpen(fn, 'wb') as f:
             f.write(b''.join(self.output))
-            
+
     def getPacker(self, n):
         if n not in self.packers:
-            self.packers[n] = Struct('B'*n)
+            self.packers[n] = Struct('B' * n)
         return self.packers[n]
-        
+
     def rpgintw(self, n):
         result = []
         result.append(n & 127)
@@ -85,7 +92,7 @@ class RPGFile(ErrorClass):
             n = n >> 7
         result.reverse()
         return [self.getPacker(len(result)).pack(*result)]
-        
+
     def rpgintsw(self, ints):
         result = []
         for n in [len(ints)] + ints:
@@ -108,7 +115,7 @@ class RPGFile(ErrorClass):
             return True
         else:
             return False
-        
+
     def rpgint(self):
         # returns: rpgint from current position
         done = False
@@ -121,30 +128,31 @@ class RPGFile(ErrorClass):
                 done = True
             result += newint & 127
         return result
-        
+
     def bytesrw(self):
         # returns only the indices of a bytes thing, for later copying
         start = self.index
         length = self.rpgint()
         self.index += length
         self.output.append(self.string[start:self.index])
-        #if '.png' in self.output[-1]:
+        # if '.png' in self.output[-1]:
         #    print 'FOUND IMAGE'
-        
+
     def blindbytes(self):
         # advances by a bytes object, returning nothing
         length = self.rpgint()
         self.index += length
-                
+
     def blindrpgints(self):
-        # reads an rpgint, then advances by that many rpgints, returning nothings
+        # reads an rpgint, then advances by that many rpgints, returning
+        # nothings
         n = self.rpgint()
         while n:
             newint = self.intstring[self.index]
             self.index += 1
             if not newint & 128:
                 n -= 1
-                
+
     def blindrpgintsrw(self):
         start = self.index
         n = self.rpgint()
@@ -154,7 +162,7 @@ class RPGFile(ErrorClass):
             if not newint & 128:
                 n -= 1
         self.output.append(self.string[start:self.index])
-        
+
     def rpgints(self):
         # read an rpgint, return it and return that many following rpgints
         n = self.rpgint()
@@ -168,9 +176,10 @@ class RPGFile(ErrorClass):
                 ret.append(newint)
                 newint = 0
         return ret
-            
+
     def rpgintsAsRaw(self):
-        # reads an rpgint, and then returns it and that many rpgints in raw form
+        # reads an rpgint, and then returns it and that many rpgints in raw
+        # form
         start = self.index
         n = self.rpgint()
         while n:
@@ -179,30 +188,31 @@ class RPGFile(ErrorClass):
             if not newint & 128:
                 n -= 1
         return self.string[start:self.index]
-                
+
     def bytes(self):
         # returns: bytes from current position
         # Assumes bytes are prefixed with an rpgint length
         length = self.rpgint()
-        ret = self.string[self.index:self.index+length]
+        ret = self.string[self.index:self.index + length]
         self.index += length
         return ret
-     
+
     def bytesw(self, bytes):
         self.output.extend(self.rpgintw(len(bytes)))
         self.output.append(bytes)
-        
+
     def parseStrings(self, schema, currentLen, contextInfo=0):
         defaultStrings = schema['defaultStringData']
         cntAttribID = self.rpgint()
         while cntAttribID and self.index < currentLen:
             self.output.extend(self.rpgintw(cntAttribID))
             string = self.bytes()
-            transString = self.translate(string, 'stringData/' + defaultStrings[cntAttribID])
+            transString = self.translate(string,
+                'stringData/' + defaultStrings[cntAttribID])
             self.bytesw(transString)
             cntAttribID = self.rpgint()
         self.output.append(b'\x00')
-        
+
     def parseContainer(self, schema, currentLen, contextInfo=0):
         cntNoOfItems = self.rpgint()
         scriptLenPos = None
@@ -221,7 +231,7 @@ class RPGFile(ErrorClass):
                         contextData = (contextInfo, cntAttribID, cntItemID)
                         transString = self.translate(string, contextData)
                         self.bytesw(transString)
-                            
+
                     elif newSchemaType == 'bytes':
                         self.bytesrw()
                     elif newSchemaType == 'scriptLength':
@@ -234,14 +244,21 @@ class RPGFile(ErrorClass):
                         self.output.append(None)
                         startIndex = len(self.output)
                         self.parseScript(newSchemaDict, end)
-                        length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
+                        length = sum(
+                            (len(
+                                self.output[x]) for x in range(
+                                startIndex, len(
+                                    self.output))))
                         lengthRaw = b''.join(self.rpgintw(length))
-                        self.output[startIndex-1] = lengthRaw
+                        self.output[startIndex - 1] = lengthRaw
                         if scriptLenPos is not None:
-                            self.output[scriptLenPos] = b''.join(self.rpgintw(len(lengthRaw))) + lengthRaw
+                            self.output[scriptLenPos] = b''.join(
+                                self.rpgintw(
+                                    len(lengthRaw))) + lengthRaw
                             scriptLenPos = None
                         else:
-                            raise Exception('Script without preceding script length')
+                            raise Exception(
+                                'Script without preceding script length')
                         if self.index != end:
                             print('weirdness', newSchemaType)
                     elif newSchemaType in self.schemaToFunc:
@@ -250,8 +267,15 @@ class RPGFile(ErrorClass):
                         self.output.append(None)
                         startIndex = len(self.output)
                         self.schemaToFunc[newSchemaType](newSchemaDict, end)
-                        length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
-                        self.output[startIndex-1] = b''.join(self.rpgintw(length))
+                        length = sum(
+                            (len(
+                                self.output[x]) for x in range(
+                                startIndex, len(
+                                    self.output))))
+                        self.output[
+                            startIndex -
+                            1] = b''.join(
+                            self.rpgintw(length))
                         if self.index != end:
                             print('weirdness', newSchemaType)
                     else:
@@ -261,16 +285,18 @@ class RPGFile(ErrorClass):
                     self.bytesrw()
                 cntAttribID = self.rpgint()
                 self.output.extend(self.rpgintw(cntAttribID))
-                
-            cntNoOfItems -= 1 
-                
-    def translateMessage(self, cmdList, schema, depth, translator, collStart, collEnd):
+
+            cntNoOfItems -= 1
+
+    def translateMessage(self, cmdList, schema, depth, translator,
+                        collStart, collEnd):
         text = b'\n'.join((x[2] for x in cmdList))
-        
+
         transText = self.translate(text, 'Dialogue/Message/FaceUnknown')
         if transText != text:
             x = 0
-            message, messageNextLine = schema['message'], schema['messageNextLine']
+            message, messageNextLine = schema[
+                'message'], schema['messageNextLine']
             for line in transText.split(b'\n'):
                 opcode = message if x == 0 else messageNextLine
                 x = (x + 1) % 4
@@ -281,8 +307,9 @@ class RPGFile(ErrorClass):
                 self.output.append(b'\x00')
         else:
             self.output.append(self.string[collStart:collEnd])
-    
-    def translateChoice(self, cmdList, schema, depth, translator, collStart, collEnd):
+
+    def translateChoice(self, cmdList, schema, depth, translator,
+                        collStart, collEnd):
         cmd = cmdList[0]
         transText = self.translate(cmd[2], 'Dialogue/Choice')
         if transText != cmd[2]:
@@ -296,8 +323,9 @@ class RPGFile(ErrorClass):
             self.output.extend(self.rpgintsw(args))
         else:
             self.output.append(self.string[collStart:collEnd])
-            
-    def translateChoiceStarter(self, cmdList, schema, depth, translator, collStart, collEnd):
+
+    def translateChoiceStarter(self, cmdList, schema, depth, translator,
+                               collStart, collEnd):
         translated = False
         textLS = []
         for opc, args, line in cmdList:
@@ -318,8 +346,9 @@ class RPGFile(ErrorClass):
                 self.output.extend(self.rpgintsw(args))
         else:
             self.output.append(self.string[collStart:collEnd])
-            
-    def translateStringData(self, cmdList, schema, depth, translator, collStart, collEnd):
+
+    def translateStringData(self, cmdList, schema, depth, translator,
+                            collStart, collEnd):
         textLS = []
         changeName, changeClass = schema['changename'], schema['changeclass']
         for opc, args, string in cmdList:
@@ -357,7 +386,7 @@ class RPGFile(ErrorClass):
                     self.output.extend(self.rpgintsw(args))
         else:
             self.output.append(self.string[collStart:collEnd])
-        
+
     def parseScript(self, schema, currentLen, contextInfo=0):
         scriptList = []
         currentDepth = 0
@@ -366,21 +395,29 @@ class RPGFile(ErrorClass):
         currentCollection = []
         currentCollectionType = None
         collStart = 0
-        faceOn = False # Need to work out how to get this variable correctly!
-                       # Probably on the lines of: if face opcode has a string, it's on, else it's off
+        faceOn = False  # Need to work out how to get this variable correctly!
+        # Probably on the lines of: if face opcode has a string, it's on, else
+        # it's off
         startCollecting = schema['startCollects']
         opcode = -1
-        
+
         while self.index < currentLen and opcode != 0:
             start = self.index
             opcode = self.rpgint()
             newDepth = self.rpgint()
-            if currentCollectionType is not None and (opcode not in collecting or newDepth != currentDepth) :
+            if currentCollectionType is not None and (
+                    opcode not in collecting or newDepth != currentDepth):
                 transFunc = self.contextToTranslator[currentCollectionType]
-                transFunc(currentCollection, schema, currentDepth, None, collStart, start)
+                transFunc(
+                    currentCollection,
+                    schema,
+                    currentDepth,
+                    None,
+                    collStart,
+                    start)
                 currentCollectionType = None
                 currentCollection = []
-                
+
             if currentCollectionType is not None and opcode in collecting:
                 stringVar = self.bytes()
                 numbers = self.rpgints()
@@ -396,9 +433,9 @@ class RPGFile(ErrorClass):
                 self.output.extend(self.rpgintw(newDepth))
                 self.bytesrw()
                 self.blindrpgintsrw()
-            
+
             currentDepth = newDepth
-            
+
     def parse(self):
         self.index = 0
         matched = False
@@ -412,36 +449,43 @@ class RPGFile(ErrorClass):
                     Exception('Not sure what to do')
         if not matched:
             raise Exception('Could not parse file: no matching schema')
-        
+
     def parseBlocks(self, schema, currentLen, contextInfo=0):
         global containerTypes
         retDict = {}
         while self.index < currentLen:
             id = self.rpgint()
-            self.output.extend(self.rpgintw(id)) # convert to use raw copy
+            self.output.extend(self.rpgintw(id))  # convert to use raw copy
             if id in schema:
                 length = self.rpgint()
                 end = self.index + length
-                self.output.append(None)                
+                self.output.append(None)
                 startIndex = len(self.output)
-                
+
                 newSchemaType, newSchemaDict = schema[id]
                 self.schemaToFunc[newSchemaType](newSchemaDict, end, id)
-                length = sum((len(self.output[x]) for x in range(startIndex, len(self.output))))
+                length = sum(
+                    (len(
+                        self.output[x]) for x in range(
+                        startIndex, len(
+                            self.output))))
 
-                self.output[startIndex-1] = b''.join(self.rpgintw(length))
-                
+                self.output[startIndex - 1] = b''.join(self.rpgintw(length))
+
                 if end != self.index:
                     print(hex(id), 'weirdness', newSchemaType)
                 self.index = end
             elif id != 0:
-                self.bytesrw()        
+                self.bytesrw()
+
 
 class TwoKRPGFile(RPGFile):
+
     def __init__(self, name, infn, translator):
         with WinOpen(infn, 'rb') as f:
             x = f.read()
         super(TwoKRPGFile, self).__init__(name, x, schemas, translator)
+
 
 def hexdiff(str, other):
     import binascii
@@ -451,11 +495,8 @@ def hexdiff(str, other):
         if str[x] != other[x]:
             breaks += 1
             print('break', breaks, 'pos', x)
-            print(binascii.hexlify(str[x-10:x+10]))
-            print(binascii.hexlify(other[x-10:x+10]))
-            x+=10
+            print(binascii.hexlify(str[x - 10:x + 10]))
+            print(binascii.hexlify(other[x - 10:x + 10]))
+            x += 10
         else:
-            x+=1 
-            
-
-    
+            x += 1
