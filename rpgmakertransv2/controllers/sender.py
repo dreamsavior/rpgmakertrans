@@ -1,8 +1,13 @@
-'''
-Created on 21 Aug 2013
+"""
+sender
+******
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Sender is a simple multiprocessing method of sending signals
+"""
 
 from multiprocessing.managers import BaseManager
 

@@ -1,8 +1,13 @@
-'''
-Created on 3 Feb 2013
+"""
+qtui
+****
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+The implementation of the QT user interface.
+"""
 
 import os
 from PySide import QtGui, QtCore

@@ -1,8 +1,17 @@
-'''
-Created on 7 Oct 2013
+"""
+guicontroller
+*************
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+The controller for the GUI, implementing the higher level functions that
+the rest of the program should interact with.
+
+TODO: This is somewhat tied to qtui at the moment. Ideally, it should be
+configurable, or in the qtui module.
+"""
 import os
 
 from ..controllers.coreprotocol import CoreRunner, CoreProtocol

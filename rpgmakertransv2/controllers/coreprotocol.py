@@ -1,8 +1,15 @@
-'''
-Created on 20 Sep 2013
+"""
+coreprotocol
+************
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Defines CoreRunner and CoreProtocol, which take care of a lot of the hard
+work of getting multiprocessing to play nicely with error messages/tracebacks,
+and passing/taking action on messages between processes.
+"""
 
 import multiprocessing, time, signal
 from collections import defaultdict

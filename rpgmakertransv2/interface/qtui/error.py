@@ -1,5 +1,16 @@
-from PySide import QtGui, QtCore
-import sys
+"""
+error
+*****
+
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A dialog box/handler to display errors which caused RPGMaker Trans
+to crash.
+"""
+
+from PySide import QtGui
 
 class ErrorMsg(QtGui.QDialog):
     def __init__(self, clip):

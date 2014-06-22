@@ -1,12 +1,14 @@
 """
 headless
-========
+********
 
-:author: habisain
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
 
 The Headless implementation is a completely blind patching engine, which
 communicates progress/errors etc to an interface, and coordinates the
-worker processes.
+worker processes. 
 
 Obviously, the primary use for Headless is paired with an interface.
 """

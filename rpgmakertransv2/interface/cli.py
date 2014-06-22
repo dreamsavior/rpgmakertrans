@@ -1,8 +1,14 @@
-'''
-Created on 3 Oct 2013
+"""
+cli
+***
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A CLI for RPGMaker Trans. Unfortunately, due to Windows being Windows, 
+this does not yet work on Windows.  
+"""
 
 
 import sys

@@ -1,8 +1,13 @@
-'''
-Created on 6 Oct 2013
+"""
+logic
+*****
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+An implementation of the logic for the UI.
+"""
 
 
 if __name__ == '__main__':
