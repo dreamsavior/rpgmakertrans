@@ -4,7 +4,7 @@ Created on 3 Feb 2013
 @author: habisain
 '''
 
-import sys
+import os
 from PySide import QtGui, QtCore
 from ...errorhook import ErrorClass, ErrorMeta
 from ...version import version
@@ -76,13 +76,7 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
                                'with a BOM, although this will break other editors.\n'
                                'Enabling this option will cause RPGMaker Trans files\n'
                                'to have a UTF-8 BOM.')
-        #self.inplace = QtGui.QCheckBox('Patch in place', self)
-        #self.inplace.setToolTip('In-place patching is faster, but the\n'
-        #                        'results can\'t be updated with either\n'
-        #                        'new game data or a new translation\n'
-        #                        'If you won\'t want to update the game\n'
-        #                        'or the translation, select this.')
-        self.widgets = [self.create, self.useBOM]#, self.inplace]
+        self.widgets = [self.create, self.useBOM]
         for x in self.widgets:
             hbox.addWidget(x)
         vbox = QtGui.QVBoxLayout()
@@ -90,7 +84,6 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
         self.setLayout(vbox)
         self.create.toggled.connect(lambda: self.toggle('create', self.create.isChecked()))
         self.useBOM.toggled.connect(lambda: self.toggle('bom', self.useBOM.isChecked()))
-        #self.inplace.toggled.connect(lambda: self.toggle('inplace', self.inplace.isChecked()))
         
     def toggle(self, signal, val):
         self.outputComs.send('optionChanged', signal, val)
@@ -125,6 +118,8 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
+        iconimagefn = os.path.join(os.path.split(__file__)[0], 'rpgtranslogo.svg')
+        self.setWindowIcon(QtGui.QIcon(iconimagefn))
         self.setMinimumHeight(height)
         self.setMaximumHeight(height)
         self.setMinimumWidth(width)

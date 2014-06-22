@@ -4,13 +4,14 @@ Created on 6 Oct 2013
 @author: habisain
 '''
 
+
 if __name__ == '__main__':
     import sys
     sys.path.append('..')
 
 from ...controllers.coreprotocol import CoreProtocol
 from .ui import MainWindow, Timer
-from PySide import QtGui, QtCore
+from PySide import QtGui
 
 class QTLogic(CoreProtocol):
     def __init__(self, *args, **kwargs):
