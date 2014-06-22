@@ -1,6 +1,16 @@
-## BEGIN INLINE BLOCK
+"""
+speedy2kconstants
+*****************
+
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Various maps which describe translations between RPG2k opcodes and
+human readable strings.
+"""
+
 from .nameDict import names, opcodes, stringDataDict
-## END INLINE BLOCK
 
 blockTypes = {# LDB File blocks
               'Hero': 11, 'Skill': 12, 'Item': 13, 'Monster': 14, 

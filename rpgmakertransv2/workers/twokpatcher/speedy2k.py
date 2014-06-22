@@ -1,3 +1,15 @@
+"""
+speedy2k
+********
+
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+The second version of the 2k patching engine, which has the property
+of being much faster than the first version.
+"""
+
 import os.path
 from struct import unpack, Struct
 from .speedy2kconstants import schemas, containerTypes

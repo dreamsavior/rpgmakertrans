@@ -1,8 +1,14 @@
-'''
-Created on 8 Oct 2013
+"""
+sniffers
+********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Provides sniffers, which are used by the API to determine the types
+of various things. 
+"""
 
 import os.path, itertools
 from .fileops import (isdir, listdir, isfile, pathexists)

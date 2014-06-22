@@ -1,8 +1,14 @@
-'''
-Created on 3 Oct 2013
+"""
+mtimesmanager
+*************
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A multiprocess capable handler for the mtimes file, which is used
+to try and not redo everything with every single patch.
+"""
 from ..errorhook import errorWrap
 import os.path
 import pickle

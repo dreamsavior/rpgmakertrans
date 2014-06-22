@@ -1,4 +1,13 @@
+"""
+speedy2kaapi
+************
 
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+The API that RPGMaker Trans uses to perform patching on a 2k game.
+"""
 
 import os
 

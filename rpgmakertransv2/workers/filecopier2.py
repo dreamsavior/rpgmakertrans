@@ -1,8 +1,14 @@
-'''
-Created on 3 Sep 2013
+"""
+filecopier2
+***********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A file copier, to be used whenever it is necessary to copy a filtered
+list of files from one directory to another. Supports progress bars etc.
+"""
 
 
 import os.path, shutil

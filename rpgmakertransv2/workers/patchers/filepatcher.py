@@ -1,8 +1,13 @@
-'''
-Created on 18 Apr 2013
+"""
+filepatcher
+***********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Provides a patcher for a patch contained in a directory.
+"""
 
 import os.path
 from .basepatcher import BasePatch

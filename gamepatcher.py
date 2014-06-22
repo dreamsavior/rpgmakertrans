@@ -1,9 +1,13 @@
-'''
-Created on 30 Aug 2013
+"""
+gamepatcher
+***********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
 
+TODO: Not entirely sure this is actually used anywhere. Check.
+"""
 import multiprocessing
 from errorhook import ErrorClass
 

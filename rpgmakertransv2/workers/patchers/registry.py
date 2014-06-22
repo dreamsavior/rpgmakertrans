@@ -1,8 +1,17 @@
-'''
-Created on 5 Oct 2013
+"""
+registry
+********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Provides a repository for sniffer functions which can
+inform which type of backend to use.
+
+TODO: The subtype stuff contains stuff which should really be
+handled by the UI (i.e the ][ mark)
+"""
 import os.path
 from ..sniffers import sniffer, sniff, SniffedType
 

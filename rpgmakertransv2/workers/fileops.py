@@ -1,9 +1,15 @@
-'''
+"""
 fileops
+*******
 
-Abstraction of file manipulation functions that deals with
-accursed Windows long paths.
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Mostly legacy; this was a part of old attempts to get around Python2s problems
+with long path names. Redundant since port to Python3, but haven't fixed other
+modules to not use these functions.
+"""
 
 import os.path
 import shutil

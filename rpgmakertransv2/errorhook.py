@@ -1,8 +1,20 @@
-'''
-Created on 3 Feb 2013
+"""
+errorhook
+*********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Various tools to assist getting an error message with traceback string through
+multiprocessing. This is problematic because normally Python does not give
+this.
+
+TODO: Test if it is sufficient to just use setErrorOut and errorWrap on the API
+entry. If it is, this would be more beneficial than using the stuff like
+metaclasses etc, because I'd be able to put in additional hooks to get things
+like arguments passed into the API.
+"""
 
 import traceback, functools
 import sys

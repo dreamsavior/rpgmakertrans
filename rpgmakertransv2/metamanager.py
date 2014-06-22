@@ -1,8 +1,14 @@
-'''
-Created on 20 Sep 2013
+"""
+metamanager
+***********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A special multiprocessing manager which takes care of some things
+automatically.
+"""
 from multiprocessing.managers import BaseManager
 from .errorhook import ErrorMeta, setErrorOut
 

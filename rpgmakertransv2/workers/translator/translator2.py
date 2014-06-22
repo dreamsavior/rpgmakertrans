@@ -1,3 +1,14 @@
+"""
+translator2
+***********
+
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A translator specialised for v2 and RPGMaker 2k files.
+"""
+
 import random
 from ..twokpatcher.speedy2kconstants import contextDict, rtsubsections
 from .translatorbase import Translator

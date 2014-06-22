@@ -1,8 +1,13 @@
-'''
-Created on 31 Oct 2013
+"""
+version
+*******
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Provides functionality related to versioning, including the version check.
+"""
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup

@@ -1,8 +1,13 @@
-'''
-Created on 4 Oct 2013
+"""
+zippatcher
+**********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Provides a patcher for patches contained in a zip file.
+"""
 
 from .basepatcher import BasePatch
 import zipfile

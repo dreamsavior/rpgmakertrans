@@ -1,3 +1,15 @@
+"""
+patchers
+********
+
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Contains an interface onto the various kinds of patch managers
+(File-based, Zip-based).
+"""
+
 import os.path
 from . import filepatcher
 from . import zippatcher

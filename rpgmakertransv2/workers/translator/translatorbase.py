@@ -1,8 +1,13 @@
-'''
-Created on 15 Aug 2013
+"""
+translatorbase
+**************
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Specifies the shared methods/interfaces of the Translator.
+"""
 
 from ...metamanager import CustomManager, MetaCustomManager
 

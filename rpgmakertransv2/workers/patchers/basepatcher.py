@@ -1,8 +1,13 @@
-'''
-Created on 19 Sep 2013
+"""
+basepatcher
+***********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Contains the shared methods/interfaces of the patcher classes.
+"""
 from ...metamanager import CustomManager, MetaCustomManager
 from ..translator import TranslatorManager
 
