@@ -8,6 +8,9 @@ speedy2k
 
 The second version of the 2k patching engine, which has the property
 of being much faster than the first version.
+
+TODO: Investigate using either ctypes or cffi instead of struct/unpack.
+These may be nicer in terms of performance/layout.
 """
 
 import os.path
@@ -15,11 +18,6 @@ from struct import unpack, Struct
 from .speedy2kconstants import schemas, containerTypes
 from ...errorhook import ErrorClass
 from ..fileops import WinOpen
-
-# TODO LIST:
-# Convert to rPython->cPython extension module - some variables overloaded
-#              but I don't think there's anything major that needs changing.
-
 
 class BytesOrNoneList(list):
 
