@@ -14,6 +14,8 @@ from PySide import QtGui, QtCore, QtSvg
 from ...errorhook import ErrorClass, ErrorMeta
 from ...version import version
 
+from .logointernal import LOGOINTERNAL
+
 labelString = ''.join([
     "RPGMaker Trans (C) Habisain 2011-2014\n",
     "Redistributing a game patched by RPGMaker Trans ",
@@ -154,13 +156,13 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
-        # TODO: Embed the SVG into the python
-        # TODO: Ensure that PyQT can render it
-        iconimagefn = os.path.join(
-            os.path.split(__file__)[0],
-            'rpgtranslogo.svg') 
-        with open(iconimagefn) as f:
-            svg = f.read()
+        iconimagefn = os.path.join(os.path.split(__file__)[0], 
+                                   'rpgtranslogo.svg')
+        if os.path.exists(iconimagefn): 
+            with open(iconimagefn) as f:
+                svg = f.read()
+        else:
+            svg = LOGOINTERNAL
         renderer = QtSvg.QSvgRenderer(QtCore.QXmlStreamReader(svg))
         img = QtGui.QPixmap(256, 256)
         painter = QtGui.QPainter(img)
