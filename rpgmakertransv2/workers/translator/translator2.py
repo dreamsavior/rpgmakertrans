@@ -174,162 +174,7 @@ compatRewrite['skillAttr/SkillDescription'] = 'skillAttr/Description'
 class Translator2kv2f(object, metaclass=ErrorMeta):
 
     def __init__(self, coms, incodec='cp932', outcodec='cp932'):
-        d = {
-            30441: [
-                123,
-                107,
-                49,
-                41,
-                91,
-                51,
-                115,
-                114,
-                123,
-                41,
-                100,
-                97,
-                125,
-                50,
-                112,
-                97,
-                102,
-                93,
-                36,
-                100,
-                125,
-                91,
-                93,
-                115,
-                125,
-                51,
-                125],
-            30123: [
-                48,
-                49,
-                52,
-                124,
-                35,
-                80,
-                35,
-                92,
-                53,
-                35,
-                95,
-                124,
-                95,
-                48,
-                124,
-                112,
-                124,
-                49,
-                35],
-            30001: [
-                83,
-                84,
-                73,
-                66,
-                69,
-                71,
-                79,
-                69,
-                83,
-                80,
-                65,
-                76,
-                65,
-                70,
-                73,
-                83,
-                83,
-                73,
-                83,
-                83,
-                76,
-                76,
-                75,
-                80],
-            38102: [
-                112,
-                107,
-                97,
-                97,
-                112,
-                115,
-                36,
-                115,
-                111,
-                107,
-                115,
-                97,
-                97,
-                50,
-                111,
-                36,
-                52,
-                100,
-                112,
-                48,
-                106,
-                111,
-                105,
-                100,
-                119],
-            23994: [
-                124,
-                117,
-                105,
-                124,
-                124,
-                47,
-                92,
-                94,
-                38,
-                36,
-                124,
-                52,
-                53,
-                92,
-                92,
-                124,
-                94,
-                47,
-                53,
-                38,
-                124,
-                45],
-            42911: [
-                65,
-                84,
-                82,
-                77,
-                65,
-                76,
-                78,
-                64,
-                75,
-                75,
-                73,
-                126,
-                126,
-                69,
-                64,
-                80,
-                76,
-                82,
-                82,
-                83,
-                71]}
-        self.keys = []
         self.coms = coms
-        for k in d:
-            l = len(d[k])
-            random.seed(k)
-            z = list(range(l))
-            random.shuffle(z)
-            s = [None] * l
-            for i in range(l):
-                s[z[i]] = d[k][i]
-            self.keys.append(''.join([chr(x) for x in s]))
         self.stringOrder = []
         self.strings = {}
         self.stringTrans = {}
@@ -342,8 +187,9 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
             type(self).__name__, len(self.stringTrans))
 
     def translateString(self, string, context):
-        if string in self.keys:
-            raise Exception('Found kill switch; not translating this game')
+        if 'RPGMKTRANSKILL' in string:
+            self.coms.send('fatalError', 
+                           'Opt-out detected, stopping translation')
         try:
             ustring = string.decode(self.incodec)
         except UnicodeError:
@@ -370,7 +216,7 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
         else:
             self.coms.send(
                 'fatalError',
-                'Opt-out detected, stopping translation')
+                'Cold not decipher context')
         if contextStr in compatRewrite:
             contextStr = compatRewrite[contextStr]
         if (ustring, contextStr) not in self.strings:
