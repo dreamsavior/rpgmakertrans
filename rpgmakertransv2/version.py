@@ -13,7 +13,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import datetime
 
-version = 2.05
+version = 2.06
 expiry = datetime.date(2015, 4, 1)
 
 
