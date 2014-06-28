@@ -10,7 +10,7 @@ The implementation of the QT user interface.
 """
 
 import os
-from PySide import QtGui, QtCore
+from PySide import QtGui, QtCore, QtSvg
 from ...errorhook import ErrorClass, ErrorMeta
 from ...version import version
 
@@ -154,10 +154,19 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
+        # TODO: Embed the SVG into the python
+        # TODO: Ensure that PyQT can render it
         iconimagefn = os.path.join(
             os.path.split(__file__)[0],
-            'rpgtranslogo.svg')
-        self.setWindowIcon(QtGui.QIcon(iconimagefn))
+            'rpgtranslogo.svg') 
+        with open(iconimagefn) as f:
+            svg = f.read()
+        renderer = QtSvg.QSvgRenderer(QtCore.QXmlStreamReader(svg))
+        img = QtGui.QPixmap(256, 256)
+        painter = QtGui.QPainter(img)
+        renderer.render(painter)
+        del painter
+        self.setWindowIcon(QtGui.QIcon(img))
         self.setMinimumHeight(height)
         self.setMaximumHeight(height)
         self.setMinimumWidth(width)
