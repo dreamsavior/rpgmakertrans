@@ -15,10 +15,10 @@ def parseRuby(string):
     index = 0
     ruleStack = [Base(string, index)]
     while ruleStack:
-        for Rule in ruleStack[-1].getSuccessorRules():
-            result = Rule.match(string, index)
+        for SimpleRule in ruleStack[-1].getSuccessorRules():
+            result = SimpleRule.match(string, index)
             if result is not False:
-                ruleStack.append(Rule(string, index))
+                ruleStack.append(SimpleRule(string, index))
                 index += result
         if ruleStack[-1].terminate(string, index):
             index += ruleStack[-1].advance(string, index)

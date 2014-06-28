@@ -12,14 +12,35 @@ Provides rules for the Ruby parser.
 from collections import defaultdict
 
 class Rule:
-    begins = None
-    escapeRules = None
-    terminator = None
     successorRules = defaultdict(set)
     
     def __init__(self, string, index):
         pass
     
+    @classmethod
+    def match(cls, string, index):
+        raise NotImplementedError('Needs to be overridden')
+    
+    def advance(self, string, index):
+        return 1
+    
+    def terminate(self, string, index):
+        raise NotImplementedError('Needs to be overridden')
+    
+    @classmethod
+    def addContextRule(cls, rule):
+        SimpleRule.successorRules[cls].add(rule)
+    
+    @classmethod
+    def getSuccessorRules(cls):
+        return Rule.successorRules[cls]
+
+    
+class SimpleRule(Rule):
+    begins = ''
+    escapeRules = []
+    terminator = ''
+      
     @classmethod
     def match(cls, string, index):
         if string.startswith(cls.begins, index):
@@ -34,64 +55,48 @@ class Rule:
         else:
             return 1
 
-    def enter(self, string, index):
-        pass
-
     def terminate(self, string, index):
-        if type(self).terminator is None:
-            raise NotImplementedError('Not implemented for this rule')
-        else:
-            return string[index] == type(self).terminator
+        return string.startswith(type(self).terminator, index)
     
-    @classmethod
-    def addContextRule(cls, rule):
-        Rule.successorRules[cls].add(rule)
-        
-    @classmethod
-    def getSuccessorRules(cls):
-        return Rule.successorRules[cls]
-
 
 class Base(Rule):
-    begins = None
-    escapeRules = []
 
     def terminate(self, string, index):
         return index >= len(string)
 
 
-class DoubleQuote(Rule):
+class DoubleQuote(SimpleRule):
     begins = '"'
     escapeRules = ['\"']
     terminator = '"'
 
 Base.addContextRule(DoubleQuote)
 
-class SingleQuote(Rule):
+class SingleQuote(SimpleRule):
     begins = '\''
     escapeRules = []
     terminator = '\''
 
 
-class Bracket(Rule):
+class Bracket(SimpleRule):
     begins = '('
     escapeRules = []
     terminator = ')'
 
 
-class Curly(Rule):
+class Curly(SimpleRule):
     begins = '{'
     escapeRules = []
     terminator = '}'
 
 
-class Square(Rule):
+class Square(SimpleRule):
     begins = '['
     escapeRules = []
     terminator = ']'
 
 
-class HereDoc(Rule):
+class HereDoc(SimpleRule):
     begins = '-->'
     escapeRules = []
 
@@ -102,7 +107,7 @@ class HereDoc(Rule):
         pass
 
 
-class HereDocLenient(Rule):
+class HereDocLenient(SimpleRule):
     pass
 
 
