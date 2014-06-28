@@ -1,16 +1,13 @@
 """
-rubyparse
-*********
+rules
+*****
 
 :author: Aleph Fell <habisain@gmail.com>
 :copyright: 2012-2014
 :license: GNU Public License version 3
 
-The experimental Ruby parser. This is written in Python because Ruby1.8 lacks
-string encoding awareness. As Ruby scripts can have 1 of 4 encodings, this
-creates substantial problems for parsing Ruby in Ruby.
+Provides rules for the Ruby parser.
 """
-
 
 
 class Rule:
@@ -88,21 +85,3 @@ class InnerCode(Base):
     begins = '#{'
     escapeRules = []
     terminator = '}'
-
-
-class RubyParser:
-
-    def __init__(self):
-        self.string = None
-        self.index = None
-        self.matchers = []
-        self.escapeRules = []
-
-    def parse(self, string):
-        self.string = string
-        self.index = 0
-        while self.index < len(self.string):
-
-            self.index += 1
-        self.string = None
-        self.index = None
