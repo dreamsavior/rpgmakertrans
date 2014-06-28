@@ -9,38 +9,63 @@ rules
 Provides rules for the Ruby parser.
 """
 
+from collections import defaultdict
 
 class Rule:
     begins = None
     escapeRules = None
     terminator = None
+    successorRules = defaultdict(set)
+    
+    def __init__(self, string, index):
+        pass
+    
+    @classmethod
+    def match(cls, string, index):
+        if string.startswith(cls.begins, index):
+            return len(cls.begins)
+        else:
+            return False
+    
+    def advance(self, string, index):
+        for escape in type(self).escapeRules:
+            if string.startswith(escape, index):
+                return len(escape)
+        else:
+            return 1
 
-    def enter(self, parser):
+    def enter(self, string, index):
         pass
 
-    def terminate(self, parser):
+    def terminate(self, string, index):
         if type(self).terminator is None:
             raise NotImplementedError('Not implemented for this rule')
         else:
-            return parser.string[parser.index] == type(self).terminator
-
-    def addContextRule(self, rule):
-        self.contextRules.add(rule)
+            return string[index] == type(self).terminator
+    
+    @classmethod
+    def addContextRule(cls, rule):
+        Rule.successorRules[cls].add(rule)
+        
+    @classmethod
+    def getSuccessorRules(cls):
+        return Rule.successorRules[cls]
 
 
 class Base(Rule):
     begins = None
     escapeRules = []
 
-    def terminate(self, parser):
-        return parser.index >= len(parser.string)
+    def terminate(self, string, index):
+        return index >= len(string)
 
 
 class DoubleQuote(Rule):
     begins = '"'
-    escapeRules = []
+    escapeRules = ['\"']
     terminator = '"'
 
+Base.addContextRule(DoubleQuote)
 
 class SingleQuote(Rule):
     begins = '\''
@@ -85,3 +110,4 @@ class InnerCode(Base):
     begins = '#{'
     escapeRules = []
     terminator = '}'
+

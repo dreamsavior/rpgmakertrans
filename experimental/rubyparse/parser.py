@@ -9,20 +9,22 @@ parser
 Implementation of the Ruby Parser.
 """
 
+from .rules import Base
 
-class RubyParser:
+def parseRuby(string):
+    index = 0
+    ruleStack = [Base(string, index)]
+    while ruleStack:
+        for Rule in ruleStack[-1].getSuccessorRules():
+            result = Rule.match(string, index)
+            if result is not False:
+                ruleStack.append(Rule(string, index))
+                index += result
+        if ruleStack[-1].terminate(string, index):
+            index += ruleStack[-1].advance(string, index)
+            ruleStack.pop()
+        else:
+            index += ruleStack[-1].advance(string, index)
 
-    def __init__(self):
-        self.string = None
-        self.index = None
-        self.matchers = []
-        self.escapeRules = []
-
-    def parse(self, string):
-        self.string = string
-        self.index = 0
-        while self.index < len(self.string):
-
-            self.index += 1
-        self.string = None
-        self.index = None
+if __name__ == '__main__':
+    parseRuby('x = "abc"')     
