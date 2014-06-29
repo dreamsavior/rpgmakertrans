@@ -11,9 +11,13 @@ Implementation of the Ruby Parser.
 
 from .rules import Base
 
-def parseRuby(string):
+class DummyTranslator:
+    def translate(self, string):
+        print(string)
+        
+def parseRuby(string, translationHandler):
     index = 0
-    ruleStack = [Base(string, index)]
+    ruleStack = [Base(translationHandler)]
     while ruleStack:
         for SimpleRule in ruleStack[-1].getSuccessorRules():
             result = SimpleRule.match(string, index)
@@ -27,4 +31,4 @@ def parseRuby(string):
             index += ruleStack[-1].advance(string, index)
 
 if __name__ == '__main__':
-    parseRuby('x = "abc"')     
+    parseRuby('x = "abc"', DummyTranslator())     

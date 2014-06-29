@@ -61,6 +61,15 @@ class SimpleRule(Rule):
     
 
 class Base(Rule):
+    def __init__(self, translationHandler):
+        self.translationHandler = translationHandler
+        self.lastIndex = 0
+        
+    def advance(self, string, index):
+        if index != self.lastIndex + 1:
+            self.translationHandler.translate(string[self.lastIndex + 1:index])
+        self.lastIndex = index
+        return 1
 
     def terminate(self, string, index):
         return index >= len(string)
