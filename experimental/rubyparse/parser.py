@@ -15,20 +15,25 @@ class DummyTranslator:
     def translate(self, string):
         print(string)
         
-def parseRuby(string, translationHandler):
-    index = 0
-    ruleStack = [Base(translationHandler)]
-    while ruleStack:
-        for SimpleRule in ruleStack[-1].getSuccessorRules():
-            result = SimpleRule.match(string, index)
-            if result is not False:
-                ruleStack.append(SimpleRule(string, index))
-                index += result
-        if ruleStack[-1].terminate(string, index):
-            index += ruleStack[-1].advance(string, index)
-            ruleStack.pop()
-        else:
-            index += ruleStack[-1].advance(string, index)
+class RubyParser:
+    def __init__(self, string, translationHandler):
+        self.string = string
+        self.translationHandler = translationHandler
+        self.index = 0
+        ruleStack = [Base(self)]
+        while ruleStack:
+            for SimpleRule in ruleStack[-1].getSuccessorRules():
+                result = SimpleRule.match(self)
+                if result is not False:
+                    ruleStack.append(SimpleRule(self))
+                    self.index += result
+            if ruleStack[-1].terminate(self):
+                self.index += ruleStack[-1].advance(self)
+                ruleStack.pop()
+            else:
+                self.index += ruleStack[-1].advance(self)
+            
+    
 
 if __name__ == '__main__':
-    parseRuby('x = "abc"', DummyTranslator())     
+    RubyParser('x = "abc"', DummyTranslator())     

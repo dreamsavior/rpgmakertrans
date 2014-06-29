@@ -14,17 +14,17 @@ from collections import defaultdict
 class Rule:
     successorRules = defaultdict(set)
     
-    def __init__(self, string, index):
+    def __init__(self, parser):
         pass
     
     @classmethod
-    def match(cls, string, index):
+    def match(cls, parser):
         raise NotImplementedError('Needs to be overridden')
     
-    def advance(self, string, index):
+    def advance(self, parser):
         return 1
     
-    def terminate(self, string, index):
+    def terminate(self, parser):
         raise NotImplementedError('Needs to be overridden')
     
     @classmethod
@@ -43,36 +43,35 @@ class SimpleRule(Rule):
     terminator = ''
       
     @classmethod
-    def match(cls, string, index):
-        if string.startswith(cls.begins, index):
+    def match(cls, parser):
+        if parser.string.startswith(cls.begins, parser.index):
             return len(cls.begins)
         else:
             return False
     
-    def advance(self, string, index):
+    def advance(self, parser):
         for escape in type(self).escapeRules:
-            if string.startswith(escape, index):
+            if parser.string.startswith(escape, parser.index):
                 return len(escape)
         else:
             return 1
 
-    def terminate(self, string, index):
-        return string.startswith(type(self).terminator, index)
+    def terminate(self, parser):
+        return parser.string.startswith(type(self).terminator, parser.index)
     
 
 class Base(Rule):
-    def __init__(self, translationHandler):
-        self.translationHandler = translationHandler
+    def __init__(self, parser):
         self.lastIndex = 0
         
-    def advance(self, string, index):
-        if index != self.lastIndex + 1:
-            self.translationHandler.translate(string[self.lastIndex + 1:index])
-        self.lastIndex = index
+    def advance(self, parser):
+        if parser.index > self.lastIndex + 1:
+            parser.translationHandler.translate(parser.string[self.lastIndex + 1:parser.index])
+        self.lastIndex = parser.index
         return 1
 
-    def terminate(self, string, index):
-        return index >= len(string)
+    def terminate(self, parser):
+        return parser.index >= len(parser.string)
 
 
 @Base.addSuccessorRule
