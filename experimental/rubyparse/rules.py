@@ -28,8 +28,9 @@ class Rule:
         raise NotImplementedError('Needs to be overridden')
     
     @classmethod
-    def addContextRule(cls, rule):
+    def addSuccessorRule(cls, rule):
         SimpleRule.successorRules[cls].add(rule)
+        return rule
     
     @classmethod
     def getSuccessorRules(cls):
@@ -65,31 +66,31 @@ class Base(Rule):
         return index >= len(string)
 
 
+@Base.addSuccessorRule
 class DoubleQuote(SimpleRule):
     begins = '"'
     escapeRules = ['\"']
     terminator = '"'
 
-Base.addContextRule(DoubleQuote)
-
+@Base.addSuccessorRule
 class SingleQuote(SimpleRule):
     begins = '\''
     escapeRules = []
     terminator = '\''
 
-
+@Base.addSuccessorRule
 class Bracket(SimpleRule):
     begins = '('
     escapeRules = []
     terminator = ')'
 
-
+@Base.addSuccessorRule
 class Curly(SimpleRule):
     begins = '{'
     escapeRules = []
     terminator = '}'
 
-
+@Base.addSuccessorRule
 class Square(SimpleRule):
     begins = '['
     escapeRules = []
@@ -111,7 +112,7 @@ class HereDocLenient(SimpleRule):
     pass
 
 
-class InnerCode(Base):
+class InnerCode(SimpleRule):
     begins = '#{'
     escapeRules = []
     terminator = '}'
