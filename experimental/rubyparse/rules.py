@@ -65,6 +65,7 @@ class SimpleRule(Rule):
 
 class Base(Rule):
     def __init__(self, parser):
+        super().__init__(parser)
         self.lastIndex = 0
         
     def advance(self, parser):
@@ -77,6 +78,20 @@ class Base(Rule):
     def terminate(self, parser):
         return parser.index >= len(parser.string)
 
+class EscapingRule(SimpleRule):
+    """Must go to terminal character, check to see if % is after string, and if so consume the next thing."""
+    def advance(self, parser):
+        pass
+    
+    def terminate(self, parser):
+        pass
+
+
+class RubyVar(Rule):
+    """Hackish Ruby variable detector - just an alphanumeric string. 
+    It would also work for string literals."""
+    def terminate(self, parser):
+        return parser.string[parser.index].isalnum()
 
 @Base.addSuccessorRule
 class DoubleQuote(SimpleRule):
@@ -118,7 +133,21 @@ class HereDoc(SimpleRule):
 
     def terminate(self, parser):
         pass
+    
+class Regex(SimpleRule):
+    pass
 
+class CustomDelimiter(Rule):
+    pass
+
+class CustomSingleQuoteString(CustomDelimiter):
+    pass
+
+class CustomDoubleQuoteString(CustomDelimiter):
+    pass
+
+class CustomRegex(CustomDelimiter):
+    pass
 
 class HereDocLenient(SimpleRule):
     pass
