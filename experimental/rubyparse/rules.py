@@ -24,6 +24,9 @@ class Rule:
     def advance(self, parser):
         return 1
     
+    def resume(self, parser):
+        pass
+    
     def terminate(self, parser):
         raise NotImplementedError('Needs to be overridden')
     
@@ -65,10 +68,11 @@ class Base(Rule):
         self.lastIndex = 0
         
     def advance(self, parser):
-        if parser.index > self.lastIndex + 1:
-            parser.translationHandler.translate(parser.string[self.lastIndex + 1:parser.index])
         self.lastIndex = parser.index
         return 1
+    
+    def resume(self, parser):
+        parser.translationHandler.translate(parser.string[self.lastIndex + 1:parser.index])
 
     def terminate(self, parser):
         return parser.index >= len(parser.string)
@@ -77,13 +81,13 @@ class Base(Rule):
 @Base.addSuccessorRule
 class DoubleQuote(SimpleRule):
     begins = '"'
-    escapeRules = ['\"']
+    escapeRules = [r'\"']
     terminator = '"'
 
 @Base.addSuccessorRule
 class SingleQuote(SimpleRule):
     begins = '\''
-    escapeRules = []
+    escapeRules = [r"\'"]
     terminator = '\''
 
 @Base.addSuccessorRule

@@ -11,9 +11,7 @@ Implementation of the Ruby Parser.
 
 from .rules import Base
 
-class DummyTranslator:
-    def translate(self, string):
-        print(string)
+
         
 class RubyParser:
     def __init__(self, string, translationHandler):
@@ -27,13 +25,14 @@ class RubyParser:
                 if result is not False:
                     ruleStack.append(SimpleRule(self))
                     self.index += result
+                    break
             if ruleStack[-1].terminate(self):
                 self.index += ruleStack[-1].advance(self)
                 ruleStack.pop()
+                if ruleStack:
+                    ruleStack[-1].resume(self)
             else:
                 self.index += ruleStack[-1].advance(self)
             
     
 
-if __name__ == '__main__':
-    RubyParser('x = "abc"', DummyTranslator())     
