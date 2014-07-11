@@ -15,4 +15,4 @@ class DummyTranslator:
     def translate(self, string):
         print(string)
         
-RubyParser('x = "abc"', DummyTranslator())    
+RubyParser('x = "abc"\n\'Another test\' ', DummyTranslator())

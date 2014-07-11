@@ -26,13 +26,16 @@ class RubyParser:
                     ruleStack.append(SimpleRule(self))
                     self.index += result
                     break
-            if ruleStack[-1].terminate(self):
-                self.index += ruleStack[-1].advance(self)
-                ruleStack.pop()
-                if ruleStack:
-                    ruleStack[-1].resume(self)
-            else:
-                self.index += ruleStack[-1].advance(self)
+            ruleFlux = True
+            while ruleFlux and ruleStack:
+                if ruleStack[-1].terminate(self):
+                    self.index += ruleStack[-1].advance(self)
+                    ruleStack.pop()
+                    if ruleStack:
+                        ruleStack[-1].resume(self)
+                else:
+                    self.index += ruleStack[-1].advance(self)
+                    ruleFlux = False
             
     
 
