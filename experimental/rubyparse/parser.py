@@ -20,6 +20,7 @@ class RubyParser:
         self.index = 0
         self.ruleStack = [Base(self)] 
         while self.ruleStack:
+            assert self.index <= len(self.string)
             self.ruleStack[-1].getSuccessorRule(self)
             ruleFlux = True
             while ruleFlux and self.ruleStack:

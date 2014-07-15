@@ -13,5 +13,5 @@ from collections import defaultdict
 
 from .base import Base
 from . import simple
-from . import escaping
+from . import formatting
 from . import customdelimiters
