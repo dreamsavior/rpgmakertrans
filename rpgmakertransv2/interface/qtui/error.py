@@ -37,7 +37,7 @@ class ErrorMsg(QtGui.QDialog):
             lambda: (
                 clip.setText(
                     self.msg),
-                QtGui.QDesktopServices.openUrl('http://habisain.blogspot.co.uk/p/bug-reporting.html')))
+                QtGui.QDesktopServices.openUrl('https://bitbucket.org/habisain/rpgmakertrans/issues?status=new&status=open')))
         button2.released.connect(lambda: self.done(0))
 
     def setMsg(self, msg):
