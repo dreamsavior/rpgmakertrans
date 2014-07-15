@@ -34,10 +34,15 @@ class Rule:
     def addSuccessorRule(cls, rule):
         SimpleRule.successorRules[cls].add(rule)
         return rule
-    
+        
     @classmethod
-    def getSuccessorRules(cls):
-        return Rule.successorRules[cls]
+    def getSuccessorRule(cls, parser):
+        for PotentialSuccessor in Rule.successorRules[cls]:
+            result = PotentialSuccessor.match(parser)
+            if result is not False:
+                parser.index += result
+                parser.ruleStack.append(PotentialSuccessor(parser))
+                return
 
     
 class SimpleRule(Rule):

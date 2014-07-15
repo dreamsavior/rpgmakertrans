@@ -18,23 +18,18 @@ class RubyParser:
         self.string = string
         self.translationHandler = translationHandler
         self.index = 0
-        ruleStack = [Base(self)]
-        while ruleStack:
-            for Rule in ruleStack[-1].getSuccessorRules(): # TODO: Move inside Rule somehow. 
-                result = Rule.match(self)
-                if result is not False:
-                    ruleStack.append(Rule(self))
-                    self.index += result
-                    break
+        self.ruleStack = [Base(self)] 
+        while self.ruleStack:
+            self.ruleStack[-1].getSuccessorRule(self)
             ruleFlux = True
-            while ruleFlux and ruleStack:
-                if ruleStack[-1].terminate(self):
-                    self.index += ruleStack[-1].advance(self)
-                    ruleStack.pop()
-                    if ruleStack:
-                        ruleStack[-1].resume(self)
+            while ruleFlux and self.ruleStack:
+                if self.ruleStack[-1].terminate(self):
+                    self.index += self.ruleStack[-1].advance(self)
+                    self.ruleStack.pop()
+                    if self.ruleStack:
+                        self.ruleStack[-1].resume(self)
                 else:
-                    self.index += ruleStack[-1].advance(self)
+                    self.index += self.ruleStack[-1].advance(self)
                     ruleFlux = False
             
     
