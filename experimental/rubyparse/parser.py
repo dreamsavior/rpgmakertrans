@@ -12,7 +12,7 @@ Implementation of the Ruby Parser.
 from .rules import Base
 
 
-        
+
 class RubyParser:
     def __init__(self, string, translationHandler):
         self.string = string
@@ -20,10 +20,10 @@ class RubyParser:
         self.index = 0
         ruleStack = [Base(self)]
         while ruleStack:
-            for SimpleRule in ruleStack[-1].getSuccessorRules():
-                result = SimpleRule.match(self)
+            for Rule in ruleStack[-1].getSuccessorRules(): # TODO: Move inside Rule somehow. 
+                result = Rule.match(self)
                 if result is not False:
-                    ruleStack.append(SimpleRule(self))
+                    ruleStack.append(Rule(self))
                     self.index += result
                     break
             ruleFlux = True
