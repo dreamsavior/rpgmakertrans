@@ -12,7 +12,7 @@ TODO: Check to see that everything still works using RVM etc.
 """
 
 import subprocess
-from newtranslator import Translator
+from .newtranslator import Translator
 import sys
 import os.path
 import os

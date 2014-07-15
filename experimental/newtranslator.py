@@ -10,7 +10,7 @@ Experimental version 3 of the patch file format. Still not final, needs some
 work, including on Ruby side.
 """
 
-import pyrbComms
+from . import pyrbComms
 from collections import defaultdict
 import os.path
 import os

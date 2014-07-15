@@ -12,7 +12,7 @@ TODO: Update to use rbscripts directory
 """
 
 import subprocess
-from newtranslator import Translator
+from .newtranslator import Translator
 import sys
 import os.path
 import os
