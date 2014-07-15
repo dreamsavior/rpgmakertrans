@@ -1,8 +1,13 @@
-'''
-Created on 15 Jul 2014
+"""
+customdelimiters
+****************
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Custom Delimiter based strings
+"""
 
 from .simple import SimpleRule
 from .base import Rule

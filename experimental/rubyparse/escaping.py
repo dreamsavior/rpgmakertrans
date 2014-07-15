@@ -1,13 +1,18 @@
-'''
-Created on 15 Jul 2014
+"""
+escaping
+********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+FormatRule class and Formatted rules (eventually)
+"""
 
 from .simple import SimpleRule
 from .base import Rule, Base
 
-class EscapingRule(SimpleRule):
+class FormatRule(SimpleRule):
     """Must go to terminal character, check to see if % is after string, and if so consume the next thing."""
     def advance(self, parser):
         pass

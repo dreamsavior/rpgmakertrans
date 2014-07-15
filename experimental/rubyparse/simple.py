@@ -1,8 +1,13 @@
-'''
-Created on 15 Jul 2014
+"""
+simple
+******
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+SimpleRule class and simple rules
+"""
 from .base import Rule, Base
 
 class SimpleRule(Rule):
