@@ -11,7 +11,7 @@ FormatRule class and Formatted rules (eventually)
 from collections import defaultdict
 
 from .simple import SimpleRule
-from .base import Rule, Base
+from .base import Rule, Base, Translateable
 
 class FormatRule(SimpleRule):
     """Must go to terminal character, check to see if % is after string, and if so consume the next thing."""
@@ -24,6 +24,7 @@ class FormatRule(SimpleRule):
     def __init__(self, parser):
         self.gotString = False
         self.gotFormat = False
+        super().__init__(parser)
         
     def advance(self, parser):
         if not self.gotString:
@@ -67,7 +68,7 @@ class RubyVar(Rule):
         return parser.string[parser.index].isalnum()
 
 @Base.addSuccessorRule
-class DoubleQuote(FormatRule):
+class DoubleQuote(FormatRule, Translateable):
     begins = '"'
     escapeRules = [r'\"']
     terminator = '"'

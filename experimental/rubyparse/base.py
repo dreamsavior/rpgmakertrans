@@ -26,6 +26,9 @@ class Rule:
     def resume(self, parser):
         pass
     
+    def exit(self, parser):
+        pass
+    
     def terminate(self, parser):
         raise NotImplementedError('Needs to be overridden')
     
@@ -39,21 +42,27 @@ class Rule:
         for PotentialSuccessor in Rule.successorRules[cls]:
             result = PotentialSuccessor.match(parser)
             if result is not False:
-                parser.index += result
                 parser.ruleStack.append(PotentialSuccessor(parser))
+                parser.index += result
                 return
 
-class Base(Rule):
-    def __init__(self, parser):
-        super().__init__(parser)
-        self.lastIndex = 0
-        
-    def advance(self, parser):
-        self.lastIndex = parser.index
-        return 1
+class Translateable(Rule):
+    focus = None
     
-    def resume(self, parser):
-        parser.translationHandler.translate(parser.string[self.lastIndex + 1:parser.index])
-
+    def __init__(self, parser):
+        if type(self).focus is None:
+            self.beginsAt = parser.index
+            type(self).focus = self
+        super().__init__(parser)
+        
+    def exit(self, parser):
+        if type(self).focus is self:
+            parser.translationHandler.translate(parser.string[self.beginsAt:parser.index])
+            type(self).focus = None
+        super().exit(parser)
+        
+class Base(Rule):
+    
     def terminate(self, parser):
         return parser.index >= len(parser.string)
+    

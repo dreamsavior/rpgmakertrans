@@ -26,6 +26,7 @@ class RubyParser:
             while ruleFlux and self.ruleStack:
                 if self.ruleStack[-1].terminate(self):
                     self.index += self.ruleStack[-1].advance(self)
+                    self.ruleStack[-1].exit(self)
                     self.ruleStack.pop()
                     if self.ruleStack:
                         self.ruleStack[-1].resume(self)
