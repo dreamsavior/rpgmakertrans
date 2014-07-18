@@ -8,18 +8,18 @@ escaping
 
 FormatRule class and Formatted rules (eventually)
 """
-from collections import defaultdict
 
 from .simple import SimpleRule
 from .base import Rule, Base, Translateable
 
+class FormatSuccessor(type):
+    formatSuccessors = set()
+    def __init__(cls, name, bases, dict_):
+        super().__init__(name, bases, dict_)
+        type(cls).formatSuccessors.add(cls)
+    
 class FormatRule(SimpleRule):
     """Must go to terminal character, check to see if % is after string, and if so consume the next thing."""
-    formatSuccessors = defaultdict(set)
-    @classmethod
-    def addFormatSuccessor(cls, succ):
-        cls.formatSuccessors[cls].add(succ)
-        return succ
         
     def __init__(self, parser):
         self.gotString = False
@@ -37,7 +37,7 @@ class FormatRule(SimpleRule):
     def getSuccessorRule(self, parser):
         if not self.gotString: super().getSuccessorRule(parser)
         else:
-            for PotentialSuccessor in FormatRule.formatSuccessors[type(self)]:
+            for PotentialSuccessor in FormatSuccessor.formatSuccessors:
                 result = PotentialSuccessor.match(parser)
                 if result is not False:
                     parser.index += result
@@ -63,23 +63,21 @@ class FormatRule(SimpleRule):
 
 class RubyVar(Rule):
     """Hackish Ruby variable detector - just an alphanumeric string. 
-    It would also work for string literals."""
+    It would also work for string literals.
+    TODO: It needs to handle attributes (prefixed @) and any other non
+    alphanumeric prefixes."""
     def terminate(self, parser):
         return parser.string[parser.index].isalnum()
 
 @Base.addSuccessorRule
-class DoubleQuote(FormatRule, Translateable):
+class DoubleQuote(FormatRule, Translateable, metaclass=FormatSuccessor):
     begins = '"'
     escapeRules = [r'\"']
     terminator = '"'
-DoubleQuote.addFormatSuccessor(DoubleQuote)
 
-@DoubleQuote.addFormatSuccessor
 @Base.addSuccessorRule
-class SingleQuote(FormatRule, Translateable):
+class SingleQuote(FormatRule, Translateable, metaclass=FormatSuccessor):
     begins = '\''
     escapeRules = [r"\'"]
     terminator = '\''
-SingleQuote.addFormatSuccessor(SingleQuote)
-SingleQuote.addFormatSuccessor(DoubleQuote)
 
