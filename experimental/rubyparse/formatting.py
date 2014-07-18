@@ -76,9 +76,10 @@ DoubleQuote.addFormatSuccessor(DoubleQuote)
 
 @DoubleQuote.addFormatSuccessor
 @Base.addSuccessorRule
-class SingleQuote(SimpleRule):
+class SingleQuote(FormatRule, Translateable):
     begins = '\''
     escapeRules = [r"\'"]
     terminator = '\''
-#SingleQuote.addFormatSuccessor(SingleQuote)
-#SingleQuote.addFormatSuccessor(DoubleQuote)
+SingleQuote.addFormatSuccessor(SingleQuote)
+SingleQuote.addFormatSuccessor(DoubleQuote)
+
