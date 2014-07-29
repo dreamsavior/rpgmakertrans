@@ -42,9 +42,7 @@ class Rule:
         for PotentialSuccessor in Rule.successorRules[cls]:
             result = PotentialSuccessor.match(parser)
             if result is not False:
-                parser.ruleStack.append(PotentialSuccessor(parser))
-                parser.index += result
-                return
+                return result, PotentialSuccessor(parser)
 
 class Translateable(Rule):
     focus = None

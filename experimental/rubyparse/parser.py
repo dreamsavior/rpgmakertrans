@@ -21,7 +21,11 @@ class RubyParser:
         self.ruleStack = [Base(self)] 
         while self.ruleStack:
             assert self.index <= len(self.string)
-            self.ruleStack[-1].getSuccessorRule(self)
+            result = self.ruleStack[-1].getSuccessorRule(self)
+            if result is not None:
+                self.index += result[0]
+                self.ruleStack.append(result[1])
+            #self.ruleStack[-1].getSuccessorRule(self)
             ruleFlux = True
             while ruleFlux and self.ruleStack:
                 if self.ruleStack[-1].terminate(self):

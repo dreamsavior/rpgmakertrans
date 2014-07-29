@@ -14,8 +14,8 @@ from .base import Rule, Base, Translateable
 
 class FormatSuccessor(type):
     formatSuccessors = set()
-    def __init__(cls, name, bases, dict_):
-        super().__init__(name, bases, dict_)
+    def __init__(cls, name, bases, nmspc):
+        super().__init__(name, bases, nmspc)
         type(cls).formatSuccessors.add(cls)
     
 class FormatRule(SimpleRule):
@@ -40,10 +40,8 @@ class FormatRule(SimpleRule):
             for PotentialSuccessor in FormatSuccessor.formatSuccessors:
                 result = PotentialSuccessor.match(parser)
                 if result is not False:
-                    parser.index += result
-                    parser.ruleStack.append(PotentialSuccessor(parser))
-                    return        
-        
+                    return result, PotentialSuccessor(parser)
+                        
     def resume(self, parser):
         if self.gotString:
             self.gotFormat = True
