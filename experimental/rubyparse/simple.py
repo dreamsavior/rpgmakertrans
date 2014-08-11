@@ -32,19 +32,16 @@ class SimpleRule(Rule):
     def terminate(self, parser):
         return parser.string.startswith(type(self).terminator, parser.index)
 
-@Base.addSuccessorRule
 class Bracket(SimpleRule):
     begins = '('
     escapeRules = []
     terminator = ')'
 
-@Base.addSuccessorRule
 class Curly(SimpleRule):
     begins = '{'
     escapeRules = []
     terminator = '}'
 
-@Base.addSuccessorRule
 class Square(SimpleRule):
     begins = '['
     escapeRules = []

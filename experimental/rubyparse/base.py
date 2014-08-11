@@ -10,9 +10,9 @@ Basic Rule class and Base rule
 """
 from collections import defaultdict
 
+from .successor import BaseSuccessor
+
 class Rule:
-    successorRules = defaultdict(set)
-    
     def __init__(self, parser):
         pass
     
@@ -31,15 +31,14 @@ class Rule:
     
     def terminate(self, parser):
         raise NotImplementedError('Needs to be overridden')
-    
-    @classmethod
-    def addSuccessorRule(cls, rule):
-        Rule.successorRules[cls].add(rule)
-        return rule
         
-    @classmethod
-    def getSuccessorRule(cls, parser):
-        for PotentialSuccessor in Rule.successorRules[cls]:
+    @staticmethod
+    def getSuccessorRule(parser):
+        return None
+    
+    @staticmethod
+    def matchSuccessors(cls, parser):
+        for PotentialSuccessor in cls.get():
             result = PotentialSuccessor.match(parser)
             if result is not False:
                 return result, PotentialSuccessor(parser)
@@ -60,7 +59,10 @@ class Translateable(Rule):
         super().exit(parser)
         
 class Base(Rule):
-    
+    @classmethod
+    def getSuccessorRule(cls, parser):
+        return cls.matchSuccessors(BaseSuccessor, parser)
+            
     def terminate(self, parser):
         return parser.index >= len(parser.string)
     

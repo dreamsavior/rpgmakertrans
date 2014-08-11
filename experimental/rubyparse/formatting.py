@@ -11,12 +11,12 @@ FormatRule class and Formatted rules (eventually)
 
 from .simple import SimpleRule
 from .base import Rule, Base, Translateable
-
-class FormatSuccessor(type):
-    formatSuccessors = set()
-    def __init__(cls, name, bases, nmspc):
-        super().__init__(name, bases, nmspc)
-        type(cls).formatSuccessors.add(cls)
+from .successor import FormatSuccessor, FormatBaseSuccessor
+#class FormatSuccessor(type):
+#    formatSuccessors = set()
+#    def __init__(cls, name, bases, dict_):
+#        super().__init__(name, bases, dict_)
+#        type(cls).formatSuccessors.add(cls)
     
 class FormatRule(SimpleRule):
     """Must go to terminal character, check to see if % is after string, and if so consume the next thing."""
@@ -35,13 +35,11 @@ class FormatRule(SimpleRule):
             return 1
         
     def getSuccessorRule(self, parser):
-        if not self.gotString: super().getSuccessorRule(parser)
+        if not self.gotString: 
+            super().getSuccessorRule(parser)
         else:
-            for PotentialSuccessor in FormatSuccessor.formatSuccessors:
-                result = PotentialSuccessor.match(parser)
-                if result is not False:
-                    return result, PotentialSuccessor(parser)
-                        
+            return self.matchSuccessors(FormatSuccessor, parser)
+        
     def resume(self, parser):
         if self.gotString:
             self.gotFormat = True
@@ -67,14 +65,12 @@ class RubyVar(Rule):
     def terminate(self, parser):
         return parser.string[parser.index].isalnum()
 
-@Base.addSuccessorRule
-class DoubleQuote(FormatRule, Translateable, metaclass=FormatSuccessor):
+class DoubleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):
     begins = '"'
     escapeRules = [r'\"']
     terminator = '"'
 
-@Base.addSuccessorRule
-class SingleQuote(FormatRule, Translateable, metaclass=FormatSuccessor):
+class SingleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):
     begins = '\''
     escapeRules = [r"\'"]
     terminator = '\''
