@@ -33,7 +33,7 @@ class FormatSuccessor(Successors):
 class BaseSuccessor(Successors):
     def __init__(cls, name, bases, dict_):
         super().__init__(name, bases, dict_)
-        type(cls).register(BaseSuccessor, cls)
+        Successors.register(BaseSuccessor, cls)
         
     @classmethod
     def get(cls):
