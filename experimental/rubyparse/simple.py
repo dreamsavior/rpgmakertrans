@@ -8,7 +8,8 @@ simple
 
 SimpleRule class and simple rules
 """
-from .base import Rule
+from .base import Rule, Translateable, BaseSuccessor
+from .successor import FormatBaseSuccessor
 
 class SimpleRule(Rule):
     begins = ''
@@ -32,17 +33,17 @@ class SimpleRule(Rule):
     def terminate(self, parser):
         return parser.string.startswith(type(self).terminator, parser.index)
 
-class Bracket(SimpleRule):
+class Bracket(SimpleRule, metaclass = FormatBaseSuccessor):
     begins = '('
     escapeRules = []
     terminator = ')'
 
-class Curly(SimpleRule):
+class Curly(SimpleRule, metaclass = FormatBaseSuccessor):
     begins = '{'
     escapeRules = []
     terminator = '}'
 
-class Square(SimpleRule):
+class Square(SimpleRule, metaclass = FormatBaseSuccessor):
     begins = '['
     escapeRules = []
     terminator = ']'
@@ -51,3 +52,9 @@ class InnerCode(SimpleRule):
     begins = '#{'
     escapeRules = []
     terminator = '}'
+
+class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
+    begins = '/'
+    escapeRules = ['\/']
+    terminator = '/'
+    

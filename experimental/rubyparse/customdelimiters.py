@@ -47,9 +47,6 @@ class HereDoc(SimpleRule):
     def terminate(self, parser):
         pass
     
-class Regex(SimpleRule):
-    pass
-
 class CustomDelimiter(Rule):
     pass
 
