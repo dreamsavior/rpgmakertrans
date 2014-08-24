@@ -8,7 +8,7 @@ simple
 
 SimpleRule class and simple rules
 """
-from .base import Rule, Base
+from .base import Rule
 
 class SimpleRule(Rule):
     begins = ''
