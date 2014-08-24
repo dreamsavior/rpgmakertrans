@@ -12,7 +12,6 @@ Implementation of the Ruby Parser.
 from .rules import Base
 
 
-
 class RubyParser:
     def __init__(self, string, translationHandler):
         self.string = string
@@ -25,7 +24,6 @@ class RubyParser:
             if result is not None:
                 self.index += result[0]
                 self.ruleStack.append(result[1])
-            #self.ruleStack[-1].getSuccessorRule(self)
             ruleFlux = True
             while ruleFlux and self.ruleStack:
                 if self.ruleStack[-1].terminate(self):

@@ -10,13 +10,9 @@ FormatRule class and Formatted rules (eventually)
 """
 
 from .simple import SimpleRule
-from .base import Rule, Base, Translateable
+from .base import Translateable
 from .successor import FormatSuccessor, FormatBaseSuccessor
-#class FormatSuccessor(type):
-#    formatSuccessors = set()
-#    def __init__(cls, name, bases, dict_):
-#        super().__init__(name, bases, dict_)
-#        type(cls).formatSuccessors.add(cls)
+
     
 class FormatRule(SimpleRule):
     """Must go to terminal character, check to see if % is after string, and if so consume the next thing."""
