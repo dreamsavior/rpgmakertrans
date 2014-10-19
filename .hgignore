@@ -4,3 +4,4 @@ __pycache__
 .project
 .pydevproject
 pylint.html
+experimental/testdata/*
