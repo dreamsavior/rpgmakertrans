@@ -49,6 +49,8 @@ class Square(SimpleRule, metaclass = FormatBaseSuccessor):
     terminator = ']'
 
 class InnerCode(SimpleRule):
+    successorClass = BaseSuccessor
+    
     begins = '#{'
     escapeRules = []
     terminator = '}'
