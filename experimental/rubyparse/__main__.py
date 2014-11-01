@@ -17,5 +17,6 @@ class DummyTranslator:
         
 #RubyParser('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n', DummyTranslator())
 #RubyParser('"%s" % @varName\n', DummyTranslator())
-#'RubyParser('"%s, %s" % (@varName, otherName)\n', DummyTranslator())
-RubyParser('/\//\n', DummyTranslator())
+#RubyParser('"%s, %s" % (@varName, otherName)\n', DummyTranslator())
+#RubyParser('/\//\n', DummyTranslator())
+#RubyParser('("Hello")', DummyTranslator())

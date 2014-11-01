@@ -9,7 +9,7 @@ simple
 SimpleRule class and simple rules
 """
 from .base import Rule, Translateable, BaseSuccessor
-from .successor import FormatBaseSuccessor
+from .successor import FormatBaseSuccessor, AllCodeSuccessor
 
 class SimpleRule(Rule):
     begins = ''
@@ -32,8 +32,16 @@ class SimpleRule(Rule):
 
     def terminate(self, parser):
         return parser.string.startswith(type(self).terminator, parser.index)
+    
+class SimpleCode(SimpleRule):
+    successorClass = AllCodeSuccessor
 
-class Bracket(SimpleRule, metaclass = FormatBaseSuccessor):
+class Comment(SimpleRule, metaclass = AllCodeSuccessor):
+    begins = '#'
+    escapeRules = []
+    terminator = '\n'
+    
+class Bracket(SimpleCode, metaclass = FormatBaseSuccessor):
     begins = '('
     escapeRules = []
     terminator = ')'

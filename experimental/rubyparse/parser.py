@@ -36,5 +36,6 @@ class RubyParser:
                     self.index += self.ruleStack[-1].advance(self)
                     ruleFlux = False
             
-    
+    def __str__(self):
+        return ('RubyParser(string=..%s.., index=%s, ruleStack=%s)' % (self.string[max(0, self.index-2):min(self.index+2, len(self.string))], self.index, [type(rule).__name__ for rule in self.ruleStack]))
 
