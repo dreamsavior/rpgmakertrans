@@ -14,9 +14,10 @@ from .parser import RubyParser
 class DummyTranslator:
     def translate(self, string):
         print(string)
-        
-#RubyParser('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n', DummyTranslator())
-#RubyParser('"%s" % @varName\n', DummyTranslator())
-#RubyParser('"%s, %s" % (@varName, otherName)\n', DummyTranslator())
-#RubyParser('/\//\n', DummyTranslator())
-#RubyParser('("Hello")', DummyTranslator())
+ 
+dt = DummyTranslator()       
+#RubyParser('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n', dt
+#RubyParser('"%s" % @varName\n', dt
+#RubyParser('"%s, %s" % (@varName, otherName)\n', dt # Problem - something isn't matching correctly.
+#RubyParser('/\//\n', dt
+RubyParser('("Hello")', dt)

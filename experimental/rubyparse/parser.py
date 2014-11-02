@@ -21,9 +21,11 @@ class RubyParser:
         while self.ruleStack:
             assert self.index <= len(self.string)
             result = self.ruleStack[-1].getSuccessorRule(self)
-            if result is not None:
+            while result is not None:
                 self.index += result[0]
                 self.ruleStack.append(result[1])
+                result = self.ruleStack[-1].getSuccessorRule(self)
+                
             ruleFlux = True
             while ruleFlux and self.ruleStack:
                 if self.ruleStack[-1].terminate(self):
@@ -37,5 +39,7 @@ class RubyParser:
                     ruleFlux = False
             
     def __str__(self):
-        return ('RubyParser(string=..%s.., index=%s, ruleStack=%s)' % (self.string[max(0, self.index-2):min(self.index+2, len(self.string))], self.index, [type(rule).__name__ for rule in self.ruleStack]))
+        return ('RubyParser(string=..%s.., index=%s, ruleStack=%s)' % 
+                (self.string[max(0, self.index-2):min(self.index+2, len(self.string))], 
+                 self.index, [type(rule).__name__ for rule in self.ruleStack]))
 
