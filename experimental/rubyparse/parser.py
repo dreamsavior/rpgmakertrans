@@ -13,7 +13,7 @@ from .rules import Base
 
 
 class RubyParser:
-    def __init__(self, string, translationHandler):
+    def __init__(self, string, translationHandler, verbose = False):
         self.string = string
         self.translationHandler = translationHandler
         self.index = 0
@@ -22,6 +22,8 @@ class RubyParser:
             assert self.index <= len(self.string)
             result = self.ruleStack[-1].getSuccessorRule(self)
             while result is not None:
+                if verbose:
+                    print('got %s at %s' % (type(result[1]).__name__, self.index))
                 self.index += result[0]
                 self.ruleStack.append(result[1])
                 result = self.ruleStack[-1].getSuccessorRule(self)
@@ -29,6 +31,8 @@ class RubyParser:
             ruleFlux = True
             while ruleFlux and self.ruleStack:
                 if self.ruleStack[-1].terminate(self):
+                    if verbose:
+                        print('released %s at %s' % (type(self.ruleStack[-1]).__name__, self.index))
                     self.index += self.ruleStack[-1].advance(self)
                     self.ruleStack[-1].exit(self)
                     self.ruleStack.pop()
