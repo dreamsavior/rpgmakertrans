@@ -13,11 +13,11 @@ from .parser import RubyParser
 
 class DummyTranslator:
     def translate(self, string):
-        print(string)
+        print('S::' + string)
  
 dt = DummyTranslator()       
-#RubyParser('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n', dt
-#RubyParser('"%s" % @varName\n', dt
-#RubyParser('"%s, %s" % (@varName, otherName)\n', dt # Problem - something isn't matching correctly.
-#RubyParser('/\//\n', dt
+#RubyParser('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n', dt)
+#RubyParser('"%s" % @varName\n', dt)
+#RubyParser('"%s, %s" % (@varName, otherName)\n', dt)
+#RubyParser('/\//\n', dt)
 RubyParser('("Hello")', dt)

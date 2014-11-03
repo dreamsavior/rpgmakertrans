@@ -21,11 +21,15 @@ class RubyVar(Rule, metaclass = FormatSuccessor):
     def __init__(self, parser):
         super().__init__(parser)
         self.gotAl = False
+        self.terminated = False
     
     @classmethod
     def match(cls, parser):
         char = parser.string[parser.index]
         return char in '@$' or char.isalnum()
+    
+    def advance(self, parser):
+        return 0 if self.terminated else 1
         
     def terminate(self, parser):
         char = parser.string[parser.index]
@@ -35,6 +39,7 @@ class RubyVar(Rule, metaclass = FormatSuccessor):
             self.gotAl = True
             return False
         else:
+            self.terminated = True
             return True
         
 class HereDoc(SimpleRule):
