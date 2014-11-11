@@ -9,15 +9,26 @@ rubyparse_main
 A simple test runner for the experimental ruby parser.
 '''
 
-from .parser import RubyParser
+from .parser import parseRuby, RubyParserException
 
 class DummyTranslator:
     def translate(self, string):
-        print('S::' + string)
+        pass#print('S::' + string)
  
-dt = DummyTranslator()       
-#RubyParser('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n', dt)
-#RubyParser('"%s" % @varName\n', dt)
-#RubyParser('"%s, %s" % (@varName, otherName)\n', dt)
-#RubyParser('/\//\n', dt)
-RubyParser('("Hello")', dt)
+dt = DummyTranslator()
+
+def test(string, verbose = False, succeeds = True):
+    print(string + ' ' +  str(succeeds))
+    try:
+        parseRuby(string, dt, verbose = verbose)
+    except RubyParserException:
+        if succeeds is True:
+            raise Exception()
+        
+test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
+test('"%s" % @varName\n')
+test('"%s, %s" % (@varName, otherName)\n')
+test('/\//\n')
+test('("Hello")')
+test('# "Not Actually A String"\n')
+test('( # Tricky one this)\n', succeeds = False)

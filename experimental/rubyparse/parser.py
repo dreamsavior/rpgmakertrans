@@ -12,38 +12,47 @@ Implementation of the Ruby Parser.
 from .rules import Base
 
 
-class RubyParser:
-    def __init__(self, string, translationHandler, verbose = False):
+class RubyParserState:
+    def __init__(self, string, translationHandler, index, ruleStack):
         self.string = string
         self.translationHandler = translationHandler
-        self.index = 0
-        self.ruleStack = [Base(self)] 
-        while self.ruleStack:
-            assert self.index <= len(self.string)
-            result = self.ruleStack[-1].getSuccessorRule(self)
-            while result is not None:
-                if verbose:
-                    print('got %s at %s' % (type(result[1]).__name__, self.index))
-                self.index += result[0]
-                self.ruleStack.append(result[1])
-                result = self.ruleStack[-1].getSuccessorRule(self)
-                
-            ruleFlux = True
-            while ruleFlux and self.ruleStack:
-                if self.ruleStack[-1].terminate(self):
-                    if verbose:
-                        print('released %s at %s' % (type(self.ruleStack[-1]).__name__, self.index))
-                    self.index += self.ruleStack[-1].advance(self)
-                    self.ruleStack[-1].exit(self)
-                    self.ruleStack.pop()
-                    if self.ruleStack:
-                        self.ruleStack[-1].resume(self)
-                else:
-                    self.index += self.ruleStack[-1].advance(self)
-                    ruleFlux = False
-            
+        self.index = index
+        self.ruleStack = ruleStack
+        
     def __str__(self):
-        return ('RubyParser(string=..%s.., index=%s, ruleStack=%s)' % 
+        return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
                 (self.string[max(0, self.index-2):min(self.index+2, len(self.string))], 
                  self.index, [type(rule).__name__ for rule in self.ruleStack]))
+
+class RubyParserException(Exception): pass
+
+def parseRuby(string, translationHandler, verbose = False):
+    state = RubyParserState(string, translationHandler, 0, [])
+    state.ruleStack.append(Base(state))
+
+    while state.ruleStack:
+        if state.index > len(state.string):
+            raise RubyParserException('String out of bounds')
+        result = state.ruleStack[-1].getSuccessorRule(state)
+        while result is not None:
+            if verbose:
+                print('got %s at %s' % (type(result[1]).__name__, state.index))
+            state.index += result[0]
+            state.ruleStack.append(result[1])
+            result = state.ruleStack[-1].getSuccessorRule(state)
+            
+        ruleFlux = True
+        while ruleFlux and state.ruleStack:
+            if state.ruleStack[-1].terminate(state):
+                if verbose:
+                    print('released %s at %s' % (type(state.ruleStack[-1]).__name__, state.index))
+                state.index += state.ruleStack[-1].advance(state)
+                state.ruleStack[-1].exit(state)
+                state.ruleStack.pop()
+                if state.ruleStack:
+                    state.ruleStack[-1].resume(state)
+            else:
+                state.index += state.ruleStack[-1].advance(state)
+                ruleFlux = False
+            
 
