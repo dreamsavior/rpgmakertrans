@@ -43,7 +43,10 @@ class RubyVar(Rule, metaclass = FormatSuccessor):
         
 class HereDocError(Exception): pass
 
-class HereDoc(Rule, metaclass = BaseSuccessor):   
+class HereDoc(Rule, metaclass = BaseSuccessor):
+    """Heredocs are not supported in this version of the Ruby parser. The
+    current behaviour is to flat out refuse to do anything to a document
+    containing a Heredoc"""
     def __init__(self, parser):
         raise HereDocError('Cannot parse heredoc')
      
