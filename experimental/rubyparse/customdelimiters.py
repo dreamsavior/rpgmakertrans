@@ -9,9 +9,8 @@ customdelimiters
 Custom Delimiter based strings
 """
 
-from .simple import SimpleRule
 from .base import Rule
-from .successor import FormatSuccessor
+from .successor import FormatSuccessor, BaseSuccessor
 
 class RubyVar(Rule, metaclass = FormatSuccessor):
     """Hackish Ruby variable detector - just an alphanumeric string. 
@@ -42,15 +41,22 @@ class RubyVar(Rule, metaclass = FormatSuccessor):
             self.terminated = True
             return True
         
-class HereDoc(SimpleRule):
-    begins = '-->'
-    escapeRules = []
+class HereDocError(Exception): pass
 
-    def enter(self):
-        pass
-
-    def terminate(self, parser):
-        pass
+class HereDoc(Rule, metaclass = BaseSuccessor):   
+    def __init__(self, parser):
+        raise HereDocError('Cannot parse heredoc')
+     
+    @classmethod
+    def match(cls, parser):
+        if parser.string.startswith('<<', parser.index):
+            char = parser.string[parser.index + 2]
+            if char == '-' or char.isalpha():
+                return 0
+            else:
+                return False
+        else:
+            return False
     
 class CustomDelimiter(Rule):
     pass
@@ -62,7 +68,4 @@ class CustomDoubleQuoteString(CustomDelimiter):
     pass
 
 class CustomRegex(CustomDelimiter):
-    pass
-
-class HereDocLenient(SimpleRule):
     pass

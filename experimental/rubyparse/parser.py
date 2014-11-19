@@ -21,7 +21,7 @@ class RubyParserState:
         
     def __str__(self):
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
-                (self.string[max(0, self.index-2):min(self.index+2, len(self.string))], 
+                (self.string[max(0, self.index-2):min(self.index+3, len(self.string))], 
                  self.index, [type(rule).__name__ for rule in self.ruleStack]))
 
 class RubyParserException(Exception): pass
