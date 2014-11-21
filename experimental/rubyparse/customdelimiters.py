@@ -10,6 +10,7 @@ Custom Delimiter based strings
 """
 
 from .base import Rule
+from .simple import SimpleRule
 from .successor import FormatSuccessor, BaseSuccessor
 
 class RubyVar(Rule, metaclass = FormatSuccessor):
@@ -60,9 +61,17 @@ class HereDoc(Rule, metaclass = BaseSuccessor):
                 return False
         else:
             return False
-    
-class CustomDelimiter(Rule):
-    pass
+
+class CustomDelimiter(SimpleRule):
+    def __init__(self, parser):
+        self.delimiter = parser.string[parser.index]
+        parser.index += 1
+        
+    def terminator(self, parser):
+        if parser.string.startswith(self.delimiter, parser.index):
+            return True
+        else:
+            return False
 
 class CustomSingleQuoteString(CustomDelimiter):
     pass
