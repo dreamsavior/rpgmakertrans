@@ -53,7 +53,7 @@ class HereDoc(Rule, metaclass = BaseSuccessor):
      
     @classmethod
     def match(cls, parser):
-        if parser.string.startswith('<<', parser.index):
+        if parser.startswith('<<'):
             char = parser.string[parser.index + 2]
             if char == '-' or char.isalpha():
                 return 0

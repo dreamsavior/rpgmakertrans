@@ -42,7 +42,16 @@ class BaseSuccessor(Successors):
     @classmethod
     def get(cls):
         return Successors._get(BaseSuccessor).union(super().get())
+
+class StatementSuccessor(Successors):
+    def __init__(cls, name, bases, dict_):
+        super().__init__(name, bases, dict_)
+        Successors.register(StatementSuccessor, cls)
         
+    @classmethod
+    def get(cls):
+        return Successors._get(StatementSuccessor).union(super().get())
+    
 class FormatBaseSuccessor(FormatSuccessor, BaseSuccessor): pass
 
 class CodeSuccessor(Successors):

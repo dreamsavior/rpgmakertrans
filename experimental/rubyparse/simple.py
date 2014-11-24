@@ -18,20 +18,20 @@ class SimpleRule(Rule):
       
     @classmethod
     def match(cls, parser):
-        if parser.string.startswith(cls.begins, parser.index):
+        if parser.startswith(cls.begins):
             return len(cls.begins)
         else:
             return False
     
     def advance(self, parser):
         for escape in type(self).escapeRules:
-            if parser.string.startswith(escape, parser.index):
+            if parser.startswith(escape):
                 return len(escape)
         else:
             return 1
 
     def terminate(self, parser):
-        return parser.string.startswith(type(self).terminator, parser.index)
+        return parser.startswith(type(self).terminator)
     
 class SimpleCode(SimpleRule):
     successorClass = AllCodeSuccessor
