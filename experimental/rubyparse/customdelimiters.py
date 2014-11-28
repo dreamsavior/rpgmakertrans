@@ -9,7 +9,7 @@ customdelimiters
 Custom Delimiter based strings
 """
 
-from .base import Rule
+from .base import Rule, StatementContainer
 from .simple import SimpleRule
 from .successor import FormatSuccessor, BaseSuccessor, AllCodeSuccessor
 
@@ -41,6 +41,26 @@ class RubyVar(Rule, metaclass = AllCodeSuccessor):
         else:
             self.terminated = True
             return True
+        
+class RubyKeyword(Rule, metaclass = AllCodeSuccessor):
+    """Catch all for Ruby Keywords - these have the property that they should
+    *reset* their parents statement detection"""
+    keywords = ['if'] # TODO: Populate this list
+    
+    @classmethod
+    def match(cls, parser):
+        for keyword in cls.keywords:
+            if parser.startswith(keyword):
+                return len(keyword)
+        return False
+    
+    def terminate(self, parser):
+        return True
+    
+    def exit(self, parser):
+        if isinstance(StatementContainer, parser.currentRule):
+            parser.currentRule.statementSeen = False
+        return super().exit(parser)
         
 class HereDocError(Exception): pass
 
