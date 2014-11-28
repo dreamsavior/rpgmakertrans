@@ -24,11 +24,10 @@ class RubyParserState:
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
                 (self.string[max(0, self.index-2):min(self.index+3, len(self.string))], 
                  self.index, [type(rule).__name__ for rule in self.ruleStack]))
-        
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            start = index.start + self.__index if 
-            return self.string(index.start + self.__index, index.stop + self.__index)
+    
+    @property
+    def index(self):
+        return self.__index
     
     @index.setter
     def index(self, newindex):
@@ -52,6 +51,8 @@ class RubyParserState:
         return self.string.startswith(substring, index)
                     
     def addRule(self, rule):
+        if self.currentRule is not None:
+            self.currentRule.unfocus(self)
         self.ruleStack.append(rule)
         
     def popRules(self):
