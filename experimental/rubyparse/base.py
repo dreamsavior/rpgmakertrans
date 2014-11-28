@@ -16,6 +16,9 @@ class Rule:
     def __init__(self, parser):
         pass
     
+    def __str__(self):
+        return type(self).__name__
+    
     @classmethod
     def match(cls, parser):
         raise NotImplementedError('Needs to be overridden')

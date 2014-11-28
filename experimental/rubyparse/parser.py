@@ -23,7 +23,7 @@ class RubyParserState:
     def __str__(self):
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
                 (self.string[max(0, self.index-2):min(self.index+3, len(self.string))], 
-                 self.index, [type(rule).__name__ for rule in self.ruleStack]))
+                 self.index, [str(rule) for rule in self.ruleStack]))
     
     @property
     def index(self):
@@ -35,7 +35,8 @@ class RubyParserState:
         for _ in range(adv):
             self.__index += 1
             if self.verbose:
-                print(self.__index, self.ruleStack[-1])
+                print(self)
+                #print(self.__index, self.ruleStack[-1])
         assert self.__index == newindex
         
     @property
