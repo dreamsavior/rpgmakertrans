@@ -11,9 +11,9 @@ Custom Delimiter based strings
 
 from .base import Rule
 from .simple import SimpleRule
-from .successor import FormatSuccessor, BaseSuccessor
+from .successor import FormatSuccessor, BaseSuccessor, AllCodeSuccessor
 
-class RubyVar(Rule, metaclass = FormatSuccessor):
+class RubyVar(Rule, metaclass = AllCodeSuccessor):
     """Hackish Ruby variable detector - just an alphanumeric string. 
     It would also work for string literals.
     TODO: It needs to handle attributes (prefixed @) and any other non
@@ -25,14 +25,14 @@ class RubyVar(Rule, metaclass = FormatSuccessor):
     
     @classmethod
     def match(cls, parser):
-        char = parser.string[parser.index]
+        char = parser.currentChar
         return char in '@$' or char.isalnum()
     
     def advance(self, parser):
         return 0 if self.terminated else 1
         
     def terminate(self, parser):
-        char = parser.string[parser.index]
+        char = parser.currentChar
         if not self.gotAl and (char == '@' or char == '$'):
             return False
         elif char.isalnum():

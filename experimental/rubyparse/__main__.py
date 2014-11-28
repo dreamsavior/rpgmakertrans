@@ -9,6 +9,8 @@ rubyparse_main
 A simple test runner for the experimental ruby parser.
 '''
 
+import os
+
 from .parser import parseRuby, RubyParserException
 from .customdelimiters import HereDocError
 
@@ -31,7 +33,8 @@ def test(string, verbose = False, succeeds = True):
             raise Exception()
     if succeeds is False and errored is False:
         raise Exception('Succeeded when should have failed')
-        
+
+test('')       
 test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
 test('"%s" % @varName\n')
 test('"%s, %s" % (@varName, otherName)\n')
@@ -42,3 +45,8 @@ test('( # Tricky one this)\n', succeeds = False)
 test('print << "yo"')
 test('print <<END\nHeredoc\nEND', succeeds = False)
 test('print <<-END\nHeredoc\nEND', succeeds = False)
+
+#for filename in os.listdir('testdata'):
+#    with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
+#        print(filename)
+#        test(f.read())
