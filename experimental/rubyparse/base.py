@@ -9,7 +9,7 @@ base
 Basic Rule class and Base rule
 """
 
-from .successor import BaseSuccessor, StatementSuccessor
+from .successor import BaseSuccessor
 
 class Rule:
     successorClass = None
