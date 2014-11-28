@@ -9,7 +9,7 @@ base
 Basic Rule class and Base rule
 """
 
-from .successor import BaseSuccessor
+from .successor import BaseSuccessor, StatementSuccessor
 
 class Rule:
     successorClass = None
@@ -22,6 +22,9 @@ class Rule:
     
     def advance(self, parser):
         return 1
+    
+    def unfocus(self, parser):
+        pass
     
     def resume(self, parser):
         pass
@@ -60,10 +63,28 @@ class Translateable(Rule):
             parser.translationHandler.translate(parser.string[self.beginsAt:parser.index])
             type(self).focus = None
         super().exit(parser)
+
+class StatementContainer(Rule):
+    statementSeperators = []
+    
+    def __init__(self, parser):
+        self.statementSeen = False
+        super().__init__(parser)
+    
+    def unfocus(self, parser):
+        self.statementSeen = True
         
-class Base(Rule):
+    def advance(self, parser):
+        for statementSeperator in type(self).statementSeperators:
+            if parser.startswith(statementSeperator):
+                self.statementSeen = False
+        return super().advance(parser) 
+            
+class Base(StatementContainer):
+    statementSeperators = ['\n', ';']
     successorClass = BaseSuccessor
             
     def terminate(self, parser):
         return parser.index >= len(parser.string)
     
+        
