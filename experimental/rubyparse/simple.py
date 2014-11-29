@@ -67,7 +67,18 @@ class InnerCode(SimpleRule):
     terminator = '}'
 
 class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
-    begins = '/'
     escapeRules = ['\/']
     terminator = '/'
     
+    @classmethod
+    def match(cls, parser):
+        if parser.startswith('/'):
+            if parser[1] in ' =': # These always mean division
+                return False
+            elif parser.rolledBack: # We tried a regex and it broke everything
+                return False
+            else:
+                parser.setRollback()
+                return 1
+        else:
+            return False

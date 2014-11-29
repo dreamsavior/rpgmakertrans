@@ -9,6 +9,7 @@ parser
 Implementation of the Ruby Parser.
 """
 
+from copy import deepcopy
 from .rules import Base
 
 
@@ -19,15 +20,43 @@ class RubyParserState:
         self.__index = index
         self.ruleStack = ruleStack
         self.verbose = verbose
+        self.rollbacks = {}
+        self.currentRollBack = None
         
     def __str__(self):
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
                 (repr(self.string[max(0, self.index-2):min(self.index+3, len(self.string))]), 
                  self.index, [str(rule) for rule in self.ruleStack]))
+        
+    def __getitem__(self, indx):
+        if isinstance(indx, slice):
+            if slice.start is not None and slice.start < 0: raise ValueError('No negative slices')
+            if slice.stop is not None and slice.stop < 0: raise ValueError('No negative slices')
+            if slice.step is not None and slice.step != 1: raise ValueError('No stepped slices')
+            start = slice.start + self.__index if slice.start is not None else slice.start
+            stop = slice.stop + self.__index if slice.stop is not None else slice.stop
+            return self.string[slice(start, stop, 1)]
+        else:
+            if indx < 0: raise ValueError('No negative indices')
+            return self.string[self.__index+indx:self.__index+indx+1]
+        
+    def setRollback(self):
+        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:])
+        
+    def resumeRollback(self):
+        print('y')
+        if self.rollbacks:
+            rollback = max(self.rollbacks)
+            self.__index, self.ruleStack = self.rollbacks.pop(rollback)
+            self.rollback = self.__index
     
     @property
     def index(self):
         return self.__index
+    
+    @property
+    def rolledBack(self):
+        return self.__index == self.currentRollBack
     
     @index.setter
     def index(self, newindex):

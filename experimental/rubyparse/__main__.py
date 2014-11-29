@@ -45,7 +45,7 @@ test('( # Tricky one this)\n', succeeds = False)
 test('print << "yo"')
 test('print <<END\nHeredoc\nEND', succeeds = False)
 test('print <<-END\nHeredoc\nEND', succeeds = False)
-
+test('x /x', verbose=True)
 #for filename in os.listdir('testdata'):
 #    with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
 #        print(filename)
