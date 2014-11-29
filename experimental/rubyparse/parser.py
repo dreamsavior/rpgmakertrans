@@ -44,11 +44,15 @@ class RubyParserState:
         self.rollbacks[self.__index] = (self.__index, self.ruleStack[:])
         
     def resumeRollback(self):
-        print('y')
         if self.rollbacks:
             rollback = max(self.rollbacks)
+            if self.verbose:
+                print('Failure, resuming at %s' % self.rollbacks[rollback][0])
             self.__index, self.ruleStack = self.rollbacks.pop(rollback)
-            self.rollback = self.__index
+            self.currentRollBack = self.__index
+            return True
+        else:
+            return False
     
     @property
     def index(self):
@@ -92,6 +96,15 @@ class RubyParserState:
             self.currentRule.unfocus(self)
         self.ruleStack.append(rule)
         
+    def checkNextRule(self):
+        result = self.currentRule.getSuccessorRule(self)
+        while result is not None:
+            if self.verbose:
+                print('got %s at %s' % (type(result[1]).__name__, self.index))
+            self.index += result[0]
+            self.addRule(result[1])
+            result = self.currentRule.getSuccessorRule(self)
+            
     def popRules(self):
         ruleFlux = True
         while ruleFlux and self.ruleStack:
@@ -115,15 +128,9 @@ def parseRuby(string, translationHandler, verbose = False):
 
     while state.ruleStack:
         if state.index > len(state.string):
-            raise RubyParserException('String out of bounds: %s' % state)
-        result = state.currentRule.getSuccessorRule(state)
-        while result is not None:
-            if verbose:
-                print('got %s at %s' % (type(result[1]).__name__, state.index))
-            state.index += result[0]
-            state.addRule(result[1])
-            result = state.currentRule.getSuccessorRule(state)
-        
+            if not state.resumeRollback():
+                raise RubyParserException('String out of bounds: %s' % state)
+        state.checkNextRule()
         state.popRules()
         
             
