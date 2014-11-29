@@ -47,7 +47,8 @@ test('print <<END\nHeredoc\nEND', succeeds = False)
 test('print <<-END\nHeredoc\nEND', succeeds = False)
 test('x /x')
 test('x /x\nx /x', verbose = True)
-#for filename in os.listdir('testdata'):
-#    with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
-#        print(filename)
-#        test(f.read())
+for filename in os.listdir('testdata'):
+    if filename.endswith('.rb'):
+        with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
+            print(filename)
+            test(f.read())
