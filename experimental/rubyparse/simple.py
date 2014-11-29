@@ -47,7 +47,7 @@ class Bracket(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
     escapeRules = []
     terminator = ')'
 
-class Curly(SimpleRule, StatementContainer, metaclass = FormatBaseSuccessor):
+class Curly(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
     statementSeperators = [',', '=>']
     begins = '{'
     escapeRules = []
@@ -76,7 +76,7 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
     Will this see false positives? Well, yes, but that can't be helped
     without a lot more work in parsing.
     """
-    escapeRules = ['\/']
+    escapeRules = [r'\/', r'\\']
     terminator = '/'
     
     def advance(self, parser):

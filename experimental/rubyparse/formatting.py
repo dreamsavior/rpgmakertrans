@@ -54,11 +54,11 @@ class FormatRule(SimpleRule):
 
 class DoubleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):
     begins = '"'
-    escapeRules = [r'\"']
+    escapeRules = [r'\"', r'\\']
     terminator = '"'
 
 class SingleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):
     begins = '\''
-    escapeRules = [r"\'"]
+    escapeRules = [r"\'", r'\\']
     terminator = '\''
 
