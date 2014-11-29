@@ -59,6 +59,13 @@ class Square(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
     escapeRules = []
     terminator = ']'
 
+class Require(SimpleRule, metaclass = BaseSuccessor):
+    begins = 'require'
+    escapeRules = []
+    
+    def terminate(self, parser):
+        return parser.startswith('\n') or parser.startswith(';')
+    
 class InnerCode(SimpleRule):
     successorClass = BaseSuccessor
     

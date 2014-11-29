@@ -17,7 +17,7 @@ from .customdelimiters import HereDocError
 class DummyTranslator:
     def translate(self, string):
         pass
-        #print('S::' + string)
+        print('S::' + string)
  
 dt = DummyTranslator()
 
