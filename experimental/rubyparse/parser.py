@@ -22,6 +22,7 @@ class RubyParserState:
         self.verbose = verbose
         self.rollbacks = {}
         self.currentRollBack = None
+        self.failed = False
         
     def __str__(self):
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
@@ -50,6 +51,7 @@ class RubyParserState:
                 print('Failure, resuming at %s' % self.rollbacks[rollback][0])
             self.__index, self.ruleStack = self.rollbacks.pop(rollback)
             self.currentRollBack = self.__index
+            self.failed = False
             return True
         else:
             return False
@@ -130,6 +132,9 @@ def parseRuby(string, translationHandler, verbose = False):
         if state.index > len(state.string):
             if not state.resumeRollback():
                 raise RubyParserException('String out of bounds: %s' % state)
+        if state.failed:
+            if not state.resumeRollback():
+                raise RubyParserException('Entered failed state: %s' % state)
         state.checkNextRule()
         state.popRules()
         

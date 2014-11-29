@@ -67,8 +67,22 @@ class InnerCode(SimpleRule):
     terminator = '}'
 
 class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
+    """Matching regexs is a little trickier as '/' is either a regex
+    or division. So there are a few strategies: 1) If / is followed
+    by ' ' or '=', its division. 2) Otherwise, assume it's a regex
+    3) If we see a newline or run out of space, the parser fails and
+    should resume assuming it's division.
+    
+    Will this see false positives? Well, yes, but that can't be helped
+    without a lot more work in parsing.
+    """
     escapeRules = ['\/']
     terminator = '/'
+    
+    def advance(self, parser):
+        if parser.currentChar == '\n':
+            parser.failed = True
+        return super().advance(parser)
     
     @classmethod
     def match(cls, parser):
