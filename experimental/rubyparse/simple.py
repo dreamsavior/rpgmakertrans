@@ -53,7 +53,7 @@ class Curly(SimpleRule, StatementContainer, metaclass = FormatBaseSuccessor):
     escapeRules = []
     terminator = '}'
 
-class Square(SimpleRule, StatementContainer, metaclass = FormatBaseSuccessor):
+class Square(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
     statementSeperators = [',']
     begins = '['
     escapeRules = []
