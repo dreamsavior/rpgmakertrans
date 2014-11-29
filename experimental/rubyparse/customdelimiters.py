@@ -58,7 +58,7 @@ class RubyKeyword(Rule, metaclass = AllCodeSuccessor):
         return True
     
     def exit(self, parser):
-        if isinstance(StatementContainer, parser.currentRule):
+        if isinstance(parser.currentRule, StatementContainer):
             parser.currentRule.statementSeen = False
         return super().exit(parser)
         
