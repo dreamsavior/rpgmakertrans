@@ -26,7 +26,7 @@ class RubyVar(Rule, metaclass = AllCodeSuccessor):
     @classmethod
     def match(cls, parser):
         char = parser.currentChar
-        return char in '@$' or char.isalnum()
+        return 0 if char in '@$' or char.isalnum() else False
     
     def advance(self, parser):
         return 0 if self.terminated else 1

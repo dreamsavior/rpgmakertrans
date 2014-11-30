@@ -109,6 +109,7 @@ class RubyParserState:
             
     def popRules(self):
         ruleFlux = True
+        ruleTerminated = False
         while ruleFlux and self.ruleStack:
             if self.currentRule.terminate(self):
                 if self.verbose:
@@ -118,9 +119,11 @@ class RubyParserState:
                 self.ruleStack.pop()
                 if self.ruleStack:
                     self.currentRule.resume(self)
+                ruleTerminated = True
             else:
-                self.index += self.currentRule.advance(self)
                 ruleFlux = False
+        if not ruleTerminated:
+            self.index += self.currentRule.advance(self)
 
 class RubyParserException(Exception): pass
 
