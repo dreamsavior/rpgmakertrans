@@ -9,14 +9,14 @@ parser
 Implementation of the Ruby Parser.
 """
 
-from copy import deepcopy
 from .rules import Base
+from .scripttranslator import ScriptTranslator
 
 
 class RubyParserState:
-    def __init__(self, string, translationHandler, index, ruleStack, verbose = False):
+    def __init__(self, string, scriptTranslator, index, ruleStack, verbose = False):
         self.string = string
-        self.translationHandler = translationHandler
+        self.scriptTranslator = scriptTranslator
         self.__index = index
         self.ruleStack = ruleStack
         self.verbose = verbose
@@ -52,6 +52,7 @@ class RubyParserState:
             self.__index, self.ruleStack = self.rollbacks.pop(rollback)
             self.currentRollBack = self.__index
             self.failed = False
+            self.scriptTranslator.rollback(self.__index)
             return True
         else:
             return False
@@ -127,8 +128,9 @@ class RubyParserState:
 
 class RubyParserException(Exception): pass
 
-def parseRuby(string, translationHandler, verbose = False):
-    state = RubyParserState(string, translationHandler, 0, [], verbose)
+def translateRuby(string, translationHandler, verbose = False):
+    scriptTranslator = ScriptTranslator(string, translationHandler)
+    state = RubyParserState(string, scriptTranslator, 0, [], verbose)
     state.addRule(Base(state))
 
     while state.ruleStack:
@@ -141,5 +143,5 @@ def parseRuby(string, translationHandler, verbose = False):
         state.checkNextRule()
         state.popRules()
         
-            
-
+    state.scriptTranslator.translate()
+    

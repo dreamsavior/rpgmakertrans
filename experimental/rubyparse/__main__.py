@@ -11,7 +11,7 @@ A simple test runner for the experimental ruby parser.
 
 import os
 import sys
-from .parser import parseRuby, RubyParserException
+from .parser import translateRuby, RubyParserException
 from .customdelimiters import HereDocError
 
 class DummyTranslator:
@@ -28,7 +28,7 @@ def test(string, verbose = None, succeeds = True):
         print(string + ' ' +  str(succeeds))
     errored = False
     try:
-        parseRuby(string, dt, verbose = verbose)
+        translateRuby(string, dt, verbose = verbose)
     except (RubyParserException, HereDocError):
         errored = True
         if succeeds is True:

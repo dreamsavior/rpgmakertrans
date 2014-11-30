@@ -63,7 +63,7 @@ class Translateable(Rule):
         
     def exit(self, parser):
         if type(self).focus is self:
-            parser.translationHandler.translate(parser.string[self.beginsAt:parser.index])
+            parser.scriptTranslator.addIndicies((self.beginsAt, parser.index))#.translate(parser.string[self.beginsAt:parser.index])
             type(self).focus = None
         super().exit(parser)
 
