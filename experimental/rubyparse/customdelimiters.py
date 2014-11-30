@@ -9,9 +9,9 @@ customdelimiters
 Custom Delimiter based strings
 """
 
-from .base import Rule, StatementContainer
+from .base import Rule, StatementContainer, Translateable
 from .simple import SimpleRule
-from .successor import FormatSuccessor, BaseSuccessor, AllCodeSuccessor
+from .successor import BaseSuccessor, AllCodeSuccessor
 
 class RubyVar(Rule, metaclass = AllCodeSuccessor):
     """Hackish Ruby variable detector - just an alphanumeric string. 
@@ -83,21 +83,44 @@ class HereDoc(Rule, metaclass = BaseSuccessor):
             return False
 
 class CustomDelimiter(SimpleRule):
+    brackets = {'(':')', '{':'}', '[':']'}
+    escapes = [r'\\']
     def __init__(self, parser):
-        self.delimiter = parser.string[parser.index]
+        super().__init__(parser)
+        self.delimiter = parser[2]
         parser.index += 1
         
-    def terminator(self, parser):
-        if parser.string.startswith(self.delimiter, parser.index):
+    @property
+    def delimiter(self):
+        return self.__delimiter
+    
+    @delimiter.setter
+    def delimiter(self, newdelimiter):
+        self.__delimiter = type(self).brackets.get(newdelimiter, newdelimiter)
+            
+    def advance(self, parser):
+        if parser.startswith(r'\%s' % self.delimiter):
+            return 2
+        else:
+            return super().advance(parser)
+        
+    def terminate(self, parser):
+        if self.delimiter and parser.string.startswith(self.delimiter, parser.index):
             return True
         else:
             return False
 
-class CustomSingleQuoteString(CustomDelimiter):
-    pass
+class CustomSingleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    begins = '%q'
 
-class CustomDoubleQuoteString(CustomDelimiter):
-    pass
+class CustomDoubleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    begins = '%Q'
 
-class CustomRegex(CustomDelimiter):
-    pass
+class CustomRegex(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    begins = '%r'
+    
+class WhitespaceArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    begins = '%w'
+
+class CustomBacktick(CustomDelimiter, metaclass=AllCodeSuccessor):
+    begins = '%x'

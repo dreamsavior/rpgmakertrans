@@ -17,7 +17,7 @@ from .customdelimiters import HereDocError
 class DummyTranslator:
     def translate(self, string):
         pass
-        #print('S::' + string)
+        print('S::' + string)
  
 dt = DummyTranslator()
 
@@ -47,6 +47,7 @@ test('print <<END\nHeredoc\nEND', succeeds = False)
 test('print <<-END\nHeredoc\nEND', succeeds = False)
 test('x /x')
 test('x/x\nx /x')
+test('%q[Hello2]')
 for filename in os.listdir('testdata'):
     if filename.endswith('.rb'):
         with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
