@@ -10,18 +10,20 @@ A simple test runner for the experimental ruby parser.
 '''
 
 import os
-
+import sys
 from .parser import parseRuby, RubyParserException
 from .customdelimiters import HereDocError
 
 class DummyTranslator:
     def translate(self, string):
-        pass
-        print('S::' + string)
+        if '-p' in sys.argv:
+            print('S::' + string)
  
 dt = DummyTranslator()
 
-def test(string, verbose = False, succeeds = True):
+def test(string, verbose = None, succeeds = True):
+    if verbose is None:
+        verbose = '-v' in sys.argv
     if verbose:
         print(string + ' ' +  str(succeeds))
     errored = False
