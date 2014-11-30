@@ -10,6 +10,7 @@ Implementation of the Ruby Parser.
 """
 
 from .rules import Base
+from .base import Translateable
 from .scripttranslator import ScriptTranslator
 
 
@@ -53,6 +54,8 @@ class RubyParserState:
             if self.verbose:
                 print('Failure, resuming at %s' % self.rollbacks[rollback][0])
             self.__index, self.ruleStack, self.char, self.line = self.rollbacks.pop(rollback)
+            if Translateable.focus not in self.ruleStack:
+                Translateable.focus = None
             self.currentRollBack = self.__index
             self.failed = False
             self.scriptTranslator.rollback(self.__index)

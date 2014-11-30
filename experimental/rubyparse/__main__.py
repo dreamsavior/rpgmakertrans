@@ -52,6 +52,8 @@ test('x /x')
 test('x/x\nx /x')
 test('%q[Hello2]')
 test('"#{""}"')
+test('"#{\'\'}"')
+test('a/a "Hello"')
 for filename in os.listdir('testdata'):
     if filename.endswith('.rb'):
         with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
