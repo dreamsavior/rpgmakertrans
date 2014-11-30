@@ -8,7 +8,7 @@ simple
 
 SimpleRule class and simple rules
 """
-from .base import Rule, Translateable, BaseSuccessor, StatementContainer
+from .base import Rule, Translateable, BaseSuccessor
 from .successor import FormatBaseSuccessor, AllCodeSuccessor, EmbeddedCodeSuccessor
 
 class SimpleRule(Rule):
@@ -44,20 +44,17 @@ class Comment(SimpleRule, metaclass = AllCodeSuccessor):
         return parser.startswith('\n') or parser.index >= len(parser.string)
             
     
-class Bracket(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
-    statementSeperators = [','] 
+class Bracket(SimpleCode, metaclass = FormatBaseSuccessor):
     begins = '('
     escapeRules = []
     terminator = ')'
 
-class Curly(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
-    statementSeperators = [',', '=>']
+class Curly(SimpleCode, metaclass = FormatBaseSuccessor):
     begins = '{'
     escapeRules = []
     terminator = '}'
 
-class Square(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
-    statementSeperators = [',']
+class Square(SimpleCode, metaclass = FormatBaseSuccessor):
     begins = '['
     escapeRules = []
     terminator = ']'

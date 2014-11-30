@@ -102,8 +102,6 @@ class RubyParserState:
         return self.string.startswith(substring, index)
                     
     def addRule(self, rule):
-        if self.currentRule is not None:
-            self.currentRule.unfocus(self)
         self.ruleStack.append(rule)
         
     def checkNextRule(self):
