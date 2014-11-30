@@ -69,6 +69,11 @@ class Require(SimpleRule, metaclass = BaseSuccessor):
     def terminate(self, parser):
         return parser.startswith('\n') or parser.startswith(';')
     
+class Backtick(SimpleRule, metaclass = BaseSuccessor):
+    begins = '`'
+    escapeRules = []
+    terminator = '`'
+    
 class InnerCode(SimpleRule):
     successorClass = BaseSuccessor
     
