@@ -19,6 +19,7 @@ class DummyTranslator:
         if '-p' in sys.argv:
             print('C::' + context)
             print('S::' + string)
+        return string
  
 dt = DummyTranslator()
 
@@ -29,7 +30,8 @@ def test(string, verbose = None, filename = '', succeeds = True):
         print(string + ' ' +  str(succeeds))
     errored = False
     try:
-        translateRuby(string, dt, filename = filename, verbose = verbose)
+        outscript = translateRuby(string, dt, filename = filename, verbose = verbose)
+        assert outscript == string, 'Did not get same string back with no translations'
     except (RubyParserException, HereDocError):
         errored = True
         if succeeds is True:

@@ -63,7 +63,7 @@ class HereDoc(Rule, metaclass = BaseSuccessor):
             return False
 
 class CustomDelimiter(SimpleRule):
-    brackets = {'(':')', '{':'}', '[':']'}
+    brackets = {'(':')', '{':'}', '[':']', '<':'>'}
     escapes = [r'\\']
     def __init__(self, parser):
         super().__init__(parser)

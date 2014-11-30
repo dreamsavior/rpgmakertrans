@@ -150,5 +150,5 @@ def translateRuby(string, translationHandler, filename = '', verbose = False):
         state.checkNextRule()
         state.popRules()
         
-    scriptTranslator.translate()
+    return scriptTranslator.translate()
     
