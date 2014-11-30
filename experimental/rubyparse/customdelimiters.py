@@ -119,8 +119,14 @@ class CustomDoubleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeS
 class CustomRegex(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     begins = '%r'
     
-class WhitespaceArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+class WordSQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     begins = '%w'
+    
+class WordDQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    begins = '%Q'
 
 class CustomBacktick(CustomDelimiter, metaclass=AllCodeSuccessor):
     begins = '%x'
+    
+class CustomSymbols(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    begins = '%s'
