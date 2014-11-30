@@ -14,8 +14,9 @@ from .scripttranslator import ScriptTranslator
 
 
 class RubyParserState:
-    def __init__(self, string, scriptTranslator, index, ruleStack, verbose = False):
+    def __init__(self, string, filename, scriptTranslator, index, ruleStack, verbose = False):
         self.string = string
+        self.filename = filename
         self.scriptTranslator = scriptTranslator
         self.__index = index
         self.ruleStack = ruleStack
@@ -23,6 +24,8 @@ class RubyParserState:
         self.rollbacks = {}
         self.currentRollBack = None
         self.failed = False
+        self.char = 1
+        self.line = 1
         
     def __str__(self):
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
@@ -42,14 +45,14 @@ class RubyParserState:
             return self.string[self.__index+indx:self.__index+indx+1]
         
     def setRollback(self):
-        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:])
+        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:], self.char, self.line)
         
     def resumeRollback(self):
         if self.rollbacks:
             rollback = max(self.rollbacks)
             if self.verbose:
                 print('Failure, resuming at %s' % self.rollbacks[rollback][0])
-            self.__index, self.ruleStack = self.rollbacks.pop(rollback)
+            self.__index, self.ruleStack, self.char, self.line = self.rollbacks.pop(rollback)
             self.currentRollBack = self.__index
             self.failed = False
             self.scriptTranslator.rollback(self.__index)
@@ -69,6 +72,10 @@ class RubyParserState:
     def index(self, newindex):
         adv = newindex - self.__index
         for _ in range(adv):
+            self.char += 1
+            if self.currentChar == '\n':
+                self.line += 1
+                self.char = 1
             self.__index += 1
             if self.verbose:
                 print(adv, self)
@@ -128,9 +135,9 @@ class RubyParserState:
 
 class RubyParserException(Exception): pass
 
-def translateRuby(string, translationHandler, verbose = False):
+def translateRuby(string, translationHandler, filename = '', verbose = False):
     scriptTranslator = ScriptTranslator(string, translationHandler)
-    state = RubyParserState(string, scriptTranslator, 0, [], verbose)
+    state = RubyParserState(string, filename, scriptTranslator, 0, [], verbose)
     state.addRule(Base(state))
 
     while state.ruleStack:
@@ -143,5 +150,5 @@ def translateRuby(string, translationHandler, verbose = False):
         state.checkNextRule()
         state.popRules()
         
-    state.scriptTranslator.translate()
+    scriptTranslator.translate()
     

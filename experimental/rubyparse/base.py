@@ -10,6 +10,7 @@ Basic Rule class and Base rule
 """
 
 from .successor import BaseSuccessor
+from collections import namedtuple
 
 class Rule:
     successorClass = None
@@ -52,18 +53,24 @@ class Rule:
             if result is not False:
                 return result, PotentialSuccessor(parser)
 
+TranslationData = namedtuple('TranslationData', ['begin', 'end', 'file', 'line', 'char'])
+
 class Translateable(Rule):
     focus = None
     
     def __init__(self, parser):
         if type(self).focus is None:
             self.beginsAt = parser.index
+            self.char = parser.char
+            self.line = parser.line
             type(self).focus = self
         super().__init__(parser)
         
     def exit(self, parser):
         if type(self).focus is self:
-            parser.scriptTranslator.addIndicies((self.beginsAt, parser.index))#.translate(parser.string[self.beginsAt:parser.index])
+            translationData = TranslationData(self.beginsAt, parser.index, 
+                                              parser.filename, self.line, self.char)
+            parser.scriptTranslator.addIndicies(translationData)
             type(self).focus = None
         super().exit(parser)
 

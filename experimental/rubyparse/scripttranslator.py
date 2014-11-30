@@ -23,5 +23,6 @@ class ScriptTranslator:
         self.translationIndices = [indices for indices in self.translationIndices if indices[0] < index]
         
     def translate(self):
-        for indicies in self.translationIndices:
-            self.translationHandler.translate(self.string[indicies[0]:indicies[1]])
+        for indices in self.translationIndices:
+            context = 'Script/%s/%s:%s' % (indices.file, indices.line, indices.char)
+            self.translationHandler.translate(self.string[indices[0]:indices[1]], context)

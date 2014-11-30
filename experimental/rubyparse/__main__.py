@@ -15,20 +15,21 @@ from .parser import translateRuby, RubyParserException
 from .customdelimiters import HereDocError
 
 class DummyTranslator:
-    def translate(self, string):
+    def translate(self, string, context):
         if '-p' in sys.argv:
+            print('C::' + context)
             print('S::' + string)
  
 dt = DummyTranslator()
 
-def test(string, verbose = None, succeeds = True):
+def test(string, verbose = None, filename = '', succeeds = True):
     if verbose is None:
         verbose = '-v' in sys.argv
     if verbose:
         print(string + ' ' +  str(succeeds))
     errored = False
     try:
-        translateRuby(string, dt, verbose = verbose)
+        translateRuby(string, dt, filename = filename, verbose = verbose)
     except (RubyParserException, HereDocError):
         errored = True
         if succeeds is True:
@@ -54,4 +55,4 @@ for filename in os.listdir('testdata'):
     if filename.endswith('.rb'):
         with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
             print(filename)
-            test(f.read())
+            test(f.read(), filename = filename)
