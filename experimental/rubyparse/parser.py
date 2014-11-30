@@ -79,7 +79,6 @@ class RubyParserState:
             self.__index += 1
             if self.verbose:
                 print(adv, self)
-                #print(self.__index, self.ruleStack[-1])
         assert self.__index == newindex
         
     @property

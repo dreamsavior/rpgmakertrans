@@ -56,19 +56,19 @@ class Translateable(Rule):
     focus = None
     
     def __init__(self, parser):
-        if type(self).focus is None:
+        if Translateable.focus is None:
             self.beginsAt = parser.index
             self.char = parser.char
             self.line = parser.line
-            type(self).focus = self
+            Translateable.focus = self
         super().__init__(parser)
         
     def exit(self, parser):
-        if type(self).focus is self:
+        if Translateable.focus is self:
             translationData = TranslationData(self.beginsAt, parser.index, 
                                               parser.filename, self.line, self.char)
             parser.scriptTranslator.addIndicies(translationData)
-            type(self).focus = None
+            Translateable.focus = None
         super().exit(parser) 
             
 class Base(Rule):
