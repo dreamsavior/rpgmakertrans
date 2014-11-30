@@ -39,7 +39,10 @@ class SimpleCode(SimpleRule):
 class Comment(SimpleRule, metaclass = AllCodeSuccessor):
     begins = '#'
     escapeRules = []
-    terminator = '\n'
+    
+    def terminate(self, parser):
+        return parser.startswith('\n') or parser.index >= len(parser.string)
+            
     
 class Bracket(SimpleCode, StatementContainer, metaclass = FormatBaseSuccessor):
     statementSeperators = [','] 
