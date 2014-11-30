@@ -33,6 +33,15 @@ class FormatSuccessor(Successors):
     @classmethod
     def get(cls):
         return Successors._get(FormatSuccessor).union(super().get())
+    
+class EmbeddedCodeSuccessor(Successors):
+    def __init__(cls, name, bases, dict_):
+        super().__init__(name, bases, dict_)
+        Successors.register(EmbeddedCodeSuccessor, cls)
+    
+    @classmethod
+    def get(cls):
+        return Successors._get(EmbeddedCodeSuccessor).union(super().get())
         
 class BaseSuccessor(Successors):
     def __init__(cls, name, bases, dict_):

@@ -11,7 +11,7 @@ FormatRule class and Formatted rules (eventually)
 
 from .simple import SimpleRule
 from .base import Translateable
-from .successor import FormatSuccessor, FormatBaseSuccessor
+from .successor import FormatSuccessor, FormatBaseSuccessor, EmbeddedCodeSuccessor
 
     
 class FormatRule(SimpleRule):
@@ -32,7 +32,7 @@ class FormatRule(SimpleRule):
         
     def getSuccessorRule(self, parser):
         if not self.gotString: 
-            super().getSuccessorRule(parser)
+            return super().getSuccessorRule(parser)
         else:
             return self.matchSuccessors(FormatSuccessor, parser)
         
@@ -53,6 +53,7 @@ class FormatRule(SimpleRule):
             return self.gotFormat
 
 class DoubleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):
+    successorClass = EmbeddedCodeSuccessor
     begins = '"'
     escapeRules = [r'\"', r'\\']
     terminator = '"'

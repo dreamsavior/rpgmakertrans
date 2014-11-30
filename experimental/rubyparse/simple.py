@@ -9,7 +9,7 @@ simple
 SimpleRule class and simple rules
 """
 from .base import Rule, Translateable, BaseSuccessor, StatementContainer
-from .successor import FormatBaseSuccessor, AllCodeSuccessor
+from .successor import FormatBaseSuccessor, AllCodeSuccessor, EmbeddedCodeSuccessor
 
 class SimpleRule(Rule):
     begins = ''
@@ -73,14 +73,14 @@ class Backtick(SimpleRule, metaclass = BaseSuccessor):
     begins = '`'
     escapeRules = []
     terminator = '`'
-    
-class InnerCode(SimpleRule):
+
+class EmbeddedCode(SimpleRule, metaclass = EmbeddedCodeSuccessor):
     successorClass = BaseSuccessor
     
     begins = '#{'
     escapeRules = []
     terminator = '}'
-
+    
 class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
     """Matching regexs is a little trickier as '/' is either a regex
     or division. So there are a few strategies: 1) If / is followed
@@ -91,6 +91,7 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
     Will this see false positives? Well, yes, but that can't be helped
     without a lot more work in parsing.
     """
+    successorClass = EmbeddedCodeSuccessor
     escapeRules = [r'\/', r'\\']
     terminator = '/'
     

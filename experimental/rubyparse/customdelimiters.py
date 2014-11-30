@@ -11,7 +11,7 @@ Custom Delimiter based strings
 
 from .base import Rule, StatementContainer, Translateable
 from .simple import SimpleRule
-from .successor import BaseSuccessor, AllCodeSuccessor
+from .successor import BaseSuccessor, AllCodeSuccessor, EmbeddedCodeSuccessor
 
 class RubyVar(Rule, metaclass = AllCodeSuccessor):
     """Hackish Ruby variable detector - just an alphanumeric string. 
@@ -114,18 +114,22 @@ class CustomSingleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeS
     begins = '%q'
 
 class CustomDoubleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    successorClass = EmbeddedCodeSuccessor
     begins = '%Q'
 
 class CustomRegex(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    successorClass = EmbeddedCodeSuccessor
     begins = '%r'
     
 class WordSQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     begins = '%w'
     
 class WordDQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
+    successorClass = EmbeddedCodeSuccessor
     begins = '%Q'
 
 class CustomBacktick(CustomDelimiter, metaclass=AllCodeSuccessor):
+    successorClass = EmbeddedCodeSuccessor
     begins = '%x'
     
 class CustomSymbols(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
