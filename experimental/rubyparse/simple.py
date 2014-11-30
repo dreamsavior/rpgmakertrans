@@ -92,7 +92,7 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
     without a lot more work in parsing.
     """
     successorClass = EmbeddedCodeSuccessor
-    escapeRules = [r'\/', r'\\']
+    escapeRules = [r'\/', r'\\', r'\#']
     terminator = '/'
     
     def advance(self, parser):

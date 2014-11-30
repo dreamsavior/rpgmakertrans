@@ -55,7 +55,7 @@ class FormatRule(SimpleRule):
 class DoubleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):
     successorClass = EmbeddedCodeSuccessor
     begins = '"'
-    escapeRules = [r'\"', r'\\']
+    escapeRules = [r'\"', r'\\', r'\#']
     terminator = '"'
 
 class SingleQuote(FormatRule, Translateable, metaclass=FormatBaseSuccessor):

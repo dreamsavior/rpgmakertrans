@@ -116,10 +116,12 @@ class CustomSingleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeS
 class CustomDoubleQuoteString(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     successorClass = EmbeddedCodeSuccessor
     begins = '%Q'
+    escapes = [r'\\', r'\#']
 
 class CustomRegex(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     successorClass = EmbeddedCodeSuccessor
     begins = '%r'
+    escapes = [r'\\', r'\#']
     
 class WordSQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     begins = '%w'
@@ -127,10 +129,12 @@ class WordSQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
 class WordDQArray(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     successorClass = EmbeddedCodeSuccessor
     begins = '%Q'
-
+    escapes = [r'\\', r'\#']
+    
 class CustomBacktick(CustomDelimiter, metaclass=AllCodeSuccessor):
     successorClass = EmbeddedCodeSuccessor
     begins = '%x'
+    escapes = [r'\\', r'\#']
     
 class CustomSymbols(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     begins = '%s'
