@@ -51,17 +51,28 @@ class TranslateableLine(namedtuple('TranslateableLine',
 class Translateable:
     def __init__(self, string):
         self.items = [TranslateableLine.fromString(line) for line in string.split('\n')]
-        
+    
+    @staticmethod
+    def __addTranslations(stringDict, stringLS, contexts):
+        string = '\n'.join(stringLS)
+        for context in contexts:
+            stringDict[context] = string
+            
     def getStrings(self):
-        currentContext = 'RAW'
-        strings = defaultdict(list)
+        currentContexts = ['RAW']
+        currentString = []
+        strings = {}
         for item in self.items:
             if item.cType == 'context':
-                currentContext = item.data
+                if currentString:
+                    self.__addTranslations(strings, currentString, currentContexts)
+                    currentContexts = []
+                    currentString = []
+                currentContexts.append(item.data)
             elif item.cType == 'data':
-                strings[currentContext].append(item.data)
-        strings2 = dict((context, '\n'.join(strings[context])) for context in strings)
-        return strings2.pop('RAW'), strings2 
+                currentString.append(item.data)
+        self.__addTranslations(strings, currentString, currentContexts)
+        return strings.pop('RAW'), strings 
         
     def __str__(self):
         return '\n'.join(str(item) for item in self.items)
