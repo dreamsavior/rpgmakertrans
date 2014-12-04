@@ -1,8 +1,14 @@
-'''
-Created on 3 Dec 2014
+"""
+translator3
+***********
 
-@author: habisain
-'''
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+Version 3 of the patch file format. Currently WIP. Different from experimental
+newtranslator, although backwards compatible with it.
+"""
 
 from collections import namedtuple, defaultdict
 
