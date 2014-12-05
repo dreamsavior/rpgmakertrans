@@ -10,7 +10,8 @@ Version 3 of the patch file format. Currently WIP. Different from experimental
 newtranslator, although backwards compatible with it.
 """
 from .translatorbase import Translator
-from collections import namedtuple, defaultdict
+from collections import namedtuple
+from fuzzywuzzy import process
 
 class TranslationLine(namedtuple('TranslateableLine', 
                                    ['cType', 'data', 'comment'])):
@@ -85,7 +86,10 @@ class Translation:
     def __addTranslations(stringDict, stringLS, contexts):
         string = '\n'.join(stringLS)
         for context in contexts:
-            stringDict[context] = string 
+            stringDict[context] = string
+            
+    def insert(self, context):
+        raise Exception('Todo: Implement') 
         
     def __str__(self):
         return '\n'.join(str(item) for item in self.items)
@@ -158,7 +162,13 @@ class CanonicalTranslation:
     def __init__(self, raw):
         self.raw = raw
         self.contexts = {}
-        # TODO: Find default translation.
+        self.__default = None
+        
+    @property
+    def default(self):
+        if self.__default is None:
+            pass
+        return self.__default
         
     def addTranslation(self, translation):
         self.contexts.update({(context, (translation, translation.translations[context])): 
@@ -166,8 +176,15 @@ class CanonicalTranslation:
         
     def translate(self, context):
         if context in self.contexts:
-            return self.contexts[1] # Simple case
-        raise Exception('Need to Insert the context to somewhere')
+            return self.contexts[context] # Simple case
+        else:
+            bestMatch, confidence = process.extractOne(context, self.contexts.keys())
+            if confidence > 90:
+                match = self.context[bestMatch]
+            else:
+                match = self.default
+            match.insert(context)
+            return match 
 
 class Translator3(Translator):
     def __init__(self, namedStrings, *args, **kwargs):
