@@ -61,7 +61,7 @@ class TranslationLine(namedtuple('TranslateableLine',
             
         return cls(cType, data, comment)
             
-    def __str__(self):
+    def asString(self):
         if self.cType == 'context':
             return '> CONTEXT: %s%s'% (self.data, self.comment)
         else:
@@ -115,16 +115,17 @@ class Translation:
             line = self.items[indx]
         while indx < len(self.items) and line.cType == 'context':
             indx += 1
-        self.items.insert(indx-2, TranslationLine.Context(context))
+            line = self.items[indx]
+        self.items.insert(indx, TranslationLine.Context(context))
         
-    def __str__(self):
-        return '\n'.join(str(item) for item in self.items)
+    def asString(self):
+        return '\n'.join(item.asString() for item in self.items)
 
 class TranslatorError(Exception): pass
 
 class TranslationFile(Translator):
     version = (3, 1)
-    header = 'RPGMAKER TRANS PATCH FILE VERSION '
+    header = 'RPGMAKER TRANS PATCH FILE VERSION'
     def __init__(self, filename, translateables):
         self.filename = filename
         self.translateables = translateables
@@ -150,10 +151,10 @@ class TranslationFile(Translator):
     def __iter__(self):
         return iter(self.translateables)
     
-    def __str__(self):
+    def asString(self):
         output = ['> %s %s' % (type(self).header, 
                               '.'.join(str(x) for x in type(self).version))]
-        output.extend(str(x) for x in self)
+        output.extend(x.asString() for x in self)
         return '\n'.join(output)
     
     @staticmethod
@@ -165,7 +166,10 @@ class TranslationFile(Translator):
                 if len(current) > 0: 
                     yield current
                     current = []
-            current.append(translationLine)
+            if translationLine.cType in ('end',):
+                pass
+            else:
+                current.append(translationLine)
         if current:
             yield current
                 
@@ -252,7 +256,10 @@ class Translator3:
     def getPatchData(self):
         # TODO: Sort out any new translations, then gather and output a
         # dictionary of the data
-        pass
+        ret = {}
+        for name in self.translationFiles:
+            ret[name] = self.translationFiles[name].asString()
+        return ret
 
     def translate(self, string, context):
         if string in self.translationDB:
@@ -279,4 +286,8 @@ Laurel
 if __name__ == '__main__':
     t = Translator3({'d2': dummy2}, mtime=1)
     print(t.translate('ローレル', 'Actors/2/Actor/name/'))
+    r = t.getPatchData()
+    for name in r:
+        print('FILENAME:%s' % name)
+        print(r[name])
     #print(Translateable(dummy))
