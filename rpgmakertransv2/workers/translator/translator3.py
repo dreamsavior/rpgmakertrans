@@ -12,6 +12,7 @@ newtranslator, although backwards compatible with it.
 from .translatorbase import Translator
 from collections import namedtuple
 from fuzzywuzzy import process
+from hmac import new
 
 class TranslationLine(namedtuple('TranslateableLine', 
                                    ['cType', 'data', 'comment'])):
@@ -75,6 +76,13 @@ class Translation:
         self.__addTranslations(strings, currentString, currentContexts)
         self.raw = strings.pop('RAW')
         self.translations = strings
+    
+    @classmethod
+    def fromDesc(cls, raw, contexts):
+        return ([TranslationLine('begin', '> BEGIN STRING'),
+                 TranslationLine('data', raw)] +
+                [TranslationLine('context', context) for context in contexts]
+                + [TranslationLine('data', '')])
         
     @classmethod
     def fromString(cls, string):
@@ -88,7 +96,7 @@ class Translation:
         for context in contexts:
             stringDict[context] = string
             
-    def insert(self, context):
+    def insert(self, context, afterContext):
         raise Exception('Todo: Implement') 
         
     def __str__(self):
@@ -167,36 +175,55 @@ class CanonicalTranslation:
     @property
     def default(self):
         if self.__default is None:
-            pass
+            defaultKey = [x for x in self.contexts][0] # TODO: Implement properly
+            self.__default = defaultKey, self.contexts[defaultKey]
         return self.__default
         
     def addTranslation(self, translation):
-        self.contexts.update({(context, (translation, translation.translations[context])): 
-                              context for context in translation.translations})
+        newContexts = {}
+        for context in translation.translations:
+            newContexts[context] = (translation, translation.translations[context])
+        self.contexts.update(newContexts)
+       # self.contexts.update({(context, (translation, translation.translations[context])): 
+        #                      context for context in translation.translations})
         
     def translate(self, context):
+        print(self.contexts)
         if context in self.contexts:
-            return self.contexts[context] # Simple case
+            return self.contexts[context][1] # Simple case
         else:
-            bestMatch, confidence = process.extractOne(context, self.contexts.keys())
-            if confidence > 90:
-                match = self.context[bestMatch]
-            else:
-                match = self.default
-            match.insert(context)
-            return match 
+            #bestMatch, confidence = process.extractOne(context, self.contexts.keys())
+            #if confidence > 90:
+            #    match = self.context[bestMatch]
+            #else:
+            matchContext, matchTranslation = self.default
+            matchTranslation[0].insert(context, matchContext)
+            return matchTranslation
 
+class TranslationDict(dict):
+    def __missing__(self, key):
+        self[key] = CanonicalTranslation(key)
+        return self[key]
+    
 class Translator3(Translator):
     def __init__(self, namedStrings, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
         self.translationFiles = {}
-        for name, string in namedStrings.items:
+        for name, string in namedStrings:
             self.translationFiles[name] = TranslationFile(name, string)
+        self.translationDB = TranslationDict()
+        for translationFileName in self.translationFiles:
+            translationFile = self.translationFiles[translationFileName]
+            for translation in translationFile:
+                self.translationDB[translation.raw].addTranslation(translation)
     
     def translate(self, string, context):
-        pass
+        if string in self.translationDB:
+            return self.translationDB[string].translate(context)
+        else:
+            print('oh')
 
 dummy = """ローレル  # Protag name
 > CONTEXT: Actors/1/Actor/name/
@@ -210,6 +237,6 @@ Laurel
 # END STRING"""
 
 if __name__ == '__main__':
-    t = TranslationFile('d2', dummy2)
-    print(t)
+    t = Translator3({'d2': dummy2}, mtime=1)
+    print(t.translate('ローレル', 'Actors/2/Actor/name/'))
     #print(Translateable(dummy))
