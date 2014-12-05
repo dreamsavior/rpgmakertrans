@@ -56,6 +56,8 @@ class TranslationLine(namedtuple('TranslateableLine',
     
 class Translation:
     def __init__(self, items):
+        if items[0].cType != 'begin':
+            items.insert(0, TranslationLine('begin', '> BEGIN STRING'))
         self.items = items
         currentContexts = ['RAW']
         currentString = []
@@ -105,26 +107,31 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         if fileVersion[1] == 0:
             lines = type(self).convertFrom30(lines)
-            fileVersion = 1
+            fileVersion[1] = 1
         if fileVersion[1] != 1:
             raise TranslatorError('Wrong version')
         
         self.translateables = [Translation(x) for x in type(self).splitLines(lines)]
     
     def __iter__(self):
-        return iter(self.translatieables)
+        return iter(self.translateables)
+    
+    def __str__(self):
+        output = ['> %s %s' % (type(self).header, 
+                              '.'.join(str(x) for x in type(self).version))]
+        output.extend(str(x) for x in self)
+        return '\n'.join(output)
     
     @staticmethod
     def splitLines(lines):
         current = []
         for line in lines:
             translationLine = TranslationLine.fromString(line)
-            if translationLine.cType in ('begin', 'end'):
+            if translationLine.cType in ('begin',):
                 if len(current) > 0: 
                     yield current
                     current = []
-            else:
-                current.append(translationLine)
+            current.append(translationLine)
         if current:
             yield current
                 
@@ -148,12 +155,14 @@ class CanonicalTranslation:
     """Seperate from the structure of the files, the canonical translation
     keeps tabs on which Translation object holds translations for what context
     and also where to put a new context."""
-    def __init__(self, raw, translations):
+    def __init__(self, raw):
+        self.raw = raw
         self.contexts = {}
-        for translation in translations:
-            self.contexts.update({(context, (translation, translation.translations[context])): 
-                                  context for context in translation.translations})
         # TODO: Find default translation.
+        
+    def addTranslation(self, translation):
+        self.contexts.update({(context, (translation, translation.translations[context])): 
+                              context for context in translation.translations})
         
     def translate(self, context):
         if context in self.contexts:
@@ -168,7 +177,9 @@ class Translator3(Translator):
         self.translationFiles = {}
         for name, string in namedStrings.items:
             self.translationFiles[name] = TranslationFile(name, string)
-        self.makeDB()
+    
+    def translate(self, string, context):
+        pass
 
 dummy = """ローレル  # Protag name
 > CONTEXT: Actors/1/Actor/name/
@@ -182,5 +193,6 @@ Laurel
 # END STRING"""
 
 if __name__ == '__main__':
-    TranslationFile('d2', dummy2)
+    t = TranslationFile('d2', dummy2)
+    print(t)
     #print(Translateable(dummy))
