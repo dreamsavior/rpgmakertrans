@@ -103,7 +103,6 @@ class Translation:
     
     @staticmethod
     def __addTranslations(stringDict, stringLS, contexts):
-        print(stringLS)
         string = '\n'.join(stringLS)
         for context in contexts:
             stringDict[context] = string
@@ -194,8 +193,18 @@ class CanonicalTranslation:
     @property
     def default(self):
         if self.__default is None:
-            defaultKey = [x for x in self.contexts][0] # TODO: Implement properly
-            self.__default = defaultKey, self.contexts[defaultKey]
+            tally = {}
+            for context in self.contexts:
+                translationString = self.contexts[context][0]
+                if translationString not in tally: 
+                    tally[translationString] = [0, context]
+                tally[translationString][0] += 1
+            bestScore, bestContext = 0, None
+            for translationString in tally:
+                score, context = tally[translationString]
+                if score > bestScore:
+                    bestScore, bestContext = score, context
+            self.__default = bestContext, self.contexts[bestContext]
         return self.__default
         
     def addTranslation(self, translation):
@@ -207,7 +216,6 @@ class CanonicalTranslation:
         #                      context for context in translation.translations})
         
     def translate(self, context):
-        print(self.contexts)
         if context in self.contexts:
             return self.contexts[context][1] # Simple case
         else:
