@@ -219,11 +219,11 @@ class CanonicalTranslation:
         if context in self.contexts:
             return self.contexts[context][1] # Simple case
         else:
-            #bestMatch, confidence = process.extractOne(context, self.contexts.keys())
-            #if confidence > 90:
-            #    match = self.context[bestMatch]
-            #else:
-            matchContext, matchTranslation = self.default
+            bestMatch, confidence = process.extractOne(context, self.contexts.keys())
+            if confidence > 90:
+                matchContext, matchTranslation = bestMatch, self.contexts[bestMatch]
+            else:
+                matchContext, matchTranslation = self.default
             matchTranslation[0].insert(context, matchContext)
             return matchTranslation[1]
 
