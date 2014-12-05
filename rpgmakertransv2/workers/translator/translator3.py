@@ -10,7 +10,7 @@ Version 3 of the patch file format. Currently WIP. Different from experimental
 newtranslator, although backwards compatible with it.
 """
 from .translatorbase import Translator
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from fuzzywuzzy import process
 
 class TranslationLine(namedtuple('TranslateableLine', 
@@ -245,13 +245,19 @@ class Translator3(Translator):
             translationFile = self.translationFiles[translationFileName]
             for translation in translationFile:
                 self.translationDB[translation.raw].addTranslation(translation)
-    
+        self.newtranslations = defaultdict(list)
+        
+    def getPatchData(self):
+        # TODO: Sort out any new translations, then gather and output a
+        # dictionary of the data
+        pass
+
     def translate(self, string, context):
         if string in self.translationDB:
             ret = self.translationDB[string].translate(context)
         else:
-            desiredOutputName = context.split('/')[0] 
-            print('oh')
+            self.newtranslations[string].append(context)
+            ret = ''
         if len(ret.strip()) == 0:
             return string
         else:
