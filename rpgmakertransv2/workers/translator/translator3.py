@@ -12,7 +12,6 @@ newtranslator, although backwards compatible with it.
 from .translatorbase import Translator
 from collections import namedtuple
 from fuzzywuzzy import process
-from hmac import new
 
 class TranslationLine(namedtuple('TranslateableLine', 
                                    ['cType', 'data', 'comment'])):
