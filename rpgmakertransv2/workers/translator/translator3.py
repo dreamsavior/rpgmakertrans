@@ -105,7 +105,8 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         if fileVersion[1] == 0:
             lines = type(self).convertFrom30(lines)
-        elif fileVersion[1] != 1:
+            fileVersion = 1
+        if fileVersion[1] != 1:
             raise TranslatorError('Wrong version')
         
         self.translateables = [Translation(x) for x in type(self).splitLines(lines)]
