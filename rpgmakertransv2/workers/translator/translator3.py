@@ -122,27 +122,31 @@ class Translation:
 
 class TranslatorError(Exception): pass
 
-class TranslationFile:
+class TranslationFile(Translator):
     version = (3, 1)
     header = 'RPGMAKER TRANS PATCH FILE VERSION '
-    def __init__(self, filename, string):
+    def __init__(self, filename, translateables):
         self.filename = filename
+        self.translateables = translateables
+    
+    @classmethod
+    def fromString(cls, filename, string):
         lines = string.split('\n')
         versionLine = lines.pop(0)
-        versionString = versionLine.partition(type(self).header)[2].strip()
+        versionString = versionLine.partition(cls.header)[2].strip()
         if not versionString:
             raise TranslatorError('Cannot parse version')
         fileVersion = [int(x) for x in versionString.split('.')]
-        if fileVersion[0] != type(self).version[0]:
+        if fileVersion[0] != cls.version[0]:
             raise TranslatorError('Wrong version')
         if fileVersion[1] == 0:
-            lines = type(self).convertFrom30(lines)
+            lines = cls.convertFrom30(lines)
             fileVersion[1] = 1
         if fileVersion[1] != 1:
             raise TranslatorError('Wrong version')
+        translateables = [Translation(x) for x in cls.splitLines(lines)]
+        return cls(filename, translateables)
         
-        self.translateables = [Translation(x) for x in type(self).splitLines(lines)]
-    
     def __iter__(self):
         return iter(self.translateables)
     
@@ -212,8 +216,6 @@ class CanonicalTranslation:
         for context in translation.translations:
             newContexts[context] = (translation, translation.translations[context])
         self.contexts.update(newContexts)
-        #self.contexts.update({(context, (translation, translation.translations[context])): 
-        #                      context for context in translation.translations})
         
     def translate(self, context):
         if context in self.contexts:
@@ -232,14 +234,14 @@ class TranslationDict(dict):
         self[key] = CanonicalTranslation(key)
         return self[key]
     
-class Translator3(Translator):
+class Translator3:
     def __init__(self, namedStrings, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        #super().__init__(*args, **kwargs)
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
         self.translationFiles = {}
         for name, string in namedStrings:
-            self.translationFiles[name] = TranslationFile(name, string)
+            self.translationFiles[name] = TranslationFile.fromString(name, string)
         self.translationDB = TranslationDict()
         for translationFileName in self.translationFiles:
             translationFile = self.translationFiles[translationFileName]
