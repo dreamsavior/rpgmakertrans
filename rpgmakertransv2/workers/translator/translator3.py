@@ -225,7 +225,7 @@ class CanonicalTranslation:
             #else:
             matchContext, matchTranslation = self.default
             matchTranslation[0].insert(context, matchContext)
-            return matchTranslation
+            return matchTranslation[1]
 
 class TranslationDict(dict):
     def __missing__(self, key):
@@ -248,9 +248,14 @@ class Translator3(Translator):
     
     def translate(self, string, context):
         if string in self.translationDB:
-            return self.translationDB[string].translate(context)
+            ret = self.translationDB[string].translate(context)
         else:
+            desiredOutputName = context.split('/')[0] 
             print('oh')
+        if len(ret.strip()) == 0:
+            return string
+        else:
+            return ret
 
 dummy = """ローレル  # Protag name
 > CONTEXT: Actors/1/Actor/name/
