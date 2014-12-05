@@ -9,9 +9,11 @@ translator3
 Version 3 of the patch file format. Currently WIP. Different from experimental
 newtranslator, although backwards compatible with it.
 """
-from .translatorbase import Translator
+
 from collections import namedtuple, defaultdict
 from fuzzywuzzy import process
+
+from .translatorbase import Translator
 
 class TranslationLine(namedtuple('TranslateableLine', 
                                    ['cType', 'data', 'comment'])):
@@ -90,7 +92,7 @@ class Translation:
     
     @classmethod
     def fromDesc(cls, raw, contexts):
-        return ([TranslationLine.Begin(),
+        return Translation([TranslationLine.Begin(),
                  TranslationLine.Data(raw)] +
                 [TranslationLine.Context(context) for context in contexts]
                 + [TranslationLine.Data('')])
@@ -123,7 +125,7 @@ class Translation:
 
 class TranslatorError(Exception): pass
 
-class TranslationFile(Translator):
+class TranslationFile:
     version = (3, 1)
     header = 'RPGMAKER TRANS PATCH FILE VERSION'
     def __init__(self, filename, translateables):
@@ -156,6 +158,9 @@ class TranslationFile(Translator):
                               '.'.join(str(x) for x in type(self).version))]
         output.extend(x.asString() for x in self)
         return '\n'.join(output)
+    
+    def addTranslation(self, translation):
+        self.translateables.append(translation)
     
     @staticmethod
     def splitLines(lines):
@@ -238,9 +243,8 @@ class TranslationDict(dict):
         self[key] = CanonicalTranslation(key)
         return self[key]
     
-class Translator3:
+class Translator3(Translator):
     def __init__(self, namedStrings, *args, **kwargs):
-        #super().__init__(*args, **kwargs)
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
         self.translationFiles = {}
@@ -254,8 +258,15 @@ class Translator3:
         self.newtranslations = defaultdict(list)
         
     def getPatchData(self):
-        # TODO: Sort out any new translations, then gather and output a
-        # dictionary of the data
+        for raw in self.newtranslations:
+            contexts = sorted(self.newtranslations[raw])
+            baseContext = contexts[0]
+            name = baseContext.partition('/')[0]
+            transObj = Translation.fromDesc(raw, contexts)
+            if name not in self.translationFiles:
+                self.translationFiles[name] = TranslationFile(name, [transObj])
+            else:
+                self.translationFiles[name].addTranslation(transObj)
         ret = {}
         for name in self.translationFiles:
             ret[name] = self.translationFiles[name].asString()
@@ -284,8 +295,11 @@ Laurel
 # END STRING"""
 
 if __name__ == '__main__':
-    t = Translator3({'d2': dummy2}, mtime=1)
+    t = Translator3({'Actors': dummy2}, mtime=1)
     print(t.translate('ローレル', 'Actors/2/Actor/name/'))
+    print(t.translate('Meh','Actors/3/Actor/name/'))
+    print(t.translate('Meh','Blargh/3/Actor/name/'))
+    print(t.translate('Eeh','Blargh/3/Actor/name/'))
     r = t.getPatchData()
     for name in r:
         print('FILENAME:%s' % name)
