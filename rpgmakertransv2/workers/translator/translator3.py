@@ -9,7 +9,7 @@ translator3
 Version 3 of the patch file format. Currently WIP. Different from experimental
 newtranslator, although backwards compatible with it.
 """
-
+from .translatorbase import Translator
 from collections import namedtuple, defaultdict
 
 class TranslationLine(namedtuple('TranslateableLine', 
@@ -110,8 +110,9 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         
         self.translateables = [Translation(x) for x in type(self).splitLines(lines)]
-        print(len(self.translateables))
-        for x in self.translateables: print(x)
+    
+    def __iter__(self):
+        return iter(self.translatieables)
     
     @staticmethod
     def splitLines(lines):
@@ -142,9 +143,32 @@ class TranslationFile:
             elif char == '>':
                 ls[indx] = '\>'
         return ''.join(ls)
-    
-class Translator3:
-    pass
+
+class CanonicalTranslation:
+    """Seperate from the structure of the files, the canonical translation
+    keeps tabs on which Translation object holds translations for what context
+    and also where to put a new context."""
+    def __init__(self, raw, translations):
+        self.contexts = {}
+        for translation in translations:
+            self.contexts.update({(context, (translation, translation.translations[context])): 
+                                  context for context in translation.translations})
+        # TODO: Find default translation.
+        
+    def translate(self, context):
+        if context in self.contexts:
+            return self.contexts[1] # Simple case
+        raise Exception('Need to Insert the context to somewhere')
+
+class Translator3(Translator):
+    def __init__(self, namedStrings, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if isinstance(namedStrings, dict):
+            namedStrings = namedStrings.items()
+        self.translationFiles = {}
+        for name, string in namedStrings.items:
+            self.translationFiles[name] = TranslationFile(name, string)
+        self.makeDB()
 
 dummy = """ローレル  # Protag name
 > CONTEXT: Actors/1/Actor/name/
