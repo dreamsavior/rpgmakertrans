@@ -19,6 +19,18 @@ class TranslationLine(namedtuple('TranslateableLine',
         return super().__new__(cls, cType, data, comment)
     
     @classmethod
+    def Context(cls, context):
+        return cls('context', context)
+    
+    @classmethod
+    def Begin(cls):
+        return cls('begin', '> BEGIN STRING')
+    
+    @classmethod
+    def Data(cls, data, comment=''):
+        return cls('data', data, comment)
+    
+    @classmethod
     def fromString(cls, string):
         indx = string.find('#', 0)
         going = True
@@ -78,10 +90,10 @@ class Translation:
     
     @classmethod
     def fromDesc(cls, raw, contexts):
-        return ([TranslationLine('begin', '> BEGIN STRING'),
-                 TranslationLine('data', raw)] +
-                [TranslationLine('context', context) for context in contexts]
-                + [TranslationLine('data', '')])
+        return ([TranslationLine.Begin(),
+                 TranslationLine.Data(raw)] +
+                [TranslationLine.Context(context) for context in contexts]
+                + [TranslationLine.Data('')])
         
     @classmethod
     def fromString(cls, string):
@@ -91,12 +103,20 @@ class Translation:
     
     @staticmethod
     def __addTranslations(stringDict, stringLS, contexts):
+        print(stringLS)
         string = '\n'.join(stringLS)
         for context in contexts:
             stringDict[context] = string
             
     def insert(self, context, afterContext):
-        raise Exception('Todo: Implement') 
+        indx = 0
+        line = self.items[indx]
+        while indx < len(self.items) and not (line.cType == 'context' and line.data == afterContext):
+            indx += 1
+            line = self.items[indx]
+        while indx < len(self.items) and line.cType == 'context':
+            indx += 1
+        self.items.insert(indx-2, TranslationLine.Context(context))
         
     def __str__(self):
         return '\n'.join(str(item) for item in self.items)
@@ -183,7 +203,7 @@ class CanonicalTranslation:
         for context in translation.translations:
             newContexts[context] = (translation, translation.translations[context])
         self.contexts.update(newContexts)
-       # self.contexts.update({(context, (translation, translation.translations[context])): 
+        #self.contexts.update({(context, (translation, translation.translations[context])): 
         #                      context for context in translation.translations})
         
     def translate(self, context):
