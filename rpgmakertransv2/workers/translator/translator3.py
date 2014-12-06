@@ -10,7 +10,7 @@ Version 3 of the patch file format. Currently WIP. Different from experimental
 newtranslator, although backwards compatible with it.
 """
 
-from collections import namedtuple, defaultdict
+from collections import namedtuple, OrderedDict
 from fuzzywuzzy import process
 
 from .translatorbase import Translator
@@ -255,7 +255,7 @@ class Translator3(Translator):
             translationFile = self.translationFiles[translationFileName]
             for translation in translationFile:
                 self.translationDB[translation.raw].addTranslation(translation)
-        self.newtranslations = defaultdict(list)
+        self.newtranslations = OrderedDict()
         
     def getPatchData(self):
         for raw in self.newtranslations:
@@ -276,6 +276,8 @@ class Translator3(Translator):
         if string in self.translationDB:
             ret = self.translationDB[string].translate(context)
         else:
+            if string not in self.newtranslations:
+                self.newtranslations[string] = []
             self.newtranslations[string].append(context)
             ret = ''
         if len(ret.strip()) == 0:
