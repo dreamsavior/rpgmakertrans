@@ -32,20 +32,21 @@ def setErrorOut(comsout):
     else:
         sys.stderr = io.StringIO()
 
-
+def handleError():
+    global errorOut, caught
+    if errorOut is not None:
+        errorOut.send('ERROR', traceback.format_exc())
+    else:
+        sys.stderr.write(traceback.format_exc())
+        sys.stderr.flush()
+    
 def errorWrap(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception:
-            global errorOut, caught
-            if errorOut is not None:
-                errorOut.send('ERROR', traceback.format_exc())
-            else:
-                sys.stderr.write(traceback.format_exc())
-                sys.stderr.flush()
-            # raise
+            handleError()
     return wrap
 
 

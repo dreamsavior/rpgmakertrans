@@ -13,15 +13,8 @@ list of files from one directory to another. Supports progress bars etc.
 
 import os.path
 import shutil
-from .fileops import (
-    getmtime,
-    pathexists,
-    isfile,
-    remove,
-    mkdir,
-    walk,
-    WinOpen,
-    copy)
+from .fileops import (getmtime, pathexists, isfile, remove, mkdir,
+                      walk, WinOpen, copy)
 from ..errorhook import ErrorMeta, errorWrap
 
 
