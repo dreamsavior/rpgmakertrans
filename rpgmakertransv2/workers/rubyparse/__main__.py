@@ -6,7 +6,7 @@ rubyparse_main
 :copyright: 2012-2014
 :license: GNU Public License version 3
 
-A simple test runner for the experimental ruby parser.
+A simple test runner for the ruby parser.
 '''
 
 import os
@@ -56,8 +56,8 @@ test('%q[Hello2]')
 test('"#{""}"')
 test('"#{\'\'}"')
 test('a/a "Hello"')
-for filename in os.listdir('testdata'):
-    if filename.endswith('.rb'):
-        with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
-            print(filename)
-            test(f.read(), filename = filename)
+#for filename in os.listdir('testdata'):
+#    if filename.endswith('.rb'):
+#        with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
+#            print(filename)
+#            test(f.read(), filename = filename)
