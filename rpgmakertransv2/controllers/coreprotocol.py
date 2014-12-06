@@ -89,12 +89,8 @@ class CoreRunner(object):
 
 class CoreProtocol(object, metaclass=ErrorMeta):
 
-    def __init__(
-            self,
-            runner=None,
-            inputcoms=None,
-            outputcoms=None,
-            errout=None):
+    def __init__(self, runner=None, inputcoms=None, outputcoms=None,
+                 errout=None):
         if runner is None and errout is not None:
             raise Exception(
                 '%s: Must supply runner and errout arguments as a pair or not at all' % str(
