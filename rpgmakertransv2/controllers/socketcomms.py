@@ -15,11 +15,9 @@ import asyncio, struct
 from ..errorhook import handleError
 
 class SocketComms:
-    def __init__(self, inputcoms, errorcoms, socket=None):
+    def __init__(self, socket=None):
         self.loop = asyncio.get_event_loop()
         self.socket = 27899 if socket is None else socket
-        self.inputcoms = inputcoms
-        self.errorcoms = errorcoms
         self.codeHandlers = {0: self.debug}
     
     def debug(self, *args):
@@ -54,12 +52,9 @@ class SocketComms:
             
     @asyncio.coroutine
     def checkForQuit(self):
+        """By default, this loops forever. Override for other behaviours"""
         while True:
-            yield from asyncio.sleep(0.1)
-            if self.inputcoms:
-                for signal, _, _ in self.inputcoms.get():
-                    if signal == 'QUIT':
-                        return
+            yield from asyncio.sleep(5)
             
     def start(self):
         coro = asyncio.start_server(self.handleRequest, '127.0.0.1', self.socket, loop=self.loop)
@@ -70,7 +65,21 @@ class SocketComms:
         self.server.close()
         self.loop.run_until_complete(self.server.wait_closed())
         self.loop.close()
-        
+
+class ControlableSocketComms(SocketComms):
+    def __init__(self, inputcoms, errorcoms, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.inputcoms = inputcoms
+        self.errorcoms = errorcoms
+    
+    @asyncio.coroutine
+    def checkForQuit(self):
+        while True:
+            yield from asyncio.sleep(0.1)
+            if self.inputcoms:
+                for signal, _, _ in self.inputcoms.get():
+                    if signal == 'QUIT':
+                        return
 if __name__ == '__main__':
-    x = SocketComms(None, None)
+    x = SocketComms()
     x.start()
