@@ -17,13 +17,15 @@ from .socketcomms import SocketComms
 from .coreprotocol import CoreProtocol
 
 class SocketCommsVX(SocketComms):
-    def __init__(self, translator, filesToProcess, *args, **kwargs):
+    def __init__(self, translator, filesToProcess, rpgversion, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.translator = translator
         self.filesToProcess = filesToProcess
+        self.rpgversion = rpgversion.encode('utf-8')
         self.codeHandlers.update({1: self.translate,
                                   2: self.translateScript,
-                                  3: self.getTaskParams})
+                                  3: self.getTaskParams,
+                                  4: self.loadVersion})
         
     @asyncio.coroutine
     def checkForQuit(self):
@@ -50,6 +52,9 @@ class SocketCommsVX(SocketComms):
             return self.filesToProcess.pop().encode('utf-8')
         else:
             return b':QUIT'
+        
+    def loadVersion(self):
+        return self.rpgversion
 
 class HeadlessVX(CoreProtocol):
     pass
