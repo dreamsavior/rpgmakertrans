@@ -24,6 +24,7 @@ class SocketComms:
     
     def debug(self, *args):
         print('Debug got args: %s' % args)
+        return b'Debug Test for Python'
         
     @asyncio.coroutine
     def handleRequest(self, reader, writer):
@@ -41,7 +42,7 @@ class SocketComms:
             output = self.codeHandlers[code](*args)
             if output:
                 if isinstance(output, bytes):
-                    writer.write(struct.pack(len(output)))
+                    writer.write(struct.pack('I', len(output)))
                     writer.write(output)
                 else:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
