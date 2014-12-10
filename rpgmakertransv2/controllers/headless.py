@@ -22,8 +22,9 @@ from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 
 class Headless(CoreProtocol):
-
     """Headless Class"""
+    
+    processGameFunc = None
 
     def __init__(self, *args, **kwargs):
         """Initialise Headless; for arguments see CoreProtocol"""
@@ -105,8 +106,9 @@ class Headless(CoreProtocol):
                     translator=translator, mtimes=mtimes,
                     newmtimes=newmtimes, progresssig='copying',
                     dirssig='dirsCopied')
-        self.submit('patcher', process2kgame, indir, outdir, translator,
-                    mtimes=mtimes, newmtimes=newmtimes, comsout=self.inputcoms)
+        self.submit('patcher', type(self).processGameFunc, indir, outdir, 
+                    translator, mtimes=mtimes, newmtimes=newmtimes, 
+                    comsout=self.inputcoms)
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.comboTrigger('patchingFinished', 
@@ -133,3 +135,7 @@ class Headless(CoreProtocol):
         patcher.quit()
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()
+        
+class Headless2k(Headless):
+    """Headless specialised for 2k games"""
+    processGameFunc = process2kgame

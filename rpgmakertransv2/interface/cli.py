@@ -14,7 +14,7 @@ this does not yet work on Windows.
 import sys
 import argparse
 from ..controllers.coreprotocol import CoreRunner, CoreProtocol
-from ..controllers.headless import Headless
+from ..controllers.headless import Headless2k
 from ..version import version
 
 VERSION = version
@@ -33,7 +33,7 @@ class CLIMode(CoreProtocol):
         self.normalPrint('Patch path : %s' % cargs.patch)
         self.normalPrint('Output path: %s' % cargs.output)
         self.progressPrint('Starting patcher...')
-        self.headless = self.runner.initialise(Headless,
+        self.headless = self.runner.initialise(Headless2k,
                                                outputcoms=self.inputcoms)
         self.runner.attach(self.headless)
         self.headless.go(cargs.input, cargs.patch, cargs.output)
