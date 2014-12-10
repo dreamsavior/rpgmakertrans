@@ -20,7 +20,7 @@ class PatchMeta(MetaCustomManager):
     customManagerClass = PatchManager
 
 
-class BasePatch(object, metaclass=PatchMeta):
+class BasePatch(metaclass=PatchMeta):
 
     def __init__(self, path, coms, errout):
         self.path = path
@@ -64,8 +64,8 @@ class BasePatch(object, metaclass=PatchMeta):
 
     def makeTranslator(self, coms):
         data, mtime = self.loadPatchData()
-        translatorClass = getattr(
-                            self.translatorManager,type(self).translatorClass) 
+        translatorClass = getattr(self.translatorManager,
+                                  type(self).translatorClass) 
         return translatorClass(data, mtime, coms)
 
     def getAssetFiles(self):

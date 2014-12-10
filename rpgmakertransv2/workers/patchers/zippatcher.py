@@ -115,8 +115,8 @@ class ZIPPatcherv2(ZIPPatcher):
                 header = type(self).header
                 z = self.zip.open(fn)
                 raw = z.read(2 ** 22)
-                matched, decoded = self.tryDecodePatchFile(
-                    header, raw, errors='ignore')
+                matched, _ = self.tryDecodePatchFile(header, raw,
+                                                     errors='ignore')
                 if matched:
                     self.patchDataFiles.append(fn)
                 else:

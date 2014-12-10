@@ -27,7 +27,7 @@ class Headless(CoreProtocol):
 
     def __init__(self, *args, **kwargs):
         """Initialise Headless; for arguments see CoreProtocol"""
-        super(Headless, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.patchManager = PatchManager()
         self.patchManager.start(self.errout)
         self.mtimesManager = MTimesHandlerManager()

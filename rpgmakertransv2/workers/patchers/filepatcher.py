@@ -75,22 +75,12 @@ class FilePatcher(BasePatch):
                 self.patchDataFiles] + ['RPGMKTRANSPATCH']
 
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
-        self.coms.send(
-            'waitUntil',
-            'dirsCopied',
-            'copier',
-            copyfiles,
-            indir=self.path,
-            outdir=outpath,
-            ignoredirs=[],
-            ignoreexts=[],
-            ignorefiles=self.getNonCopyNames(),
-            comsout='outputcoms',
-            translator=translator,
-            mtimes=mtimes,
-            newmtimes=newmtimes,
-            progresssig='patchdata',
-            dirssig=None)
+        self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles,
+                       indir=self.path, outdir=outpath, ignoredirs=[],
+                       ignoreexts=[], ignorefiles=self.getNonCopyNames(),
+                       comsout='outputcoms', translator=translator,
+                       mtimes=mtimes, newmtimes=newmtimes,
+                       progresssig='patchdata', dirssig=None)
 
 
 class FilePatcherv2(FilePatcher):
