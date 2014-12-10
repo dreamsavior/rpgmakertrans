@@ -215,17 +215,10 @@ class CoreProtocol(object, metaclass=ErrorMeta):
         events = self.inputcoms.get()
         while events:
             code, args, kwargs = events.pop(0)
-            if hasattr(
-                self,
-                code) and isinstance(
-                getattr(
-                    self,
-                    code),
-                    collections.Callable):
+            if (hasattr(self, code) and 
+                isinstance(getattr(self, code), collections.Callable)):
                 getattr(self, code)(*args, **kwargs)
             else:
-                self.errout.send(
-                    'ERROR',
-                    'Got an unknown code: %s ' %
-                    str(code))
+                self.errout.send('ERROR', 
+                                 'Got an unknown code: %s ' % str(code))
         # self.checkResults()

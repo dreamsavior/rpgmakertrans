@@ -22,10 +22,9 @@ class FileCopier(object, metaclass=ErrorMeta):
 
     """Handles copying files from orig directory to target. Does *not* copy patch files."""
 
-    def __init__(self, indir, outdir,
-                 ignoredirs, ignoreexts, ignorefiles,
-                 comsout, translator, mtimes, newmtimes,
-                 progresssig, dirssig, *args, **kwargs):
+    def __init__(self, indir, outdir, ignoredirs, ignoreexts, ignorefiles,
+                 comsout, translator, mtimes, newmtimes, progresssig, 
+                 dirssig, *args, **kwargs):
         super(FileCopier, self).__init__(*args, **kwargs)
         self.indir = os.path.normcase(indir)
         self.outdir = os.path.normcase(outdir)
@@ -63,8 +62,7 @@ class FileCopier(object, metaclass=ErrorMeta):
             self.comsout.send('trigger', self.dirssig)
         if self.progresssig:
             self.comsout.send(
-                'setProgressDiv', self.progresssig, len(
-                    self.files))
+                'setProgressDiv', self.progresssig, len(self.files))
         for fid, infn, outfn in self.files:
             self.doCopyFile(fid, infn, outfn)
             if self.progresssig:
@@ -79,9 +77,8 @@ class FileCopier(object, metaclass=ErrorMeta):
                 copy(infn, outfn)
                 self.newmtimes[outfn] = infnmtime
             except IOError:
-                self.comsout.send(
-                    'nonfatalError', 'Could not copy %s to %s' %
-                    (infn, outfn))
+                self.comsout.send('nonfatalError', 
+                                  'Could not copy %s to %s' % (infn, outfn))
         else:
             self.newmtimes[outfn] = infnmtime
 
@@ -89,9 +86,8 @@ class FileCopier(object, metaclass=ErrorMeta):
         if path.startswith(partA):
             path = path.replace(partA, partB, 1)
         else:
-            raise Exception(
-                'Could not change directory of %s from %s to %s' %
-                (path, partA, partB))
+            raise Exception('Could not change directory of %s from %s to %s' %
+                            (path, partA, partB))
         return path
 
     def getLists(self):
@@ -117,24 +113,18 @@ class FileCopier(object, metaclass=ErrorMeta):
 
 
 @errorWrap
-def copyfilesAndTrigger(indir, outdir,
-                        ignoredirs, ignoreexts, ignorefiles,
-                        comsout, translator, mtimes, newmtimes,
-                        progresssig, dirssig):
-    copyfiles(indir, outdir,
-              ignoredirs, ignoreexts, ignorefiles,
-              comsout, translator, mtimes, newmtimes,
-              progresssig, dirssig)
+def copyfilesAndTrigger(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
+                        comsout, translator, mtimes, newmtimes, progresssig, 
+                        dirssig):
+    copyfiles(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
+              comsout, translator, mtimes, newmtimes, progresssig, dirssig)
     comsout.send('trigger', 'fileCopyDone')
 
 
 @errorWrap
-def copyfiles(indir, outdir,
-              ignoredirs, ignoreexts, ignorefiles,
-              comsout, translator, mtimes, newmtimes,
-              progresssig, dirssig):
-    x = FileCopier(indir, outdir,
-                   ignoredirs, ignoreexts, ignorefiles,
-                   comsout, translator, mtimes, newmtimes,
-                   progresssig, dirssig)
+def copyfiles(indir, outdir, ignoredirs, ignoreexts, ignorefiles, comsout, 
+              translator, mtimes, newmtimes, progresssig, dirssig):
+    x = FileCopier(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
+                   comsout, translator, mtimes, newmtimes, progresssig,
+                   dirssig)
     x.run()
