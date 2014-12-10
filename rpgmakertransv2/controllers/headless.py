@@ -25,6 +25,8 @@ class Headless(CoreProtocol):
     """Headless Class"""
     
     processGameFunc = None
+    copyIgnoreDirs = []
+    copyIgnoreExts = []
 
     def __init__(self, *args, **kwargs):
         """Initialise Headless; for arguments see CoreProtocol"""
