@@ -12,14 +12,14 @@ of various things.
 
 import os.path
 import itertools
-from .fileops import (isdir, listdir, isfile, pathexists)
 from collections import defaultdict
-from ..errorhook import ErrorMeta
 
 SNIFFERS = set()
 
 
-class SniffedType(object):
+class SniffedType:
+    """Represents a sniffed type, along with where that object
+    resides on disk"""
     maintype = None
     subtype = None
 
@@ -29,9 +29,8 @@ class SniffedType(object):
         elif isinstance(canonicalpath, str):
             self.canonicalpath = canonicalpath
         else:
-            raise Exception(
-                'Could not work out sniffed type data from a %s' % str(
-                    type(canonicalpath)))
+            raise Exception('Could not work out sniffed type data from a %s' % 
+                            str(type(canonicalpath)))
 
     def __str__(self):
         return '<%s:%s>' % (type(self).__name__, self.canonicalpath)
@@ -49,29 +48,22 @@ class SniffedType(object):
         else:
             raise Exception('Invalid index %s' % str(item))
 
-
-def SniffedTypeCons(name, maintypeN, subtypeN):
-    class SniffedTypeB(SniffedType):
-        maintype = maintypeN
-        subtype = subtypeN
-    SniffedTypeB.__name__ = name
-    return SniffedTypeB
-
-
 class RPG2k(SniffedType):
+    """Sniffed type for an untranslated target game"""
     maintype, subtype = 'GAME', 'RPG2k'
 
-
 class TransLoc(SniffedType):
+    """Sniffed type for a translated game"""
     maintype, subtype = 'TRANS', 'RPG2k][translated'
 
-
 class NewDirTransLoc(SniffedType):
+    """Sniffed Type for a new directory"""
     maintype, subtype = 'TRANS', 'create'
 
-
-class Sniffer(object, metaclass=ErrorMeta):
-
+class Sniffer:
+    """Sniffer object; can be called with a path, and
+    if it matches the sniffer function it returns the appropriate
+    sniffer type."""
     def __init__(self, sniffedType, func):
         self.sniffedType = sniffedType
         self.func = func
@@ -86,30 +78,19 @@ class Sniffer(object, metaclass=ErrorMeta):
         else:
             return False
 
-
 def sniffer(sniffedType):
+    """Sniffer decorator; create Sniffer objects from functions"""
     def f(func):
         return Sniffer(sniffedType, func)
     return f
 
-# def sniffer(sniffedType, func):
-#    global SNIFFERS
-#    class Sniffer(object):
-#
-#        sniffedType = sniffedType
-#        def __call__(self, path):
-#            path = func(path)
-#            if path: return type(self).sniffedType(path)
-#            else: return False
-#    x = Sniffer()
-#    SNIFFERS.add(x)
-#    return func
-
-
 def checkForFiles(path, req):
-    if not isdir(path):
+    """Given a dictionary of filenames to true/false values (False being
+    file required, True being file required to not exist), assert a path 
+    meets these required"""
+    if not os.path.isdir(path):
         return False
-    subdirlist = listdir(path)
+    subdirlist = os.listdir(path)
     for fn in subdirlist:
         fn = fn.upper()
         if fn in req:
@@ -119,45 +100,47 @@ def checkForFiles(path, req):
     else:
         return False
 
-
 @sniffer(RPG2k)
 def sniff2kGame(path):
+    """Sniffer for 2k games"""
     req = {'RPG_RT.LDB': False,
            'RPGMKTRANSPATCH': True,
            'RPGMKTRANSLATED': True, }
     return checkForFiles(path, req)
 
-
 @sniffer(RPG2k)
 def sniff2kGameFile(path):
-    if isfile(path) and path.upper().endswith('RPG_RT.EXE'):
+    """Sniffer for 2k games, given a RPG_RT.EXE file"""
+    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
         return sniff2kGame(os.path.split(path)[0])
     return False
 
-
 @sniffer(TransLoc)
 def sniffTransLoc(path):
+    """Sniffer for a game translated by RPGMaker Trans"""
     req = {'RPG_RT.LDB': False,
            'RPGMKTRANSPATCH': True,
            'RPGMKTRANSLATED': False, }
     return checkForFiles(path, req)
 
-
 @sniffer(TransLoc)
 def sniffTransLocFile(path):
-    if isfile(path) and path.upper().endswith('RPG_RT.EXE'):
+    """Sniffer for a game translated by RPGMaker Trans, given
+    RPG_RT.EXE file"""
+    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
         return sniffTransLoc(os.path.split(path)[0])
     return False
 
-
 @sniffer(NewDirTransLoc)
 def sniffNewDirTransLoc(path):
-    if (isdir(path) and len(listdir(path)) == 0) or (not pathexists(path)):
+    """Sniffer for a new directory"""
+    if ((os.path.isdir(path) and len(os.listdir(path)) == 0) or 
+        (not os.path.exists(path))):
         return path
     return False
 
-
 def sniff(path, positives=None, negatives=None, conflicts=None):
+    """Run all sniffers on a given path"""
     if positives is None:
         positives = 'GAME', 'PATCH', 'TRANS'
     if negatives is None:
@@ -180,18 +163,18 @@ def sniff(path, positives=None, negatives=None, conflicts=None):
             for conflicttype in conflicts[maintype]:
                 results[conflicttype] = [
                     x for x in results[conflicttype] if x.canonicalpath not in delBases]
-    return list(itertools.chain(*list(results.values())))
-
+    return list(itertools.chain.from_iterable(list(results.values())))
 
 def sniffAll(path):
-    if isdir(path):
-        return list(itertools.chain(
-            *[sniff(path2) for path2 in (os.path.join(path, fn) for fn in listdir(path))]))
-    elif isfile(path):
+    """Run all sniffers on given path; if directory, everything in directory"""
+    if os.path.isdir(path):
+        pathsToSniff = [sniff(path2) for path2 in 
+                        (os.path.join(path, fn) for fn in os.listdir(path))] 
+        return list(itertools.chain.from_iterable(pathsToSniff))
+    elif os.path.isfile(path):
         return sniff(path)
     else:
         return []
-
 
 if __name__ == '__main__':
     import sys
