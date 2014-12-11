@@ -36,36 +36,22 @@ class TwoKGame(object, metaclass=ErrorMeta):
             if os.path.splitext(fn)[1].lower() in ('.lmu', '.ldb'):
                 infn = os.path.join(self.inpath, fn)
                 outfn = os.path.join(self.outpath, fn)
-                jobs.append(
-                    (process2kfile,
-                     (infn, outfn, self.mtimes, self.newmtimes,
-                      self.translator, 'outputcoms')))
+                jobs.append((process2kfile,
+                             (infn, outfn, self.mtimes, self.newmtimes,
+                              self.translator, 'outputcoms')))
         self.jobsTotal = len(jobs) - 1
         return jobs
 
     def callback(self, res):
         self.jobsDone += 1
-        self.comsout.send(
-            'setProgess',
-            'patching',
-            self.jobsDone /
-            self.jobsTotal)
+        self.comsout.send('setProgess', 'patching', 
+                          self.jobsDone / self.jobsTotal)
 
     def run(self):
-        if self.pool is not None:
-            raise Exception('Trying to run the same TwoKGame Translator twice')
         jobs = self.jobs()
         self.comsout.send('setProgressDiv', 'patching', self.jobsTotal)
         for fn, args in jobs:
             self.comsout.send('waitUntil', 'dirsCopied', 'patcher', fn, *args)
-
-#        self.pool = multiprocessing.Pool()
-#        for fn, args in jobs:
-#            rets[args[0]] = self.pool.apply_async(fn, args, callback=self.callback)
-            #apply(fn, args)
-#        self.pool.close()
-#        self.pool.join()
-
 
 @errorWrap
 def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):

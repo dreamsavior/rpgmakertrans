@@ -115,7 +115,8 @@ class Headless(CoreProtocol):
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.comboTrigger('patchingFinished', 
-                    ['fileCopyDone', 'gamePatchingDone', 'fullPatchesDone'])
+                          ['fileCopyDone', 'gamePatchingDone', 
+                           'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation,
                             patcher, translator, mtimesManager, indir,
                             patchpath, outdir, useBOM)
