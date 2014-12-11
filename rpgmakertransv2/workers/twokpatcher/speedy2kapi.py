@@ -75,23 +75,15 @@ def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
 
 
 @errorWrap
-def process2kfile(
-        inFileName,
-        outFileName,
-        mtimes,
-        newmtimes,
-        translator,
-        comsout,
-        dbgid=None):
+def process2kfile(inFileName, outFileName, mtimes, newmtimes,
+                  translator, comsout, dbgid=None):
     # Args: inFileName: input file name
     # outFileName: output file name
     # mtimes: the mtimes dictionary
     name = os.path.split(inFileName)[1].rpartition('.')[0].upper()
     ret = (os.path.getmtime(inFileName), translator.getMTime())
-    needOutput = (
-        mtimes.get(
-            name,
-            None) != ret) or not os.path.exists(outFileName)
+    needOutput = ((mtimes.get(name,None) != ret) or 
+                  not os.path.exists(outFileName))
     if needOutput:
         rpgfile = TwoKRPGFile(name, inFileName, translator)
         rpgfile.parse()
