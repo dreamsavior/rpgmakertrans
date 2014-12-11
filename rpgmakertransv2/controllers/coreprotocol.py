@@ -71,9 +71,10 @@ class CoreRunner:
         while self.running:
             detachments = []
             for runner in self.running:
-                runner.update()
                 if runner.finished():
                     detachments.append(runner)
+                else:
+                    runner.update()
             for runner in detachments:
                 self.detach(runner)
             for msg in self.errors.get():
