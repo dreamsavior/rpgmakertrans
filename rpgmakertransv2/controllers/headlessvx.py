@@ -15,4 +15,5 @@ coordinates worker progress (including Ruby processes by Sockets).
 from .headless import Headless
 
 class HeadlessVX(Headless):
-    pass
+    processGameFunc = None
+    copyIgnoreExts = ['.rvdata', '.rvdata2', '.rxdata']

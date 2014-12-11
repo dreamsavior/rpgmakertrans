@@ -103,7 +103,8 @@ class Headless(CoreProtocol):
         newmtimes = mtimesManager.getNewMTimes()
 
         self.submit('copier', copyfilesAndTrigger, indir=indir, outdir=outdir,
-                    ignoredirs=[], ignoreexts=['.lmu', '.ldb', '.lsd'],
+                    ignoredirs=type(self).copyIgnoreDirs, 
+                    ignoreexts=type(self).copyIgnoreExts,
                     ignorefiles=dontcopy, comsout=self.inputcoms,
                     translator=translator, mtimes=mtimes,
                     newmtimes=newmtimes, progresssig='copying',
@@ -141,3 +142,4 @@ class Headless(CoreProtocol):
 class Headless2k(Headless):
     """Headless specialised for 2k games"""
     processGameFunc = process2kgame
+    copyIgnoreExts = ['.lmu', '.ldb', '.lsd']
