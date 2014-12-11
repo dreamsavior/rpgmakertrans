@@ -78,15 +78,15 @@ class SocketCommsRB(SocketComms):
     
     def getTaskParams(self):
         if len(self.filesToProcess) > 0:
-            return self.filesToProcess.pop().encode('utf-8')
+            return (b'translateFile', self.filesToProcess.pop().encode('utf-8'))
         elif self.scriptsAreTranslated:
-            return b':QUIT'
+            return (b'quit')
         elif (len(self.scripts) == len(self.translatedScripts)
               and not self.scriptsRebuilding):
             self.scriptsRebuilding = True
-            return b':REBUILDSCRIPTS'
+            return (b'rebuildScripts')
         else:
-            return b':WAIT'
+            return (b':WAIT')
         
     def loadVersion(self):
         return self.rpgversion
