@@ -29,8 +29,8 @@ def setErrorOut(comsout):
     errorOut = comsout
     if errorOut is None:
         sys.stderr = sys.__stderr__
-    else:
-        sys.stderr = io.StringIO()
+    #else:
+    #    sys.stderr = io.StringIO()
 
 def handleError():
     global errorOut, caught

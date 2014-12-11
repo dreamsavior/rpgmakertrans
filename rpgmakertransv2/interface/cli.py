@@ -36,7 +36,7 @@ class CLIMode(CoreProtocol):
         self.headless = self.runner.initialise(Headless2k,
                                                outputcoms=self.inputcoms)
         self.runner.attach(self.headless)
-        self.headless.go(cargs.input, cargs.patch, cargs.output)
+        self.headless.go(cargs.input, cargs.patch, cargs.output, useBOM=False)
 
     def errorMsgQuit(self, string):
         """Write an error message to stderr"""
@@ -60,6 +60,9 @@ class CLIMode(CoreProtocol):
         hashes = ('#' * int(70 * progress)).ljust(70)
         percent = str(int(progress * 100)).ljust(3)
         self.progressPrint('[%s] %s %%' % (hashes, percent))
+        
+    def finalisingPatch(self):
+        self.progressPrint('Finalising Patch..')
 
     def finishedPatching(self):
         """Finish patching"""

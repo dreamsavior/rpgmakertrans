@@ -25,7 +25,6 @@ class TwoKGame(object, metaclass=ErrorMeta):
         self.translator = translator
         self.mtimes = mtimes
         self.newmtimes = newmtimes
-        self.pool = None
         self.comsout = comsout
         self.jobsDone = 0
         self.jobsTotal = 1

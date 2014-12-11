@@ -16,12 +16,12 @@ import time
 import signal
 from collections import defaultdict
 from .sender import SenderManager
-from ..errorhook import setErrorOut, ErrorMeta
+from ..errorhook import setErrorOut
 import sys
 import collections
 
 
-class CoreRunner(object):
+class CoreRunner:
 
     def __init__(self, runners=None, errors=None):
         if errors is None:
@@ -87,7 +87,7 @@ class CoreRunner(object):
         self.errorManager.shutdown()
 
 
-class CoreProtocol(object, metaclass=ErrorMeta):
+class CoreProtocol:
 
     def __init__(self, runner=None, inputcoms=None, outputcoms=None,
                  errout=None):
