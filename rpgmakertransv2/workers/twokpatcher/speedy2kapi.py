@@ -12,10 +12,10 @@ The API that RPGMaker Trans uses to perform patching on a 2k game.
 import os
 
 from .speedy2k import TwoKRPGFile
-from ...errorhook import ErrorMeta, errorWrap
+from ...errorhook import errorWrap
 
 
-class TwoKGame(object, metaclass=ErrorMeta):
+class TwoKGame:
 
     def __init__(self, inpath, outpath, translator, mtimes, newmtimes,
                  comsout, *args, **kwargs):
@@ -26,8 +26,6 @@ class TwoKGame(object, metaclass=ErrorMeta):
         self.mtimes = mtimes
         self.newmtimes = newmtimes
         self.comsout = comsout
-        self.jobsDone = 0
-        self.jobsTotal = 1
 
     def jobs(self):
         jobs = []
@@ -40,11 +38,6 @@ class TwoKGame(object, metaclass=ErrorMeta):
                               self.translator, 'outputcoms')))
         self.jobsTotal = len(jobs) - 1
         return jobs
-
-    def callback(self, res):
-        self.jobsDone += 1
-        self.comsout.send('setProgess', 'patching', 
-                          self.jobsDone / self.jobsTotal)
 
     def run(self):
         jobs = self.jobs()
