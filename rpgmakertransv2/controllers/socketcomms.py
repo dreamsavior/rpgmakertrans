@@ -40,8 +40,13 @@ class SocketComms:
             output = self.codeHandlers[code](*args)
             if output:
                 if isinstance(output, bytes):
+                    output = [bytes]
+                if isinstance(output, (tuple, list)):
                     writer.write(struct.pack('I', len(output)))
-                    writer.write(output)
+                    for returnVal in output:
+                        assert isinstance(returnVal, bytes), 'Only bytes value allowed'
+                        writer.write(struct.pack('I', len(returnVal)))
+                        writer.write(output)
                 else:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
                 yield from writer.drain()
