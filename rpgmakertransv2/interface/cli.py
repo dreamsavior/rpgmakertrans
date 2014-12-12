@@ -52,7 +52,7 @@ class CLIMode(CoreProtocol):
     def progressPrint(self, string):
         """Print something using a progress bar style print"""
         if not self.quiet:
-            print(string.ljust(CLI_LENGTH) + '\r', end=' ')
+            print('\r' + string.ljust(CLI_LENGTH), end=' ')
             sys.stdout.flush()
 
     def setProgress(self, progress):
