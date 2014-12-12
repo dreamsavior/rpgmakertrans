@@ -40,7 +40,7 @@ class MTimesHandler(object, metaclass=MetaMTimesManager):
     def loadMTimes(self):
         """Try to load mtimes. If fail, assume no mtimes available"""
         try:
-            with open(self.mtimespath) as f:
+            with open(self.mtimespath, 'rb') as f:
                 loadedmtimes = pickle.load(f)
         except:
             loadedmtimes = {}
