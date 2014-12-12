@@ -69,28 +69,9 @@ class CLIMode(CoreProtocol):
         self.normalPrint('\nPatching finished')
         self.going = False
 
-
-def useCLIBackend():
-    """Function to determine if we should use the CLI backend"""
-    longargs = set()
-    shortargs = set()
-    for x in sys.argv:
-        if x.startswith('--'):
-            longargs.add(x)
-        elif x.startswith('-'):
-            shortargs.add(x)
-
-    if '--cli' in longargs or any('c' in x for x in shortargs):
-        return True
-    else:
-        return False
-
-
 def CLIBackend(runner):
     """Function to run the CLI Backend"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--cli', help='Enable CLI mode', 
-                        action='store_true')
     parser.add_argument("input", help="Path of input game to patch")
     parser.add_argument("patch", help="Path of patch (directory or zip)")
     parser.add_argument("output",
@@ -103,9 +84,3 @@ def CLIBackend(runner):
     sys.stderr = t
     x = runner.initialise(CLIMode, cargs=args)
     return x
-
-if __name__ == '__main__':
-    if useCLIBackend():
-        z = CoreRunner([])
-        CLIBackend(z)
-        z.run()

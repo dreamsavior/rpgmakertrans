@@ -1,5 +1,5 @@
 """
-rpgmakertransmain
+rpgmakertrans_gui
 *****************
 
 :author: Aleph Fell <habisain@gmail.com>
@@ -13,13 +13,9 @@ freezing.
 from multiprocessing import freeze_support
 from rpgmakertransv2.interface.guicontroller import GUIController
 from rpgmakertransv2.controllers.coreprotocol import CoreRunner
-from rpgmakertransv2.interface.cli import useCLIBackend, CLIBackend
 
 if __name__ == '__main__':
     freeze_support()
     runner = CoreRunner()
-    if useCLIBackend():
-        CLIBackend(runner)
-    else:
-        runner.initialise(GUIController)
+    runner.initialise(GUIController)
     runner.run()

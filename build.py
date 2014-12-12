@@ -15,13 +15,20 @@ or if I should embed the SVG into a Python file or something.
 import sys
 
 from cx_Freeze import setup, Executable
+from rpgmakertransv2.version import version
 
 base = None
+setup(
+    name="RPGMaker Trans CLI" % version,
+    version="%s" % version,
+    description="Translation tool for RPGMaker games, CLI mode",
+    executables=[Executable("rpgmakertrans_cli.py", base=base)])
+
 if sys.platform == "win32":
     base = "Win32GUI"
 
 setup(
-    name="RPGMaker Trans v2.0",
-    version="2.0",
+    name="RPGMaker Trans" % version,
+    version="%s" version,
     description="Translation tool for RPGMaker games",
-    executables=[Executable("rpgmakertransmain.py", base=base)])
+    executables=[Executable("rpgmakertrans_gui.py", base=base)])
