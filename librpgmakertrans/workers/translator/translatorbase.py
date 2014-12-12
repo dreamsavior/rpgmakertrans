@@ -12,9 +12,9 @@ Specifies the shared methods/interfaces of the Translator.
 from ...metamanager import CustomManager, MetaCustomManager
 
 
-class TranslatorManager(CustomManager):
-    pass
+class TranslatorError(Exception): pass
 
+class TranslatorManager(CustomManager): pass
 
 class TranslatorMeta(MetaCustomManager):
     customManagerClass = TranslatorManager
@@ -24,9 +24,20 @@ class Translator(object, metaclass=TranslatorMeta):
 
     def __init__(self, mtime, *args, **kwargs):
         self.mtime = mtime
+        self.final = False
 
     def updateMTime(self, newmtime):
         self.mtime = max(self.mtime, newmtime)
 
     def getMTime(self):
         return self.mtime
+    
+    def translate(self, string, context):
+        if self.final:
+            raise TranslatorError('Cannot translate from finalised'
+                                  'translator')
+        return string
+            
+    def getPatchData(self):
+        self.final = True
+        return {}

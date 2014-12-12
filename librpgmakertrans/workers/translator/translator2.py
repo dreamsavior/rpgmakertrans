@@ -332,11 +332,13 @@ class Translator2kv2(Translator):
             self.translators[uname].loadTranslatables(data[name])
 
     def translate(self, string, context):
+        super().translate(string, context)
         name, ocontext = context
         name = name.upper()
         return self.translators[name].translateString(string, ocontext)
 
     def getPatchData(self):
+        super().getPatchData()
         ret = {}
         for name, translator in list(self.translators.items()):
             if name == 'RPG_RT':
