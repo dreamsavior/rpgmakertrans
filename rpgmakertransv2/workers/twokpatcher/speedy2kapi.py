@@ -41,7 +41,7 @@ def process2kfile(inFileName, outFileName, mtimes, newmtimes,
         rpgfile = TwoKRPGFile(name, inFileName, translator)
         rpgfile.parse()
         rpgfile.outputfile(outFileName)
-        newmtime = (os.path.getmtime(outFileName), translator.getMTime())
+        newmtime = (os.path.getmtime(inFileName), translator.getMTime())
         newmtimes[name] = newmtime
     comsout.send('incProgress', 'patching')
     if dbgid:
