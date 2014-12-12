@@ -56,6 +56,8 @@ class TranslationLine(namedtuple('TranslateableLine',
         elif string.startswith('> CONTEXT:'):
             cType = 'context'
             data = data.partition(':')[2].lstrip()
+            if '<' in data:
+                data = data.rpartition('<')[0].lstrip()
         elif not string.strip():
             cType = 'comment'
         else:
@@ -63,9 +65,13 @@ class TranslationLine(namedtuple('TranslateableLine',
             
         return cls(cType, data, comment)
             
-    def asString(self):
+    def asString(self, translations):
         if self.cType == 'context':
-            return '> CONTEXT: %s%s'% (self.data, self.comment)
+            translation = translations.get(self.data, '').strip()
+            translated = True if len(translation) > 0 else False 
+            translatedString = '' if translated else ' < UNTRANSLATED'
+            return '> CONTEXT: %s%s%s'% (self.data, translatedString, 
+                                         self.comment)
         else:
             return '%s%s' % (self.data, self.comment)
     
@@ -109,7 +115,7 @@ class Translation:
         for context in contexts:
             stringDict[context] = string
             
-    def insert(self, context, afterContext):
+    def insert(self, context, afterContext, translation):
         indx = 0
         line = self.items[indx]
         while indx < len(self.items) and not (line.cType == 'context' and line.data == afterContext):
@@ -119,9 +125,10 @@ class Translation:
             indx += 1
             line = self.items[indx]
         self.items.insert(indx, TranslationLine.Context(context))
+        self.translations[context] = translation
         
     def asString(self):
-        return '\n'.join(item.asString() for item in self.items)
+        return '\n'.join(item.asString(self.translations) for item in self.items)
 
 class TranslatorError(Exception): pass
 
@@ -235,7 +242,7 @@ class CanonicalTranslation:
                 matchContext, matchTranslation = bestMatch, self.contexts[bestMatch]
             else:
                 matchContext, matchTranslation = self.default
-            matchTranslation[0].insert(context, matchContext)
+            matchTranslation[0].insert(context, matchContext, matchTranslation[1])
             return matchTranslation[1]
 
 class TranslationDict(dict):
@@ -292,7 +299,7 @@ Laurel \# Not a comment"""
 dummy2 = """# RPGMAKER TRANS PATCH FILE VERSION 3.0
 # BEGIN STRING
 ローレル
-# CONTEXT: Actors/1/Actor/name/
+# CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED # Comment
 Laurel
 # END STRING"""
 
@@ -303,7 +310,7 @@ if __name__ == '__main__':
     print(t.translate('Meh','Blargh/3/Actor/name/'))
     print(t.translate('Eeh','Blargh/3/Actor/name/'))
     r = t.getPatchData()
-    for name in r:
+    for name in sorted(r.keys()):
         print('FILENAME:%s' % name)
         print(r[name])
     #print(Translateable(dummy))
