@@ -31,7 +31,7 @@ def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
 
 @errorWrap
 def process2kfile(inFileName, outFileName, mtimes, newmtimes,
-                  translator, comsout, dbgid=None):
+                  translator, comsout):
     """Process an individual 2k file"""
     name = os.path.split(inFileName)[1].rpartition('.')[0].upper()
     ret = (os.path.getmtime(inFileName), translator.getMTime())
@@ -44,7 +44,4 @@ def process2kfile(inFileName, outFileName, mtimes, newmtimes,
     newmtime = os.path.getmtime(inFileName)
     newmtimes[name] = newmtime
     comsout.send('incProgress', 'patching')
-    if dbgid:
-        return ret, dbgid
-    else:
-        return ret
+    return ret
