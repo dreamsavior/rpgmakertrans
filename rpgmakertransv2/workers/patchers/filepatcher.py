@@ -9,11 +9,10 @@ filepatcher
 Provides a patcher for a patch contained in a directory.
 """
 
-import os.path
+import os
 from .basepatcher import BasePatch
 from ..filecopier2 import copyfiles
 from .registry import patcherSniffer, FilePatchv2
-from ..fileops import WinOpen, getmtime, walk, listdir
 
 
 class FilePatcher(BasePatch):
@@ -28,8 +27,8 @@ class FilePatcher(BasePatch):
         mtime = 0
         for fn in self.patchDataFiles:
             name = os.path.split(fn)[1].rpartition('.')[0].lower()
-            mtime = max(mtime, getmtime(fn))
-            with WinOpen(fn, 'rb') as f:
+            mtime = max(mtime, os.path.getmtime(fn))
+            with open(fn, 'rb') as f:
                 raw = f.read()
                 matched, decoded = self.tryDecodePatchFile(
                     type(self).header, raw)
@@ -46,16 +45,16 @@ class FilePatcher(BasePatch):
             if os.path.isdir(patchmarkerfn):
                 raise Exception(
                     'Can\'t create patch marker file due to directory name conflict')
-            with WinOpen(patchmarkerfn, 'w') as f:
+            with open(patchmarkerfn, 'w') as f:
                 f.write('')
         for name in data:
             fn = name + '.txt'
             fullfn = os.path.join(self.path, fn)
-            with WinOpen(fullfn, 'w', encoding=encoding) as f:
+            with open(fullfn, 'w', encoding=encoding) as f:
                 f.write(data[name])
 
     def allPaths(self):
-        for dr, _, files in walk(self.path):
+        for dr, _, files in os.walk(self.path):
             if dr != self.path:
                 yield dr
             for fn in files:
@@ -64,7 +63,7 @@ class FilePatcher(BasePatch):
                     yield fpath
 
     def fileDirs(self):
-        for dr, _, _ in walk(self.path):
+        for dr, _, _ in os.walk(self.path):
             yield dr
 
     def getAssetNames(self):
@@ -91,12 +90,12 @@ class FilePatcherv2(FilePatcher):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
         self.patchDataFiles = []
-        rootls = set(listdir(self.path))
+        rootls = set(os.listdir(self.path))
         for fn in self.allPaths():
             if fn.lower().endswith('.txt') and os.path.normcase(
                     os.path.split(fn)[1]) in rootls and os.path.isfile(fn):
                 header = type(self).header
-                with WinOpen(fn, 'rb') as f:
+                with open(fn, 'rb') as f:
                     data = f.read(len(header) + 3)
                 matched, _ = self.tryDecodePatchFile(header, data, 'ignore')
                 if matched:
@@ -111,13 +110,13 @@ class FilePatcherv2(FilePatcher):
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
     if os.path.isdir(path):
-        cands = [x for x in listdir(path) if x.lower() == 'rpgmktranspatch']
+        cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
         if len(cands) == 1:
             path = os.path.join(path, cands[0])
     elif not path.lower().endswith('rpgmktranspatch'):
         return False
     if os.path.isfile(path):
-        with WinOpen(path, 'r') as f:
+        with open(path, 'r') as f:
             versionString = f.read()
         if not versionString.strip():
             return os.path.split(path)[0]
