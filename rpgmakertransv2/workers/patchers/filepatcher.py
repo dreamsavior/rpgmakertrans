@@ -35,6 +35,7 @@ class FilePatcher(BasePatch):
                 if not matched:
                     raise Exception('Could not decode file %s' % fn)
                 data[name] = decoded
+        self.originalData = data.copy()
         return data, mtime
 
     def writePatchData(self, data, encoding='utf-8'):
@@ -48,10 +49,11 @@ class FilePatcher(BasePatch):
             with open(patchmarkerfn, 'w') as f:
                 f.write('')
         for name in data:
-            fn = name + '.txt'
-            fullfn = os.path.join(self.path, fn)
-            with open(fullfn, 'w', encoding=encoding) as f:
-                f.write(data[name])
+            if data[name] != self.originalData[name.lower()]:
+                fn = name + '.txt'
+                fullfn = os.path.join(self.path, fn)
+                with open(fullfn, 'w', encoding=encoding) as f:
+                    f.write(data[name])
 
     def allPaths(self):
         for dr, _, files in os.walk(self.path):
