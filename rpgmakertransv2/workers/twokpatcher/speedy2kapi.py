@@ -14,50 +14,25 @@ import os
 from .speedy2k import TwoKRPGFile
 from ...errorhook import errorWrap
 
-
-class TwoKGame:
-
-    def __init__(self, inpath, outpath, translator, mtimes, newmtimes,
-                 comsout, *args, **kwargs):
-        super(TwoKGame, self).__init__(*args, **kwargs)
-        self.inpath = inpath
-        self.outpath = outpath
-        self.translator = translator
-        self.mtimes = mtimes
-        self.newmtimes = newmtimes
-        self.comsout = comsout
-
-    def jobs(self):
-        jobs = []
-        for fn in os.listdir(self.inpath):
-            if os.path.splitext(fn)[1].lower() in ('.lmu', '.ldb'):
-                infn = os.path.join(self.inpath, fn)
-                outfn = os.path.join(self.outpath, fn)
-                jobs.append((process2kfile,
-                             (infn, outfn, self.mtimes, self.newmtimes,
-                              self.translator, 'outputcoms')))
-        self.jobsTotal = len(jobs) - 1
-        return jobs
-
-    def run(self):
-        jobs = self.jobs()
-        self.comsout.send('setProgressDiv', 'patching', self.jobsTotal)
-        for fn, args in jobs:
-            self.comsout.send('waitUntil', 'dirsCopied', 'patcher', fn, *args)
-
 @errorWrap
 def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
-    game = TwoKGame(inpath, outpath, translator, mtimes, newmtimes, comsout)
-    game.run()
-    comsout.send('trigger', 'gamePatchingDone')
-
+    """Generate the required jobs needed for patching a 2k game."""
+    jobs = []
+    for fn in os.listdir(inpath):
+        if os.path.splitext(fn)[1].lower() in ('.lmu', '.ldb'):
+            infn = os.path.join(inpath, fn)
+            outfn = os.path.join(outpath, fn)
+            jobs.append((process2kfile, (infn, outfn, mtimes, newmtimes,
+                        translator, 'outputcoms')))
+    jobsTotal = len(jobs) 
+    comsout.send('setProgressDiv', 'patching', jobsTotal)
+    for fn, args in jobs:
+        comsout.send('waitUntil', 'dirsCopied', 'patcher', fn, *args)
 
 @errorWrap
 def process2kfile(inFileName, outFileName, mtimes, newmtimes,
                   translator, comsout, dbgid=None):
-    # Args: inFileName: input file name
-    # outFileName: output file name
-    # mtimes: the mtimes dictionary
+    """Process an individual 2k file"""
     name = os.path.split(inFileName)[1].rpartition('.')[0].upper()
     ret = (os.path.getmtime(inFileName), translator.getMTime())
     needOutput = ((mtimes.get(name,None) != ret) or 

@@ -37,6 +37,7 @@ class Headless(CoreProtocol):
         self.mtimesManager.start(self.errout)
         self.progress = defaultdict(lambda: [0, 1])
         self.progressVal = 0
+        self.progressCompleteTriggers = {}
 
     def nonfatalError(self, msg):
         """Sends a nonfatal error message to the controller of headless"""
@@ -59,6 +60,10 @@ class Headless(CoreProtocol):
         else:
             if key in self.progress:
                 del self.progress[key]
+                
+    def setProgressCompleteTrigger(self, key, trigger):
+        """Emit a local trigger when a progress counter is complete"""
+        self.progressCompleteTriggers[key] = trigger
 
     def setProgress(self, key, progress):
         """Set the progress of a given key"""
@@ -68,6 +73,9 @@ class Headless(CoreProtocol):
     def incProgress(self, key):
         """Increment the progress for a given key"""
         self.progress[key][0] += 1
+        if self.progress[key][0] == self.progress[key][1]:
+            if key in self.progressCompleteTriggers:
+                self.trigger(self.progressCompleteTriggers.pop(key))
         self.updateProgress()
 
     def updateProgress(self):
@@ -114,6 +122,7 @@ class Headless(CoreProtocol):
                     comsout=self.inputcoms)
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
+        self.setProgressCompleteTrigger('patching', 'gamePatchingDone')
         self.comboTrigger('patchingFinished', 
                           ['fileCopyDone', 'gamePatchingDone', 
                            'fullPatchesDone'])
