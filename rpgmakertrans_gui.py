@@ -11,8 +11,8 @@ freezing.
 """
 
 from multiprocessing import freeze_support
-from rpgmakertransv2.interface.guicontroller import GUIController
-from rpgmakertransv2.controllers.coreprotocol import CoreRunner
+from librpgmakertrans.interface.guicontroller import GUIController
+from librpgmakertrans.controllers.coreprotocol import CoreRunner
 
 if __name__ == '__main__':
     freeze_support()
