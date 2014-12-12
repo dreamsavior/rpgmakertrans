@@ -13,8 +13,6 @@ list of files from one directory to another. Supports progress bars etc.
 
 import os.path
 import shutil
-from .fileops import (getmtime, pathexists, isfile, remove, mkdir,
-                      walk, WinOpen, copy)
 from ..errorhook import ErrorMeta, errorWrap
 
 
@@ -43,18 +41,18 @@ class FileCopier(object, metaclass=ErrorMeta):
 
     def doCopyDirs(self):
         for directory in self.dirs:
-            if pathexists(directory):
-                if isfile(directory):
-                    remove(directory)
-            mkdir(directory)
+            if os.path.exists(directory):
+                if os.path.isfile(directory):
+                    os.remove(directory)
+            os.mkdir(directory)
 
     def run(self):
         self.getLists()
-        if not pathexists(self.outdir):
-            mkdir(self.outdir)
+        if not os.path.exists(self.outdir):
+            os.mkdir(self.outdir)
         patchmarkerfn = os.path.join(self.outdir, 'rpgmktranslated')
-        if not pathexists(patchmarkerfn):
-            with WinOpen(patchmarkerfn, 'w') as f:
+        if not os.path.exists(patchmarkerfn):
+            with open(patchmarkerfn, 'w') as f:
                 f.write(
                     'RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
         self.doCopyDirs()
@@ -69,12 +67,12 @@ class FileCopier(object, metaclass=ErrorMeta):
                 self.comsout.send('incProgress', self.progresssig)
 
     def doCopyFile(self, fid, infn, outfn):
-        infnmtime = getmtime(infn)
+        infnmtime = os.path.getmtime(infn)
         # self.testFile(infn)
         outfnmtime = self.mtimes.get(outfn, None)
         if infnmtime != outfnmtime:
             try:
-                copy(infn, outfn)
+                shutil.copy(infn, outfn)
                 self.newmtimes[outfn] = infnmtime
             except IOError:
                 self.comsout.send('nonfatalError', 
@@ -93,7 +91,7 @@ class FileCopier(object, metaclass=ErrorMeta):
     def getLists(self):
         indir, outdir = self.indir, self.outdir
 
-        for path, subdirs, files in walk(indir):
+        for path, subdirs, files in os.walk(indir):
             for rm in self.ignoredirs:
                 if rm in subdirs:
                     subdirs.remove(rm)
@@ -101,7 +99,7 @@ class FileCopier(object, metaclass=ErrorMeta):
             for subdir in subdirs:
                 dirname = os.path.normcase(os.path.join(path, subdir))
                 transdirname = self.changeDir(dirname, indir, outdir)
-                if not pathexists(transdirname):
+                if not os.path.exists(transdirname):
                     self.dirs.append(transdirname)
             for fname in files:
                 origfile = os.path.normcase(os.path.join(path, fname))

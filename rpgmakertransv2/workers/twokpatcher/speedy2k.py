@@ -13,11 +13,9 @@ TODO: Investigate using either ctypes or cffi instead of struct/unpack.
 These may be nicer in terms of performance/layout.
 """
 
-import os.path
 from struct import unpack, Struct
 from .speedy2kconstants import schemas, containerTypes
 from ...errorhook import ErrorClass
-from ..fileops import WinOpen
 
 class BytesOrNoneList(list):
 
@@ -73,7 +71,7 @@ class RPGFile(ErrorClass):
         return r
 
     def outputfile(self, fn):
-        with WinOpen(fn, 'wb') as f:
+        with open(fn, 'wb') as f:
             f.write(b''.join(self.output))
 
     def getPacker(self, n):
@@ -480,7 +478,7 @@ class RPGFile(ErrorClass):
 class TwoKRPGFile(RPGFile):
 
     def __init__(self, name, infn, translator):
-        with WinOpen(infn, 'rb') as f:
+        with open(infn, 'rb') as f:
             x = f.read()
         super(TwoKRPGFile, self).__init__(name, x, schemas, translator)
 
