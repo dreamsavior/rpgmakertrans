@@ -46,10 +46,13 @@ class MTimesHandler(object, metaclass=MetaMTimesManager):
             loadedmtimes = {}
         self.mtimes.update(loadedmtimes)
 
-    def dumpMTimes(self):
+    def dumpMTimes(self, translatorMTime):
         """Dump *new* mtimes to output file"""
+        localCopy = {}
+        localCopy.update(self.newmtimes)
         dumpmtimes = {}
-        dumpmtimes.update(self.newmtimes)
+        for key in localCopy:
+            dumpmtimes[key] = (self.newmtimes[key], translatorMTime)
         with open(self.mtimespath, 'wb') as f:
             pickle.dump(dumpmtimes, f)
 
@@ -69,6 +72,6 @@ def loadMTimes(mtimeshandler, comsout):
 
 
 @errorWrap
-def dumpMTimes(mtimeshandler, comsout):
-    mtimeshandler.dumpMTimes()
+def dumpMTimes(mtimeshandler, translatorMTime, comsout):
+    mtimeshandler.dumpMTimes(translatorMTime)
     comsout.send('trigger', 'mtimesDumped')

@@ -136,7 +136,8 @@ class Headless(CoreProtocol):
         self.outputcoms.send('finalisingPatch')
         self.submit('patcher', writeTranslator, patcher, translator,
                     useBOM, self.inputcoms)
-        self.submit('copier', dumpMTimes, mtimesManager, self.inputcoms)
+        self.submit('copier', dumpMTimes, mtimesManager, 
+                    translator.getMTime(), self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish, patcher)
 
