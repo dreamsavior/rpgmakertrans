@@ -55,9 +55,9 @@ class TranslationLine(namedtuple('TranslateableLine',
             cType = 'end'
         elif string.startswith('> CONTEXT:'):
             cType = 'context'
-            data = data.partition(':')[2].lstrip()
+            data = data.partition(':')[2].strip()
             if '<' in data:
-                data = data.rpartition('<')[0].lstrip()
+                data = data.rpartition('<')[0].strip()
         elif not string.strip():
             cType = 'comment'
         else:
@@ -299,12 +299,19 @@ Laurel \# Not a comment"""
 dummy2 = """# RPGMAKER TRANS PATCH FILE VERSION 3.0
 # BEGIN STRING
 ローレル
-# CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED # Comment
+# CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED \# Comment
 Laurel
 # END STRING"""
 
+dummy3 = """> RPGMAKER TRANS PATCH FILE VERSION 3.1
+> BEGIN STRING
+ローレル
+> CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED # Comment
+Laurel
+> END STRING"""
+
 if __name__ == '__main__':
-    t = Translator3({'Actors': dummy2}, mtime=1)
+    t = Translator3({'Actors': dummy3}, mtime=1)
     print(t.translate('ローレル', 'Actors/2/Actor/name/'))
     print(t.translate('Meh','Actors/3/Actor/name/'))
     print(t.translate('Meh','Blargh/3/Actor/name/'))
