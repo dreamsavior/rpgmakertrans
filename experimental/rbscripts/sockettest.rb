@@ -1,4 +1,4 @@
-require 'socketcall'
+require_relative 'socketcall'
 
 debug('Testing')
 #sock = TCPSocket.new('localhost', 27899)

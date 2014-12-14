@@ -18,8 +18,12 @@ def socketCall(code, args)
     sock.write([arg.bytesize].pack('L'))
     sock.write(arg)
   end
-  retlen = sock.recv(4).unpack('L')[0]
-  ret = sock.recv(retlen)
+  nargs = sock.recv(4).unpack('L')[0]
+  ret = []
+  (1..nargs).each do |n|
+    arglen = sock.recv(4).unpack('L')[0]
+    ret.push(sock.recv(arglen))
+  end
   sock.close()
   return ret
 end
