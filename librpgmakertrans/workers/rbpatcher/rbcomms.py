@@ -83,7 +83,7 @@ class SocketCommsRB(SocketComms):
             self.scriptsRebuilding = True
             return ('rebuildScripts')
         else:
-            return (':WAIT')
+            return ('wait')
         
     def loadVersion(self):
         return self.rpgversion
