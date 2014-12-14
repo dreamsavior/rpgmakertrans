@@ -14,7 +14,9 @@ import asyncio
 
 from ...controllers.socketcomms import SocketComms
 
-class SocketCommsRB(SocketComms):
+class RBCommsError(Exception): pass
+
+class RBComms(SocketComms):
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
                  outputComs, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,9 +71,9 @@ class SocketCommsRB(SocketComms):
         if self.scripts:
             name = self.scripts.pop(0)
             script = self.translatedScripts.pop(name)
-            return '%s:%s' % (name, script)
+            return len(self.scripts), name, script
         else:
-            return ':END:'
+            raise RBCommsError('Asked for translated script which does not exist')
     
     def getTaskParams(self):
         if len(self.filesToProcess) > 0:
