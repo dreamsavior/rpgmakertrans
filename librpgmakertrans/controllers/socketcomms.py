@@ -19,10 +19,11 @@ class SocketComms:
         self.loop = asyncio.get_event_loop()
         self.socket = 27899 if socket is None else socket
         self.codeHandlers = {0: self.debug}
+        self.rawArgs = {0: False}
     
     def debug(self, *args):
         print('Debug got args: %s' % args)
-        return b'Debug Test for Python'
+        return 'Debug Test for Python'
         
     @asyncio.coroutine
     def handleRequest(self, reader, writer):
@@ -37,10 +38,15 @@ class SocketComms:
                 length = struct.unpack('I', rawLength)[0]
                 nextArg = yield from reader.read(length)
                 args.append(nextArg)
+            rawArgs = self.rawArgs.get(code, False)
+            if not rawArgs:
+                args = [arg.decode('utf-8') for arg in args]
             output = self.codeHandlers[code](*args)
             if output:
-                if isinstance(output, bytes):
+                if isinstance(output, (bytes, str)):
                     output = [output]
+                if not rawArgs:
+                    output = [arg.encode('utf-8') for arg in output]
                 if isinstance(output, (tuple, list)):
                     writer.write(struct.pack('I', len(output)))
                     for returnVal in output:

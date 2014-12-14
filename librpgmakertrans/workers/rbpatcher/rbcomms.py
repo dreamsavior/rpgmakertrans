@@ -27,13 +27,14 @@ class SocketCommsRB(SocketComms):
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
         self.filesToProcess = filesToProcess
-        self.rpgversion = rpgversion.encode('utf-8')
+        self.rpgversion = rpgversion
         self.codeHandlers.update({1: self.translate,
                                   2: self.translateScript,
                                   3: self.getTaskParams,
                                   4: self.loadVersion,
                                   5: self.setScripts,
                                   6: self.getTranslatedScript})
+        self.rawArgs.update({5: True})
         
     @asyncio.coroutine
     def checkForQuit(self):
@@ -45,10 +46,8 @@ class SocketCommsRB(SocketComms):
                 assert code == 'setTranslatedScript', 'Can only respond to one event!'
                 self.setTranslatedScript(*args, **kwargs)
         
-    def translate(self, rawString, rawContext):
-        string = rawString.decode('utf-8')
-        context = rawContext.decode('utf-8')
-        return self.translator.translate(string, context).encode('utf-8')
+    def translate(self, string, context):
+        return self.translator.translate(string, context)
     
     def setScripts(self, *scripts):
         self.scripts = list(scripts)
@@ -69,24 +68,22 @@ class SocketCommsRB(SocketComms):
     def getTranslatedScript(self):
         if self.scripts:
             name = self.scripts.pop(0)
-            bName = name.encode('utf-8')
             script = self.translatedScripts.pop(name)
-            bScript = script.encode('utf-8')
-            return b'%s:%s' % (bName, bScript)
+            return '%s:%s' % (name, script)
         else:
-            return b':END:'
+            return ':END:'
     
     def getTaskParams(self):
         if len(self.filesToProcess) > 0:
-            return (b'translateFile', self.filesToProcess.pop().encode('utf-8'))
+            return ('translateFile', self.filesToProcess.pop())
         elif self.scriptsAreTranslated:
-            return (b'quit')
+            return ('quit')
         elif (len(self.scripts) == len(self.translatedScripts)
               and not self.scriptsRebuilding):
             self.scriptsRebuilding = True
-            return (b'rebuildScripts')
+            return ('rebuildScripts')
         else:
-            return (b':WAIT')
+            return (':WAIT')
         
     def loadVersion(self):
         return self.rpgversion
