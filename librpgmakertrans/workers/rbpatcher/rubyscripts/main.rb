@@ -9,7 +9,8 @@
 #
 
 require_relative 'socketcall.rb'
-
+require_relative 'rgss.rb'
+require_relative 'transvx.rb'
 going = true
 
 versionString = getVersion()

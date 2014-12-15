@@ -110,9 +110,11 @@ class RBComms(SocketComms):
 
 if __name__ == '__main__':
     indir = '/home/habisain/LiliumUnion/Data'
+    from ..translator.translator3 import Translator3
     files = {}
     for fn in os.listdir(indir):
         if fn != 'Scripts.rvdata':
             files[os.path.join(indir, fn)] = os.path.join(indir, 'o', fn)
-    tester = RBComms(None, files, 'vx', None, None, 2)
+    translator = Translator3({})
+    tester = RBComms(translator, files, 'vx', None, None, 2)
     tester.start()

@@ -8,17 +8,23 @@
 # Script that contains most of the functions needed to translate Ruby
 #
 
-$KCODE = 'UTF8'
 require 'zlib'
-require 'rmvx/rgss2'
-require 'vxschema'
-require 'common'
+require_relative 'socketcall.rb'
+require_relative 'rgss.rb'
+require_relative 'vxschema.rb'
+
 # Notes:
 # Don't think animations is necessary
 # Areas unknown
 
+def contextStr(context)
+  result = ''
+  context.each{|x| result += x.to_s + '/'}
+  result = result.sub('RPG::', '')
+  return result
+end
 
-def patchPage(translator, page, context)
+def patchPage(page, context)
   # Some notes for VX:
   # code 101 sets up / clears a dialogue box.
   # a 101 may be followed by 401s, each with a single line of dialogue
@@ -55,7 +61,7 @@ def patchPage(translator, page, context)
           eventCommand = page.list[currIndx] 
         end
         currentStr.rstrip!
-        translatedString = translator.translateString(currentStr, contextString + 'Dialogue/')
+        translatedString = translate(currentStr, contextString + 'Dialogue/')
         if translatedString == ''
           translatedString = ' '
         end
@@ -73,13 +79,13 @@ def patchPage(translator, page, context)
       elsif eventCommand.code == 102
         eventCommand.parameters[0].each_index{|y|
           choiceString = eventCommand.parameters[0][y]
-          translatedChoice = translator.translateString(choiceString, contextString + 'Choice/')
+          translatedChoice = translate(choiceString, contextString + 'Choice/')
           eventCommand.parameters[0][y] = translatedChoice
         }
         newPageList.push(eventCommand)
         currIndx += 1
       elsif eventCommand.code == 402
-        translatedChoice = translator.translateString(eventCommand.parameters[1], contextString + 'Choice/')
+        translatedChoice = translate(eventCommand.parameters[1], contextString + 'Choice/')
         eventCommand.parameters[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1 
@@ -96,26 +102,26 @@ def patchPage(translator, page, context)
   return page
 end
 
-def patch(translator, data, context)
+def patch(data, context)
   schemaMatchResult = schemaMatch($schema, context)
   if schemaMatchResult == 1
-    return translator.translateString(data, contextStr(context))
+    return translate(data, contextStr(context))
   elsif schemaMatchResult == 2
-    return patchPage(translator, data, context)
+    return patchPage(data, context)
   elsif schemaMatchResult == 0
     if data.class == Array
       data.each_index{|x| 
-         data[x] = patch(translator, data[x], context + [x])
+         data[x] = patch(data[x], context + [x])
       }
     elsif data.class == Hash
       data.each{|key, value| 
-        data[key] = patch(translator, value, context+[key])
+        data[key] = patch(value, context+[key])
       }
     else
       context += [data.class]
       data.instance_variables.each{|var| 
         data.instance_variable_set(var, 
-          patch(translator, data.instance_variable_get(var), 
+          patch(data.instance_variable_get(var), 
                 context + [var.sub(/^@/,'')]))
         }
      return data
@@ -125,12 +131,12 @@ def patch(translator, data, context)
   end
 end
 
-def patchFile(infn, outfn, translator, context)
+def patchFile(infn, outfn, context)
   data = 0
   File.open( infn, "r+" ) do |datafile|
     data = Marshal.load(datafile)
   end
-  patch(translator, data, [context])
+  patch(data, [context])
   File.open( outfn, "w+") do |datafile|
     Marshal.dump(data, datafile)
   end
@@ -138,53 +144,8 @@ def patchFile(infn, outfn, translator, context)
 end
 
 
-def parseScript(script, translator, context)
-  scriptStr2 = ''
-  currIndx = 0
-  currBase = 0
-  currMode = nil
-  currTerm = nil
-  escaping = false
-  escapeValid = false
-  scriptLen = scriptStr.length
-  while currIndx < scriptLen
-    char = scriptStr[currIndx, 1]
-    if "'\"".include?(char)
-      if currBase <= currIndx - 1
-        scriptStr2 += scriptStr[currBase..currIndx-1]
-      end
-      currBase = currIndx
-      char2 = nil
-      while char2 != char
-        currIndx += 1
-        char2 = scriptStr[currIndx, 1]
-      end
-      if currBase < currIndx
-        transString = scriptStr[currBase..currIndx]
-        translated = translator.translateString(transString, contextString).strip
-        if translated[0, 1] == '"' and translated[-1, 1] == '"'
-        elsif translated[0, 1] == '\'' and translated[-1, 1] == '\''
-        else 
-          puts 'Ill formated string'
-          puts translated
-        end          
-        scriptStr2 += translated
-      end  
-      currIndx += 1
-      currBase = currIndx
-      elsif char == '#'
-        while char != "\n" and currIndx < scriptLen 
-          currIndx += 1
-          char = scriptStr[currIndx, 1]
-        end
-      end
-      currIndx += 1  
-    end
-    scriptStr2 += scriptStr[currBase..currIndx]
-    return scriptStr2
-end
-
-def scriptsFile(infn, outfn, translator, context)
+def scriptsFile(infn, outfn, context)
+  # TODO: This will need a lot of work.
   data = nil
   File.open(infn, "r+") do |datafile|
     data = Marshal.load(datafile)
@@ -195,7 +156,7 @@ def scriptsFile(infn, outfn, translator, context)
     contextString = context + '/' + scriptName + '/' 
     scriptStr = Zlib::Inflate.inflate(data[x][2])
     if scriptName != '' and scriptStr != ''
-      scriptStr2 = parseScript(scriptStr, translator, context)
+      scriptStr2 = parseScript(scriptStr, context)
       data[x][2] = Zlib::Deflate.deflate(scriptStr2)
     end
   }

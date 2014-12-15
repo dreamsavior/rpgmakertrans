@@ -285,7 +285,7 @@ class TranslationDict(dict):
     
 class Translator3(Translator):
     """A Version 3 Translator"""
-    def __init__(self, namedStrings, *args, **kwargs):
+    def __init__(self, namedStrings, debug = False, *args, **kwargs):
         """Initialise the translator from a dictionary of filenames to
         file contents"""
         if isinstance(namedStrings, dict):
@@ -299,6 +299,7 @@ class Translator3(Translator):
             for translation in translationFile:
                 self.translationDB[translation.raw].addTranslation(translation)
         self.newtranslations = OrderedDict()
+        self.debug = debug
         
     def getPatchData(self):
         """Return a dictionary of filenames to file contents of the patch"""
@@ -319,6 +320,8 @@ class Translator3(Translator):
 
     def translate(self, string, context):
         """Get translation of string in given context"""
+        if self.debug:
+            print('TRANSLATORDEBUG: %s:%s' % (string, context))
         if string in self.translationDB:
             ret = self.translationDB[string].translate(context)
         else:
