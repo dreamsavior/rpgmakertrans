@@ -13,6 +13,7 @@ sorts things out from there.
 import asyncio
 import os
 import subprocess
+from collections import OrderedDict
 
 from ...controllers.socketcomms import SocketComms
 
@@ -32,10 +33,10 @@ class RBComms(SocketComms):
         self.translator = translator
         self.scripts = []
         self.translatedScripts = {}
-        self.scriptWaiting = any(x.startswith('Scripts.') for x in filesToProcess)
+        self.scriptWaiting = any(x.endswith('Scripts.rvdata') for x in filesToProcess)
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
-        self.filesToProcess = filesToProcess
+        self.filesToProcess = OrderedDict(filesToProcess)
         self.rpgversion = rpgversion
         self.codeHandlers.update({1: self.translate,
                                   2: self.translateScript,
@@ -94,7 +95,7 @@ class RBComms(SocketComms):
     
     def getTaskParams(self):
         if len(self.filesToProcess) > 0:
-            return ('translateFile', self.filesToProcess.pop())
+            return ('translateFile',) + self.filesToProcess.popitem()
         elif self.scriptsAreTranslated:
             return ('quit')
         elif (len(self.scripts) == len(self.translatedScripts)
@@ -109,7 +110,9 @@ class RBComms(SocketComms):
 
 if __name__ == '__main__':
     indir = '/home/habisain/LiliumUnion/Data'
-    infiles = [fn for fn in os.listdir(indir) if fn.endswith('.rvdata')]
-    infiles.remove('Scripts.rvdata')
-    tester = RBComms(None, infiles, 'vx', None, None, 2)
+    files = {}
+    for fn in os.listdir(indir):
+        if fn != 'Scripts.rvdata':
+            files[os.path.join(indir, fn)] = os.path.join(indir, 'o', fn)
+    tester = RBComms(None, files, 'vx', None, None, 2)
     tester.start()

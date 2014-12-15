@@ -14,13 +14,17 @@ going = true
 
 versionString = getVersion()
 
+def translateFile(infile, outfile)
+  puts('translated %s' % infile)
+end
+
 while going 
   values = getTaskParams()
   code = values[0]
   if code == 'quit'
     going = false
   elsif code == 'translateFile' 
-    translateFile(values[1])
+    translateFile(values[1], values[2])
   elsif code == 'rebuildScripts'
     rebuildScripts()
   elsif code == 'wait'
