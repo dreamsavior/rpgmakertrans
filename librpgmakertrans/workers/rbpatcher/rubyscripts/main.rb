@@ -10,7 +10,7 @@
 
 require_relative 'socketcall.rb'
 
-going = False
+going = true
 
 versionString = getVersion()
 
@@ -18,7 +18,7 @@ while going
   values = getTaskParams()
   code = values[0]
   if code == 'quit'
-    going = False
+    going = false
   elsif code == 'translateFile' 
     translateFile(values[1])
   elsif code == 'rebuildScripts'

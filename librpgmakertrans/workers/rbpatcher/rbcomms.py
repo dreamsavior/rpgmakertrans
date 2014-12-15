@@ -11,14 +11,21 @@ happens over sockets. It is given a list of files to process, and
 sorts things out from there.
 """
 import asyncio
+import os
+import subprocess
 
 from ...controllers.socketcomms import SocketComms
+
+if os.name == 'posix':
+    RUBYPATH = 'ruby'
+else:
+    raise Exception('Unsupported Platform')
 
 class RBCommsError(Exception): pass
 
 class RBComms(SocketComms):
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, *args, **kwargs):
+                 outputComs, subprocesses, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
         self.outputComs = outputComs
@@ -37,6 +44,15 @@ class RBComms(SocketComms):
                                   5: self.setScripts,
                                   6: self.getTranslatedScript})
         self.rawArgs.update({5: True})
+        self.subprocesses = subprocesses
+        
+    def start(self):
+        base = os.path.split(__file__)[0]
+        rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
+        openRuby = lambda: subprocess.Popen([RUBYPATH, rbScriptPath],
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE) 
+        self.rubies = [openRuby() for _ in range(self.subprocesses)]
+        super().start()
         
     @asyncio.coroutine
     def checkForQuit(self):
@@ -44,9 +60,10 @@ class RBComms(SocketComms):
             yield from asyncio.sleep(0.1)
             if len(self.filesToProcess) == 0 and len(self.scripts) == 0 and not self.scriptWaiting:
                 return
-            for code, args, kwargs in self.inputComs.get():
-                assert code == 'setTranslatedScript', 'Can only respond to one event!'
-                self.setTranslatedScript(*args, **kwargs)
+            if self.inputComs:
+                for code, args, kwargs in self.inputComs.get():
+                    assert code == 'setTranslatedScript', 'Can only respond to one event!'
+                    self.setTranslatedScript(*args, **kwargs)
         
     def translate(self, string, context):
         return self.translator.translate(string, context)
@@ -89,3 +106,10 @@ class RBComms(SocketComms):
         
     def loadVersion(self):
         return self.rpgversion
+
+if __name__ == '__main__':
+    indir = '/home/habisain/LiliumUnion/Data'
+    infiles = [fn for fn in os.listdir(indir) if fn.endswith('.rvdata')]
+    infiles.remove('Scripts.rvdata')
+    tester = RBComms(None, infiles, 'vx', None, None, 2)
+    tester.start()
