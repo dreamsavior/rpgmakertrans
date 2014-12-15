@@ -12,7 +12,7 @@ require 'socket'
 
 def socketCall(code, args)
   sock = TCPSocket.new('localhost', 27899)
-  data = [0, args.length].pack('LL')
+  data = [code, args.length].pack('LL')
   sock.write(data)
   args.each do |arg|
     sock.write([arg.bytesize].pack('L'))
@@ -41,7 +41,7 @@ def sendScript(script, scriptName)
 end
 
 def getTaskParams()
-  return sockerCall(3, [])
+  return socketCall(3, [])
 end
 
 def getVersion()
