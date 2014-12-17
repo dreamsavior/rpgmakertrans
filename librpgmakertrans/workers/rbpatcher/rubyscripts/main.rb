@@ -19,6 +19,13 @@ def translateFile(infile, outfile)
   puts('translated %s' % infile)
 end
 
+def rebuildScripts()
+  value = getTranslatedScript()
+  while value[0] > 0
+    puts('rebuilding %s' % value[1])
+  end
+end
+
 while going 
   values = getTaskParams()
   code = values[0]
