@@ -47,6 +47,8 @@ class RBComms(SocketComms):
         self.rawArgs.update({5: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
+        self.going = True
+        self.tickTasks = [self.checkForQuit, self.getInputComs]
         
     def start(self):
         base = os.path.split(__file__)[0]
@@ -59,12 +61,18 @@ class RBComms(SocketComms):
         
     @asyncio.coroutine
     def checkForQuit(self):
-        while True:
+        while self.going:
             yield from asyncio.sleep(0.1)
             for ruby in self.rubies[:]:
                 if ruby.poll() is not None:
                     self.rubies.remove(ruby)
-            if len(self.rubies) == 0: return
+            if len(self.rubies) == 0: 
+                self.going = False
+            
+    @asyncio.coroutine
+    def getInputComs(self):
+        while self.going:
+            yield from asyncio.sleep(0.1)
             if self.inputComs:
                 for code, args, kwargs in self.inputComs.get():
                     assert code == 'setTranslatedScript', 'Can only respond to one event!'

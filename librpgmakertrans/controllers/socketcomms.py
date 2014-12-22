@@ -20,6 +20,7 @@ class SocketComms:
         self.socket = 27899 if socket is None else socket
         self.codeHandlers = {0: self.debug}
         self.rawArgs = {0: False}
+        self.tickTasks = [self.checkForQuit]
     
     def debug(self, *args):
         print('Debug got args: %s' % args)
@@ -71,7 +72,8 @@ class SocketComms:
         coro = asyncio.start_server(self.handleRequest, '127.0.0.1', self.socket, loop=self.loop)
         self.server = self.loop.run_until_complete(coro)
         # Serve requests until CTRL+c is pressed
-        try: self.loop.run_until_complete(self.checkForQuit())
+        loopCondition = asyncio.wait([coro() for coro in self.tickTasks])
+        try: self.loop.run_until_complete(loopCondition)
         except KeyboardInterrupt: pass
         self.server.close()
         self.loop.run_until_complete(self.server.wait_closed())
