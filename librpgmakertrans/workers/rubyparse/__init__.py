@@ -11,3 +11,4 @@ string encoding awareness. As Ruby scripts can have 1 of 4 encodings, this
 creates substantial problems for parsing Ruby in Ruby.
 """
  
+from .parser import translateRuby
