@@ -97,7 +97,8 @@ class RBComms(SocketComms):
     
     def getTaskParams(self):
         if len(self.filesToProcess) > 0:
-            return ('translateFile',) + self.filesToProcess.popitem()
+            item = self.filesToProcess.popitem()
+            return ('translateFile', item[0]) + item[1]
         elif self.scriptsAreTranslated:
             return ('quit')
         elif (len(self.scripts) == len(self.translatedScripts)
@@ -115,8 +116,8 @@ if __name__ == '__main__':
     from ..translator.translator3 import Translator3
     files = {}
     for fn in os.listdir(indir):
-        if fn == 'Actors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
-            files[os.path.join(indir, fn)] = os.path.join(indir, 'o', fn)
+        if fn == 'Armors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
+            files[os.path.join(indir, fn)] = (os.path.join(indir, 'o', fn), fn.rpartition('.rvdata')[0])
     translator = Translator3({})
     tester = RBComms(translator, files, 'vx', None, None, 1, debugRb=True)
     tester.start()

@@ -15,9 +15,10 @@ going = true
 
 versionString = getVersion()
 
-def translateFile(infile, outfile)
-  patchFile(infile, outfile, 'Actors')
-  puts('translated %s' % infile)
+def translateFile(infile, outfile, context)
+  puts('working on %s' % context)
+  patchFile(infile, outfile, context)
+  puts('translated %s' % context)
 end
 
 def rebuildScripts() 
@@ -33,7 +34,7 @@ while going
   if code == 'quit'
     going = false
   elsif code == 'translateFile' 
-    translateFile(values[1], values[2])
+    translateFile(values[1], values[2], values[3])
   elsif code == 'rebuildScripts'
     rebuildScripts()
   elsif code == 'wait'
