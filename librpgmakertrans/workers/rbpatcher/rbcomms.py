@@ -26,7 +26,7 @@ class RBCommsError(Exception): pass
 
 class RBComms(SocketComms):
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
         self.outputComs = outputComs
@@ -46,12 +46,14 @@ class RBComms(SocketComms):
                                   6: self.getTranslatedScript})
         self.rawArgs.update({5: True})
         self.subprocesses = subprocesses
+        self.debugRb = debugRb
         
     def start(self):
         base = os.path.split(__file__)[0]
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
+        piping = None if self.debugRb else subprocess.PIPE
         openRuby = lambda: subprocess.Popen([RUBYPATH, rbScriptPath],
-                                stdin=subprocess.PIPE, stdout=subprocess.PIPE) 
+                                stdin=piping, stdout=piping, stderr=piping) 
         self.rubies = [openRuby() for _ in range(self.subprocesses)]
         super().start()
         
@@ -113,8 +115,8 @@ if __name__ == '__main__':
     from ..translator.translator3 import Translator3
     files = {}
     for fn in os.listdir(indir):
-        if fn != 'Scripts.rvdata':
+        if fn == 'Actors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
             files[os.path.join(indir, fn)] = os.path.join(indir, 'o', fn)
     translator = Translator3({})
-    tester = RBComms(translator, files, 'vx', None, None, 2)
+    tester = RBComms(translator, files, 'vx', None, None, 1, debugRb=True)
     tester.start()

@@ -24,6 +24,33 @@ def contextStr(context)
   return result
 end
 
+def schemaMatch(schema, context)
+  schemaLevel = schema
+  level = 0
+  context.each{|x|
+    level += 1
+    # Match all Maps to the Map class
+    if x.class == String and x[0, 3] == 'Map'
+      x = 'Map'
+    end
+    if schemaLevel.member?(x)
+      schemaLevel = schemaLevel[x]
+    elsif schemaLevel.member?(true)
+      schemaLevel = schemaLevel[true] 
+    else
+      return -1 # Failure, do not iterate down here.
+    end
+  }
+  if schemaLevel == true
+    return 1 # Success, dump this for translating
+  elsif schemaLevel == 'eventList'
+    return 2 # Dump an event list
+  else
+    return 0 # Failure, but keep iterating
+  end
+
+end
+
 def patchPage(page, context)
   # Some notes for VX:
   # code 101 sets up / clears a dialogue box.

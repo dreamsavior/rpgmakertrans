@@ -16,10 +16,11 @@ going = true
 versionString = getVersion()
 
 def translateFile(infile, outfile)
+  patchFile(infile, outfile, 'Actors')
   puts('translated %s' % infile)
 end
 
-def rebuildScripts()
+def rebuildScripts() 
   value = getTranslatedScript()
   while value[0] > 0
     puts('rebuilding %s' % value[1])
