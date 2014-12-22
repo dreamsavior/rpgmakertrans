@@ -146,10 +146,10 @@ def patch(data, context)
       }
     else
       context += [data.class]
-      data.instance_variables.each{|var| 
+      data.instance_variables.each{|var|
         data.instance_variable_set(var, 
           patch(data.instance_variable_get(var), 
-                context + [var.sub(/^@/,'')]))
+                context + [var.to_s.sub(/^@/,'')]))
         }
      return data
     end
