@@ -27,7 +27,7 @@ class SocketComms:
         
     @asyncio.coroutine
     def handleRequest(self, reader, writer):
-        #try:
+        try:
             header = yield from reader.read(8)
             code, numberArgs = struct.unpack('II', header)
             if code not in self.codeHandlers:
@@ -58,8 +58,8 @@ class SocketComms:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
                 yield from writer.drain()
             writer.close()
-        #except:
-        #    handleError()
+        except:
+            handleError()
             
     @asyncio.coroutine
     def checkForQuit(self):
