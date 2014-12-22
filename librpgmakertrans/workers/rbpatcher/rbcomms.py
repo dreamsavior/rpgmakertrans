@@ -61,8 +61,10 @@ class RBComms(SocketComms):
     def checkForQuit(self):
         while True:
             yield from asyncio.sleep(0.1)
-            if len(self.filesToProcess) == 0 and len(self.scripts) == 0 and not self.scriptWaiting:
-                return
+            for ruby in self.rubies[:]:
+                if ruby.poll() is not None:
+                    self.rubies.remove(ruby)
+            if len(self.rubies) == 0: return
             if self.inputComs:
                 for code, args, kwargs in self.inputComs.get():
                     assert code == 'setTranslatedScript', 'Can only respond to one event!'
