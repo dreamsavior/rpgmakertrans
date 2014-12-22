@@ -27,7 +27,7 @@ class SocketComms:
         
     @asyncio.coroutine
     def handleRequest(self, reader, writer):
-        try:
+        #try:
             header = yield from reader.read(8)
             code, numberArgs = struct.unpack('II', header)
             if code not in self.codeHandlers:
@@ -42,7 +42,7 @@ class SocketComms:
             if not rawArgs:
                 args = [arg.decode('utf-8') for arg in args]
             output = self.codeHandlers[code](*args)
-            if output:
+            if output is not None:
                 if isinstance(output, (bytes, str)):
                     output = [output]
                 if not rawArgs:
@@ -52,14 +52,14 @@ class SocketComms:
                     for returnVal in output:
                         assert isinstance(returnVal, bytes), 'Only bytes value allowed, got %s' % returnVal
                         writer.write(struct.pack('I', len(returnVal)))
-                        writer.write(returnVal)
+                        if len(returnVal) > 0:
+                            writer.write(returnVal)
                 else:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
                 yield from writer.drain()
-                
             writer.close()
-        except:
-            handleError()
+        #except:
+        #    handleError()
             
     @asyncio.coroutine
     def checkForQuit(self):

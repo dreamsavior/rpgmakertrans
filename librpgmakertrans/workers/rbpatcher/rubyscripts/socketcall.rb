@@ -33,9 +33,6 @@ def debug(string)
 end
 
 def translate(string, context)
-  if (string == '') 
-    return '' # BUG: 1) Should I ever see this, 2) Why does it break everything sending an empty string?
-  end
   return socketCall(1, [string, context])
 end
 
