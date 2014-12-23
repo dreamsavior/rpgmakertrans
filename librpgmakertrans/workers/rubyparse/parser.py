@@ -15,7 +15,10 @@ from .scripttranslator import ScriptTranslator
 
 
 class RubyParserState:
-    def __init__(self, string, filename, scriptTranslator, index, ruleStack, verbose = False):
+    """Encapsulates the state of the Ruby parser"""
+    def __init__(self, string, filename, scriptTranslator, index, ruleStack,
+                 verbose = False):
+        """Initialise the Ruby parser state"""
         self.string = string
         self.filename = filename
         self.scriptTranslator = scriptTranslator
@@ -29,26 +32,40 @@ class RubyParserState:
         self.line = 1
         
     def __str__(self):
+        """Give a human readable version of interesting bits of the 
+        RubyParserState"""
+        indx1 = max(0, self.index-2)
+        indx2 = min(self.index+3, len(self.string))
         return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
-                (repr(self.string[max(0, self.index-2):min(self.index+3, len(self.string))]), 
+                (repr(self.string[indx1:indx2]), 
                  self.index, [str(rule) for rule in self.ruleStack]))
         
     def __getitem__(self, indx):
+        """Get an item from the Ruby parsers string, offset by 
+        the current position"""
         if isinstance(indx, slice):
-            if slice.start is not None and slice.start < 0: raise ValueError('No negative slices')
-            if slice.stop is not None and slice.stop < 0: raise ValueError('No negative slices')
-            if slice.step is not None and slice.step != 1: raise ValueError('No stepped slices')
-            start = slice.start + self.__index if slice.start is not None else slice.start
-            stop = slice.stop + self.__index if slice.stop is not None else slice.stop
+            if slice.start is not None and slice.start < 0: 
+                raise ValueError('No negative slices')
+            if slice.stop is not None and slice.stop < 0: 
+                raise ValueError('No negative slices')
+            if slice.step is not None and slice.step != 1: 
+                raise ValueError('No stepped slices')
+            start = (slice.start + self.__index if slice.start is not None
+                     else slice.start)
+            stop = (slice.stop + self.__index if slice.stop is not None
+                    else slice.stop)
             return self.string[slice(start, stop, 1)]
         else:
             if indx < 0: raise ValueError('No negative indices')
             return self.string[self.__index+indx:self.__index+indx+1]
         
     def setRollback(self):
-        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:], self.char, self.line)
+        """Set a rollback at the current position"""
+        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:], 
+                                        self.char, self.line)
         
     def resumeRollback(self):
+        """Resume the last rollback"""
         if self.rollbacks:
             rollback = max(self.rollbacks)
             if self.verbose:
@@ -65,14 +82,13 @@ class RubyParserState:
     
     @property
     def index(self):
+        """Return the current index"""
         return self.__index
-    
-    @property
-    def rolledBack(self):
-        return self.__index == self.currentRollBack
     
     @index.setter
     def index(self, newindex):
+        """Set the current index, advancing the line/character counts
+        as appropriate"""
         adv = newindex - self.__index
         for _ in range(adv):
             self.char += 1
@@ -83,9 +99,15 @@ class RubyParserState:
             if self.verbose:
                 print(adv, self)
         assert self.__index == newindex
+    
+    @property
+    def rolledBack(self):
+        """Determine if this state has just been rolled back"""
+        return self.__index == self.currentRollBack
         
     @property
     def currentRule(self):
+        """Return the current rule if applicable"""
         if self.ruleStack:
             return self.ruleStack[-1]
         else:
@@ -93,20 +115,24 @@ class RubyParserState:
     
     @property
     def currentChar(self):
+        """Return the current character"""
         if self.__index < len(self.string):
             return self.string[self.__index]
         else:
             return ''
                   
     def startswith(self, substring, index = None):
+        """As string.startswith, but using current index"""
         if index is None:
             index = self.__index
         return self.string.startswith(substring, index)
                     
     def addRule(self, rule):
+        """Add a rule"""
         self.ruleStack.append(rule)
         
     def checkNextRule(self):
+        """Check applicable next rules, and add it if it matches"""
         result = self.currentRule.getSuccessorRule(self)
         while result is not None:
             if self.verbose:
@@ -116,12 +142,14 @@ class RubyParserState:
             result = self.currentRule.getSuccessorRule(self)
             
     def popRules(self):
+        """Pop all rules which are terminated"""
         ruleFlux = True
         ruleTerminated = False
         while ruleFlux and self.ruleStack:
             if self.currentRule.terminate(self):
                 if self.verbose:
-                    print('released %s at %s' % (type(self.currentRule).__name__, self.index))
+                    print('released %s at %s' % 
+                          (type(self.currentRule).__name__, self.index))
                 self.index += self.currentRule.advance(self)
                 self.currentRule.exit(self)
                 self.ruleStack.pop()
@@ -133,11 +161,14 @@ class RubyParserState:
         if not ruleTerminated:
             self.index += self.currentRule.advance(self)
 
-class RubyParserException(Exception): pass
+class RubyParserException(Exception): 
+    """Exception raised for RubyParser errors"""
 
 def translateRuby(string, translationHandler, filename = '', verbose = False):
+    """Translate a ruby string"""
     scriptTranslator = ScriptTranslator(string, translationHandler)
-    state = RubyParserState(string, filename, scriptTranslator, 0, [], verbose)
+    state = RubyParserState(string, filename, scriptTranslator, 0, [],
+                            verbose)
     state.addRule(Base(state))
 
     while state.ruleStack:
