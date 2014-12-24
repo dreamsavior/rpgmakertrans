@@ -13,7 +13,19 @@ coordinates worker progress (including Ruby processes by Sockets).
 """
 
 from .headless import Headless
+from ..workers.rbpatcher import startRBComms
 
 class HeadlessVX(Headless):
     processGameFunc = None
     copyIgnoreExts = ['.rvdata', '.rvdata2', '.rxdata']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.rbcomsInput = self.senderManager.Sender()
+        self.setupPool('rbcomms', 1)
+    
+    def translateScript(self, scriptName, script):
+        pass
+    
+    def setTranslatedScript(self, scriptName, script):
+        pass

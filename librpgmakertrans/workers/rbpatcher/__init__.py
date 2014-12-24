@@ -8,3 +8,5 @@ rbpatcher
 
 Patching engine for Ruby based RPGMaker games.
 """
+
+from .rbcomms import RBComms, startRBComms

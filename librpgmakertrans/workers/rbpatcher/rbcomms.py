@@ -16,6 +16,7 @@ import subprocess
 from collections import OrderedDict
 
 from ...controllers.socketcomms import SocketComms
+from librpgmakertrans.errorhook import errorWrap
 
 if os.name == 'posix':
     RUBYPATH = 'ruby'
@@ -121,13 +122,27 @@ class RBComms(SocketComms):
     def loadVersion(self):
         return self.rpgversion
 
+@errorWrap
+def startRBComms(translator, filesToProcess, rpgversion, inputComs,
+                 outputComs, subprocesses):
+    rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
+                      outputComs, subprocesses)
+    rbcomms.start()
+
 if __name__ == '__main__':
     indir = '/home/habisain/LiliumUnion/Data'
     from ..translator.translator3 import Translator3
+    from ..translator import TranslatorManager
+    from ...controllers.sender import SenderManager
     files = {}
     for fn in os.listdir(indir):
         if fn == 'Armors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
             files[os.path.join(indir, fn)] = (os.path.join(indir, 'o', fn), fn.rpartition('.rvdata')[0])
-    translator = Translator3({})
+    senderManager = SenderManager()
+    senderManager.start()
+    errour = senderManager.Sender()
+    translatorManager = TranslatorManager()
+    translatorManager.start(errour)
+    translator = translatorManager.Translator3({})
     tester = RBComms(translator, files, 'vx', None, None, 1, debugRb=True)
     tester.start()

@@ -28,3 +28,8 @@ def rbTranslationServer(inputComs, outputComs, translator):
                                               *args, **kwargs))
             else:
                 raise Exception('Unknown code on input bus')
+            
+@errorErap
+def rbOneOffTranslation(outputComs, scriptName, script, translator):
+    tname, tscript = translateRuby(script, scriptName, translationHandler=translator)
+    outputComs.send('setTranslatedScript', [tname, tscript])
