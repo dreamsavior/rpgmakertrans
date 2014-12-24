@@ -30,7 +30,8 @@ def test(string, verbose = None, filename = '', succeeds = True):
         print(string + ' ' +  str(succeeds))
     errored = False
     try:
-        outscript = translateRuby(string, dt, filename = filename, verbose = verbose)
+        outscript = translateRuby(string, filename = filename, 
+                                  translationHandler = dt, verbose = verbose)
         assert outscript == string, 'Did not get same string back with no translations'
     except (RubyParserException, HereDocError):
         errored = True
