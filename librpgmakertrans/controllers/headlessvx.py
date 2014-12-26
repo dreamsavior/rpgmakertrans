@@ -14,18 +14,20 @@ coordinates worker progress (including Ruby processes by Sockets).
 
 from .headless import Headless
 from ..workers.rbpatcher import startRBComms
+from ..workers.rubyparse import rbOneOffTranslation
+
+# TODO: Work out if I should force patcher to have more than 2 processes
+# or alternatively some other pool?
 
 class HeadlessVX(Headless):
-    processGameFunc = None
     copyIgnoreExts = ['.rvdata', '.rvdata2', '.rxdata']
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.rbcomsInput = self.senderManager.Sender()
-        self.setupPool('rbcomms', 1)
-    
-    def translateScript(self, scriptName, script):
-        pass
-    
-    def setTranslatedScript(self, scriptName, script):
-        pass
+    def translateScript(self, scriptName, script, translator, outputComs):
+        self.submit('patcher', rbOneOffTranslation, outputComs, scriptName,
+                    script, translator)
+            
+    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
+        rbCommsIn = self.senderManager.Sender()
+        self.submit('patcher', startRBComms, indir, outdir, 
+                    translator, mtimes=mtimes, newmtimes=newmtimes, 
+                    outputComs=self.inputcoms, inputComs=rbCommsIn)

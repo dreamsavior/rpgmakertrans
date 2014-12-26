@@ -12,4 +12,4 @@ creates substantial problems for parsing Ruby in Ruby.
 """
  
 from .parser import translateRuby
-from .server import rbTranslationServer
+from .server import rbTranslationServer, rbOneOffTranslation

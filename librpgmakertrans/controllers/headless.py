@@ -20,11 +20,12 @@ from ..workers.twokpatcher import process2kgame
 from .coreprotocol import CoreProtocol
 from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
+class PatchEngineState:
+    pass
 
 class Headless(CoreProtocol):
     """Headless Class"""
     
-    processGameFunc = None
     copyIgnoreDirs = []
     copyIgnoreExts = []
 
@@ -101,6 +102,9 @@ class Headless(CoreProtocol):
         self.localWaitUntil('startTranslation', self.beginTranslation, patcher,
                             translatorRet, mtimesManager, indir, patchpath,
                             outdir, useBOM)
+        
+    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
+        raise NotImplementedError('Override this method')
 
     def beginTranslation(self, patcher, translatorRet, mtimesManager,
                          indir, patchpath, outdir, useBOM):
@@ -117,9 +121,7 @@ class Headless(CoreProtocol):
                     translator=translator, mtimes=mtimes,
                     newmtimes=newmtimes, progresssig='copying',
                     dirssig='dirsCopied')
-        self.submit('patcher', type(self).processGameFunc, indir, outdir, 
-                    translator, mtimes=mtimes, newmtimes=newmtimes, 
-                    comsout=self.inputcoms)
+        self.processGame(indir, outdir, translator, mtimes, newmtimes)
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.setProgressCompleteTrigger('patching', 'gamePatchingDone')
@@ -152,5 +154,9 @@ class Headless(CoreProtocol):
         
 class Headless2k(Headless):
     """Headless specialised for 2k games"""
-    processGameFunc = process2kgame
     copyIgnoreExts = ['.lmu', '.ldb', '.lsd']
+    
+    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
+        self.submit('patcher', process2kgame, indir, outdir, 
+                    translator, mtimes=mtimes, newmtimes=newmtimes, 
+                    comsout=self.inputcoms)

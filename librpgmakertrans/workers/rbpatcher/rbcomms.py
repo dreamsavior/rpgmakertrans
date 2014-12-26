@@ -51,6 +51,12 @@ class RBComms(SocketComms):
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs]
         
+    @classmethod
+    def makeFilesToProcess(indir, outdir):
+        for fn in os.listdir(indir):
+            if fn == 'Armors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
+                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])    
+                
     def start(self):
         base = os.path.split(__file__)[0]
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
@@ -91,7 +97,8 @@ class RBComms(SocketComms):
             try:
                 name = bName.decode(encoding)
                 script = bScript.decode(encoding)
-                self.outputComs.send('translateScript', name, script)
+                self.outputComs.send('translateScript', name, script, 
+                                     self.translator, self.inputComs)
             except UnicodeDecodeError:
                 pass
             
@@ -123,8 +130,11 @@ class RBComms(SocketComms):
         return self.rpgversion
 
 @errorWrap
-def startRBComms(translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses):
+def startRBComms(indir, outdir, translator, mtimes, newmtimes, 
+                 outputComs, inputComs):
+    filesToProcess = RBComms.makeFilesToProcess(indir, outdir)
+    rpgversion = 'vx'
+    subprocesses = 1
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses)
     rbcomms.start()
