@@ -1,0 +1,14 @@
+'''
+textvxpatcher
+*************
+
+:author: Aleph Fell <habisain@gmail.com>
+:copyright: 2012-2014
+:license: GNU Public License version 3
+
+A temporary file for development with the VX patcher.
+'''
+
+from librpgmakertrans.controllers.headlessvx import HeadlessVX
+
+tester = HeadlessVX()
