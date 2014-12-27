@@ -275,6 +275,12 @@ module RPG
   end
   
   class EventCommand
+    def initialize(code = 0, indent = 0, parameters = [])
+          @code = code
+          @indent = indent
+          @parameters = parameters
+    end
+        
     def encode_with(coder)
       raise 'Unexpected number of instance variables' if instance_variables.length != 3
       clean
@@ -296,6 +302,7 @@ end
 
 module RGSS
   # creates an empty class in a potentially nested scope
+  
   def self.process(root, name, *args)
     if args.length > 0
       process(root.const_get(name), *args)

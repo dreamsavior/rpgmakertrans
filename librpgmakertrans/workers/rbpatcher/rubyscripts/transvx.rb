@@ -72,20 +72,20 @@ def patchPage(page, context)
   numberConsecutive = 0
   if page != nil
     newPageList = []
-    pageListLen = page.list.length
+    pageListLen = page.instance_variable_get(:@list).length
     currIndx = 0
     while currIndx < pageListLen
-      eventCommand = page.list[currIndx]
-      if eventCommand.code == 101
+      eventCommand = page.instance_variable_get(:@list)[currIndx]
+      if eventCommand.instance_variable_get(:@code) == 101
         currIndx += 1
         windowInit = eventCommand
-        indent = windowInit.indent
-        eventCommand = page.list[currIndx]
+        indent = windowInit.instance_variable_get(:@indent)
+        eventCommand = page.instance_variable_get(:@list)[currIndx]
         currentStr = ''
-        while eventCommand.code == 401 and currIndx < pageListLen do
-          currentStr += eventCommand.parameters[0] + "\n"
+        while eventCommand.instance_variable_get(:@code) == 401 and currIndx < pageListLen do
+          currentStr += eventCommand.instance_variable_get(:@parameters)[0] + "\n"
           currIndx += 1
-          eventCommand = page.list[currIndx] 
+          eventCommand = page.instance_variable_get(:@list)[currIndx] 
         end
         currentStr.rstrip!
         translatedString = translate(currentStr, contextString + 'Dialogue/')
@@ -103,17 +103,17 @@ def patchPage(page, context)
           newPageList.push(RPG::EventCommand.new(401, indent, [line]))
         }
         
-      elsif eventCommand.code == 102
-        eventCommand.parameters[0].each_index{|y|
-          choiceString = eventCommand.parameters[0][y]
+      elsif eventCommand.instance_variable_get(:@code) == 102
+        eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
+          choiceString = eventCommand.instance_variable_get(:@parameters)[0][y]
           translatedChoice = translate(choiceString, contextString + 'Choice/')
-          eventCommand.parameters[0][y] = translatedChoice
+          eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
         }
         newPageList.push(eventCommand)
         currIndx += 1
-      elsif eventCommand.code == 402
-        translatedChoice = translate(eventCommand.parameters[1], contextString + 'Choice/')
-        eventCommand.parameters[1] = translatedChoice
+      elsif eventCommand.instance_variable_get(:@code) == 402
+        translatedChoice = translate(eventCommand.instance_variable_get(:@parameters)[1], contextString + 'Choice/')
+        eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1 
       else
@@ -124,7 +124,7 @@ def patchPage(page, context)
     #if newPageList != page.list 
     #  puts contextString
     #end
-    page.list = newPageList
+    page.instance_variable_set(:@list, newPageList)
   end
   return page
 end

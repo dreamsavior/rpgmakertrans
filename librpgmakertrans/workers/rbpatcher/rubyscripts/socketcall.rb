@@ -33,7 +33,7 @@ def debug(string)
 end
 
 def translate(string, context)
-  return socketCall(1, [string, context])
+  return socketCall(1, [string, context])[0]
 end
 
 def sendScript(script, scriptName)
