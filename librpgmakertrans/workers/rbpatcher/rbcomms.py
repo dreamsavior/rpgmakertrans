@@ -44,12 +44,15 @@ class RBComms(SocketComms):
                                   3: self.getTaskParams,
                                   4: self.loadVersion,
                                   5: self.setScripts,
-                                  6: self.getTranslatedScript})
+                                  6: self.getTranslatedScript,
+                                  7: self.doneTranslation})
         self.rawArgs.update({5: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs]
+        self.outputComs.send('setProgressDiv', 'patching', 
+                             len(self.filesToProcess))
         
     @staticmethod
     def makeFilesToProcess(indir, outdir):
@@ -127,6 +130,9 @@ class RBComms(SocketComms):
             return ('rebuildScripts')
         else:
             return ('wait')
+        
+    def doneTranslation(self, context):
+        print('PyDone%s' % context)
         
     def loadVersion(self):
         return self.rpgversion

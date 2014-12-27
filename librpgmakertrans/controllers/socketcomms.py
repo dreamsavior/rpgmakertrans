@@ -57,7 +57,9 @@ class SocketComms:
                             writer.write(returnVal)
                 else:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
-                yield from writer.drain()
+            else:
+                writer.write(struct.pack('I', 0))
+            yield from writer.drain()
             writer.close()
         except:
             handleError()

@@ -19,6 +19,7 @@ def translateFile(infile, outfile, context)
   puts('working on %s' % context)
   patchFile(infile, outfile, context)
   puts('translated %s (%s=>%s)' % [context, infile, outfile])
+  doneTranslation(context)
 end
 
 def rebuildScripts() 
