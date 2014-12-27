@@ -27,14 +27,19 @@ class RBCommsError(Exception): pass
 
 class RBComms(SocketComms):
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
         self.outputComs = outputComs
         self.translator = translator
         self.scripts = []
         self.translatedScripts = {}
-        self.scriptWaiting = any(x.endswith('Scripts.rvdata') for x in filesToProcess)
+        self.scriptParams = None
+        self.scriptWaiting = False
+        for item in [x for x in filesToProcess]:
+            if item.endswith('Scripts.rvdata'):
+                self.scriptWaiting = True
+                self.scriptParams = item, filesToProcess.pop(item)
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
         self.filesToProcess = OrderedDict(filesToProcess)
@@ -46,7 +51,7 @@ class RBComms(SocketComms):
                                   5: self.setScripts,
                                   6: self.getTranslatedScript,
                                   7: self.doneTranslation})
-        self.rawArgs.update({5: True})
+        self.rawArgs.update({2: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
         self.going = True
@@ -58,7 +63,7 @@ class RBComms(SocketComms):
     def makeFilesToProcess(indir, outdir):
         files = {}
         for fn in os.listdir(indir):
-            if fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
+            if fn.endswith('.rvdata'):
                 files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])
         return files    
                 
@@ -85,10 +90,9 @@ class RBComms(SocketComms):
     def getInputComs(self):
         while self.going:
             yield from asyncio.sleep(0.1)
-            if self.inputComs:
-                for code, args, kwargs in self.inputComs.get():
-                    assert code == 'setTranslatedScript', 'Can only respond to one event!'
-                    self.setTranslatedScript(*args, **kwargs)
+            for code, args, kwargs in self.inputComs.get():
+                assert code == 'setTranslatedScript', 'Can only respond to one event!'
+                self.setTranslatedScript(*args, **kwargs)
         
     def translate(self, string, context):
         return self.translator.translate(string, context)
@@ -119,7 +123,11 @@ class RBComms(SocketComms):
             raise RBCommsError('Asked for translated script which does not exist')
     
     def getTaskParams(self):
-        if len(self.filesToProcess) > 0:
+        if self.scriptParams is not None:
+            ret = ('translateScripts', self.scriptParams[0]) + self.scriptParams[1]
+            self.scriptParams = None
+            return ret
+        elif len(self.filesToProcess) > 0:
             item = self.filesToProcess.popitem()
             return ('translateFile', item[0]) + item[1]
         elif self.scriptsAreTranslated:

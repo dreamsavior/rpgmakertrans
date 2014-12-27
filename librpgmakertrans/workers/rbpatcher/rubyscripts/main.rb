@@ -22,6 +22,11 @@ def translateFile(infile, outfile, context)
   doneTranslation(context)
 end
 
+def translateScripts(infile, outfile, context)
+  puts('working on %s' % context)
+  scriptsFile(infile, outfile, context)
+end
+
 def rebuildScripts() 
   value = getTranslatedScript()
   while value[0] > 0
@@ -34,6 +39,8 @@ while going
   code = values[0]
   if code == 'quit'
     going = false
+  elsif code == 'translateScripts'
+    translateScripts(values[1], values[2], values[3])
   elsif code == 'translateFile' 
     translateFile(values[1], values[2], values[3])
   elsif code == 'rebuildScripts'

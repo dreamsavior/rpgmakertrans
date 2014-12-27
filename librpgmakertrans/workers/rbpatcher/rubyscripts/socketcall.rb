@@ -36,8 +36,8 @@ def translate(string, context)
   return socketCall(1, [string, context])[0]
 end
 
-def sendScript(script, scriptName)
-  return socketCall(2, [script, scriptName])
+def sendScript(scriptName, script)
+  return socketCall(2, [scriptName, script])
 end
 
 def getTaskParams()

@@ -183,6 +183,23 @@ def scriptsFile(infn, outfn, context)
     contextString = context + '/' + scriptName + '/' 
     scriptStr = Zlib::Inflate.inflate(data[x][2])
     if scriptName != '' and scriptStr != ''
+      sendScript(scriptName, scriptStr)
+    end
+  }
+end
+
+def scriptsFile2(infn, outfn, context)
+  # TODO: This will need a lot of work.
+  data = nil
+  File.open(infn, "r+") do |datafile|
+    data = Marshal.load(datafile)
+  end
+  data.each_index{|x|
+    magicNo = data[x][0]
+    scriptName = data[x][1]
+    contextString = context + '/' + scriptName + '/' 
+    scriptStr = Zlib::Inflate.inflate(data[x][2])
+    if scriptName != '' and scriptStr != ''
       scriptStr2 = parseScript(scriptStr, context)
       data[x][2] = Zlib::Deflate.deflate(scriptStr2)
     end
