@@ -146,21 +146,3 @@ def startRBComms(indir, outdir, translator, mtimes, newmtimes,
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses)
     rbcomms.start()
-
-if __name__ == '__main__':
-    indir = '/home/habisain/LiliumUnion/Data'
-    from ..translator.translator3 import Translator3
-    from ..translator import TranslatorManager
-    from ...controllers.sender import SenderManager
-    files = {}
-    for fn in os.listdir(indir):
-        if fn == 'Armors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
-            files[os.path.join(indir, fn)] = (os.path.join(indir, 'o', fn), fn.rpartition('.rvdata')[0])
-    senderManager = SenderManager()
-    senderManager.start()
-    errour = senderManager.Sender()
-    translatorManager = TranslatorManager()
-    translatorManager.start(errour)
-    translator = translatorManager.Translator3({})
-    tester = RBComms(translator, files, 'vx', None, None, 1, debugRb=True)
-    tester.start()

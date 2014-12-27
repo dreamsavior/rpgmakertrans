@@ -37,17 +37,21 @@ class FilePatcher(BasePatch):
                 data[name] = decoded
         self.originalData = data.copy()
         return data, mtime
+    
+    def patchMarkerText(self):
+        return ''
 
     def writePatchData(self, data, encoding='utf-8'):
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         patchmarkerfn = os.path.join(self.path, 'RPGMKTRANSPATCH')
+        print(patchmarkerfn)
         if not os.path.exists(patchmarkerfn):
             if os.path.isdir(patchmarkerfn):
                 raise Exception(
                     'Can\'t create patch marker file due to directory name conflict')
             with open(patchmarkerfn, 'w') as f:
-                f.write('')
+                f.write(self.patchMarkerText())
         for name in data:
             if data[name] != self.originalData[name.lower()]:
                 fn = name + '.txt'
@@ -112,6 +116,9 @@ class FilePatcherv3(FilePatcher):
     translatorClass = 'Translator3'
     header = '> RPGMAKER TRANS PATCH'
     
+    def patchMarkerText(self):
+        return '> RPGMAKER TRANS PATCH V3'
+    
     def categorisePatchFiles(self):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
@@ -159,6 +166,6 @@ def sniffv3(path):
     if os.path.isfile(path):
         with open(path, 'r') as f:
             versionString = f.read()
-        if not versionString.strip():
+        if versionString.strip() == '> RPGMAKER TRANS PATCH V3':
             return os.path.split(path)[0]
     return False
