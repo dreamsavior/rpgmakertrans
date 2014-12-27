@@ -45,7 +45,6 @@ class FilePatcher(BasePatch):
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         patchmarkerfn = os.path.join(self.path, 'RPGMKTRANSPATCH')
-        print(patchmarkerfn)
         if not os.path.exists(patchmarkerfn):
             if os.path.isdir(patchmarkerfn):
                 raise Exception(
@@ -53,7 +52,7 @@ class FilePatcher(BasePatch):
             with open(patchmarkerfn, 'w') as f:
                 f.write(self.patchMarkerText())
         for name in data:
-            if data[name] != self.originalData[name.lower()]:
+            if data[name] != self.originalData.get(name.lower(), None):
                 fn = name + '.txt'
                 fullfn = os.path.join(self.path, fn)
                 with open(fullfn, 'w', encoding=encoding) as f:

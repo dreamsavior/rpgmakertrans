@@ -288,6 +288,7 @@ class Translator3(Translator):
     def __init__(self, namedStrings, debug = False, *args, **kwargs):
         """Initialise the translator from a dictionary of filenames to
         file contents"""
+        super().__init__(*args, **kwargs)
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
         self.translationFiles = {}
@@ -320,6 +321,8 @@ class Translator3(Translator):
 
     def translate(self, string, context):
         """Get translation of string in given context"""
+        if not string.strip():
+            return string
         if self.debug:
             print('TRANSLATORDEBUG: %s:%s' % (string, context))
         if string in self.translationDB:
