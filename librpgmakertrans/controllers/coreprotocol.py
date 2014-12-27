@@ -101,6 +101,8 @@ class CoreProtocol:
             self.senderManager.start()
         if inputcoms is None:
             inputcoms = self.senderManager.Sender()
+        if errout is None:
+            errout = self.senderManager.ErrorSender()
         self.runner = runner
         self.inputcoms = inputcoms
         if outputcoms is None:
