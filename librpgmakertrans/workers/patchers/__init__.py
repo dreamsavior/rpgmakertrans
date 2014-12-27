@@ -15,17 +15,21 @@ from . import filepatcher
 from . import zippatcher
 from .basepatcher import PatchManager, makeTranslator, writeTranslator
 from .registry import getClassName
-DEFAULT = 'FilePatcherv2'
 
 
-def getPatcher(manager, path, coms, errout):
+def getPatcher(manager, path, coms, errout, defaultVersion=2):
     className = getClassName(path)
     if className is None:
         if not os.path.exists(path):
             os.mkdir(path)
         elif not os.path.isdir(path):
             raise Exception('Not a patcher!')
-        className = DEFAULT
+        if defaultVersion == 2:
+            className = 'FilePatcherv2'
+        elif defaultVersion == 3:
+            className = 'FilePatcherv3'
+        else:
+            raise Exception('Bad Patch Version')
     return getattr(manager, className)(path, coms, errout)
 
 

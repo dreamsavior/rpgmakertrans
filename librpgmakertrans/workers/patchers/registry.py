@@ -19,10 +19,11 @@ from ..sniffers import sniffer, sniff, SniffedType
 class FilePatchv2(SniffedType):
     maintype, subtype = 'PATCH', 'v2][update'
 
+class FilePatchv3(SniffedType):
+    maintype, subtype = 'PATCH', 'v3][update'
 
 class ZipPatchv2(SniffedType):
     maintype, subtype = 'PATCH', 'v2][use'
-
 
 class NewDir(SniffedType):
     maintype, subtype = 'PATCH', 'create'

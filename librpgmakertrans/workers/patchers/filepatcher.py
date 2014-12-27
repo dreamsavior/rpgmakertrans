@@ -12,7 +12,7 @@ Provides a patcher for a patch contained in a directory.
 import os
 from .basepatcher import BasePatch
 from ..filecopier2 import copyfiles
-from .registry import patcherSniffer, FilePatchv2
+from .registry import patcherSniffer, FilePatchv2, FilePatchv3
 
 
 class FilePatcher(BasePatch):
@@ -107,10 +107,49 @@ class FilePatcherv2(FilePatcher):
             else:
                 if not fn.upper().endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
-
+                    
+class FilePatcherv3(FilePatcher):
+    translatorClass = 'Translator3'
+    header = '> RPGMAKER TRANS PATCH'
+    
+    def categorisePatchFiles(self):
+        """Work out if a file is an asset or patch data"""
+        self.assetFiles = []
+        self.patchDataFiles = []
+        rootls = set(os.listdir(self.path))
+        for fn in self.allPaths():
+            if (fn.lower().endswith('.txt') and 
+            os.path.normcase(os.path.split(fn)[1]) in rootls
+            and os.path.isfile(fn)):
+                header = type(self).header
+                with open(fn, 'rb') as f:
+                    data = f.read(len(header) + 3)
+                matched, _ = self.tryDecodePatchFile(header, data, 'ignore')
+                if matched:
+                    self.patchDataFiles.append(fn)
+                else:
+                    self.assetFiles.append(fn)
+            else:
+                if not fn.upper().endswith('RPGMKTRANSPATCH'):
+                    self.assetFiles.append(fn)
 
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
+    if os.path.isdir(path):
+        cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
+        if len(cands) == 1:
+            path = os.path.join(path, cands[0])
+    elif not path.lower().endswith('rpgmktranspatch'):
+        return False
+    if os.path.isfile(path):
+        with open(path, 'r') as f:
+            versionString = f.read()
+        if not versionString.strip():
+            return os.path.split(path)[0]
+    return False
+
+@patcherSniffer(FilePatchv3, 'FilePatcherv3')
+def sniffv3(path):
     if os.path.isdir(path):
         cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
         if len(cands) == 1:
