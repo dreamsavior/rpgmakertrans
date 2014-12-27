@@ -51,11 +51,13 @@ class RBComms(SocketComms):
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs]
         
-    @classmethod
+    @staticmethod
     def makeFilesToProcess(indir, outdir):
+        files = {}
         for fn in os.listdir(indir):
             if fn == 'Armors.rvdata': #fn.endswith('.rvdata') and fn != 'Scripts.rvdata':
-                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])    
+                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])
+        return files    
                 
     def start(self):
         base = os.path.split(__file__)[0]
