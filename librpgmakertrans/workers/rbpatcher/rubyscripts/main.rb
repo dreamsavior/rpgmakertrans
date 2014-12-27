@@ -32,9 +32,10 @@ end
 def rebuildScripts() 
   value = getTranslatedScript()
   while value[0].to_i > 0
-    puts('rebuilding %s' % value[1])
+    puts('rebuilding %s (magicNo:%s)' % [value[1], value[2]])
     value = getTranslatedScript()
   end
+  puts('rebuilding %s (magicNo:%s)' % [value[1], value[2]])
 end
 
 while going 

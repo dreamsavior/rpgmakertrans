@@ -33,6 +33,7 @@ class RBComms(SocketComms):
         self.outputComs = outputComs
         self.translator = translator
         self.scripts = []
+        self.magicNumbers = {}
         self.translatedScripts = {}
         self.scriptParams = None
         self.scriptWaiting = False
@@ -102,7 +103,7 @@ class RBComms(SocketComms):
         self.scripts = list(scripts)
         self.scriptWaiting = False
     
-    def translateScript(self, bName, bScript):
+    def translateScript(self, bName, bScript, magicNo):
         for encoding in ('utf-8', 'cp932'):
             try:
                 name = bName.decode(encoding)
@@ -110,6 +111,7 @@ class RBComms(SocketComms):
                 self.outputComs.send('translateScript', name, script, 
                                      self.translator, self.inputComs)
                 self.scripts.append(name)
+                self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:
                 pass
@@ -124,7 +126,8 @@ class RBComms(SocketComms):
             script = self.translatedScripts.pop(name)
             if len(self.scripts) == 0:
                 self.scriptsAreTranslated = True
-            return str(len(self.scripts)), name, script
+            print(self.magicNumbers[name])
+            return str(len(self.scripts)), name, self.magicNumbers[name], script
         else:
             raise RBCommsError('Asked for translated script which does not exist')
     

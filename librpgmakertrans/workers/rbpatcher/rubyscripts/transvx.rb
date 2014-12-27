@@ -172,18 +172,16 @@ end
 
 
 def scriptsFile(infn, outfn, context)
-  # TODO: This will need a lot of work.
   data = nil
   File.open(infn, "r+") do |datafile|
     data = Marshal.load(datafile)
   end
   data.each_index{|x|
     magicNo = data[x][0]
-    scriptName = data[x][1]
-    contextString = context + '/' + scriptName + '/' 
+    scriptName = data[x][1] 
     scriptStr = Zlib::Inflate.inflate(data[x][2])
     if scriptName != '' and scriptStr != ''
-      sendScript(scriptName, scriptStr)
+      sendScript(scriptName, scriptStr, magicNo.to_s)
     end
   }
 end
