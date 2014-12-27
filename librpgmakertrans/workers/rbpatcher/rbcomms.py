@@ -132,7 +132,7 @@ class RBComms(SocketComms):
             return ('wait')
         
     def doneTranslation(self, context):
-        print('PyDone%s' % context)
+        self.outputComs.send('incProgress', 'patching')
         
     def loadVersion(self):
         return self.rpgversion
