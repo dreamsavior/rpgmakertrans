@@ -12,6 +12,8 @@ interface and coordinates progress/errors to an interface and
 coordinates worker progress (including Ruby processes by Sockets).
 """
 
+import os
+
 from .headless import Headless
 from ..workers.rbpatcher import startRBComms
 from ..workers.rubyparse import rbOneOffTranslation
@@ -28,6 +30,7 @@ class HeadlessVX(Headless):
             
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         rbCommsIn = self.senderManager.Sender()
+        indir = os.path.join(indir, 'Data')
         self.submit('patcher', startRBComms, indir, outdir, 
                     translator, mtimes=mtimes, newmtimes=newmtimes, 
                     outputComs=self.inputcoms, inputComs=rbCommsIn)

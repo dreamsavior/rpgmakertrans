@@ -87,13 +87,13 @@ class Headless(CoreProtocol):
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
 
-    def go(self, indir, patchpath, outdir, useBOM):
+    def go(self, indir, patchpath, outdir, useBOM, defaultPatchVersion=2):
         """Initiate the patching"""
         self.setupPool('patcher')
         self.setupPool('copier', processes=1)
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
         patcher = getPatcher(self.patchManager, patchpath,
-                             self.inputcoms, self.errout)
+                             self.inputcoms, self.errout, defaultPatchVersion)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
         translatorRet = self.submit('patcher', makeTranslator, patcher,
                                     self.inputcoms)

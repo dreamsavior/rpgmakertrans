@@ -12,3 +12,4 @@ A temporary file for development with the VX patcher.
 from librpgmakertrans.controllers.headlessvx import HeadlessVX
 
 tester = HeadlessVX()
+tester.go('/home/habisain/LiliumUnion', '/tmp/LiliumUnionPatch', '/tmp/LiliumUnion', False, 3)
