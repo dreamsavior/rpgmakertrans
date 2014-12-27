@@ -25,18 +25,22 @@ end
 def translateScripts(infile, outfile, context)
   puts('working on %s' % context)
   scriptsFile(infile, outfile, context)
+  puts('translated %s (%s)' % [context, infile])
+  doneTranslation(context)
 end
 
 def rebuildScripts() 
   value = getTranslatedScript()
-  while value[0] > 0
+  while value[0].to_i > 0
     puts('rebuilding %s' % value[1])
+    value = getTranslatedScript()
   end
 end
 
 while going 
   values = getTaskParams()
   code = values[0]
+  puts(code)
   if code == 'quit'
     going = false
   elsif code == 'translateScripts'

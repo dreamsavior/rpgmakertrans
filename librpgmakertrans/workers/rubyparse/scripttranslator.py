@@ -26,7 +26,7 @@ class ScriptTranslator:
         lastIndex = 0
         output = []
         for indices in self.translationIndices:
-            context = 'Script/%s/%s:%s' % (indices.file, indices.line, indices.char)
+            context = 'Scripts/%s/%s:%s' % (indices.file, indices.line, indices.char)
             output.append(self.string[lastIndex:indices[0]])
             output.append(self.translationHandler.translate(self.string[indices[0]:indices[1]], context))
             lastIndex = indices[1]

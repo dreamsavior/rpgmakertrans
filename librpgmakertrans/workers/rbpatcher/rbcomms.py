@@ -27,7 +27,7 @@ class RBCommsError(Exception): pass
 
 class RBComms(SocketComms):
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
         self.outputComs = outputComs
@@ -42,6 +42,7 @@ class RBComms(SocketComms):
                 self.scriptParams = item, filesToProcess.pop(item)
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
+        self.scriptsDumped = False
         self.filesToProcess = OrderedDict(filesToProcess)
         self.rpgversion = rpgversion
         self.codeHandlers.update({1: self.translate,
@@ -63,7 +64,7 @@ class RBComms(SocketComms):
     def makeFilesToProcess(indir, outdir):
         files = {}
         for fn in os.listdir(indir):
-            if fn.endswith('.rvdata') and not fn.endswith('Scripts.rvdata'):
+            if fn.endswith('.rvdata'):
                 files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])
         return files    
                 
@@ -108,8 +109,11 @@ class RBComms(SocketComms):
                 script = bScript.decode(encoding)
                 self.outputComs.send('translateScript', name, script, 
                                      self.translator, self.inputComs)
+                self.scripts.append(name)
+                return
             except UnicodeDecodeError:
                 pass
+        raise UnicodeDecodeError('Couldn\'t find appropriate encoding for script')
             
     def setTranslatedScript(self, name, script):
         self.translatedScripts[name] = script
@@ -118,7 +122,9 @@ class RBComms(SocketComms):
         if self.scripts:
             name = self.scripts.pop(0)
             script = self.translatedScripts.pop(name)
-            return len(self.scripts), name, script
+            if len(self.scripts) == 0:
+                self.scriptsAreTranslated = True
+            return str(len(self.scripts)), name, script
         else:
             raise RBCommsError('Asked for translated script which does not exist')
     
@@ -132,7 +138,8 @@ class RBComms(SocketComms):
             return ('translateFile', item[0]) + item[1]
         elif self.scriptsAreTranslated:
             return ('quit')
-        elif (len(self.scripts) == len(self.translatedScripts)
+        elif (self.scriptsDumped and
+              len(self.scripts) == len(self.translatedScripts)
               and not self.scriptsRebuilding):
             self.scriptsRebuilding = True
             return ('rebuildScripts')
@@ -140,6 +147,8 @@ class RBComms(SocketComms):
             return ('wait')
         
     def doneTranslation(self, context):
+        if context == 'Scripts':
+            self.scriptsDumped = True
         self.outputComs.send('incProgress', 'patching')
         
     def loadVersion(self):

@@ -30,6 +30,7 @@ class HeadlessVX(Headless):
             
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         rbCommsIn = self.senderManager.Sender()
+        self.registerSender(rbCommsIn)
         indir = os.path.join(indir, 'Data')
         outdir = os.path.join(outdir, 'Data')
         self.submit('patcher', startRBComms, indir, outdir, 
