@@ -27,7 +27,7 @@ class RBCommsError(Exception): pass
 
 class RBComms(SocketComms):
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
         self.outputComs = outputComs

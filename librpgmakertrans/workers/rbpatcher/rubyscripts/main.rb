@@ -18,7 +18,7 @@ versionString = getVersion()
 def translateFile(infile, outfile, context)
   puts('working on %s' % context)
   patchFile(infile, outfile, context)
-  puts('translated %s' % context)
+  puts('translated %s (%s=>%s)' % [context, infile, outfile])
 end
 
 def rebuildScripts() 
