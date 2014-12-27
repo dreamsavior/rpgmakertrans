@@ -20,7 +20,7 @@ class TranslatorMeta(MetaCustomManager):
     customManagerClass = TranslatorManager
 
 
-class Translator(object, metaclass=TranslatorMeta):
+class Translator(metaclass=TranslatorMeta):
 
     def __init__(self, mtime, *args, **kwargs):
         self.mtime = mtime
