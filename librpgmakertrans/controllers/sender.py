@@ -25,7 +25,7 @@ class SenderID:
         
     def __hash__(self):
         """Hash function"""
-        return hash(type(self), self.uuid)
+        return hash((type(self), self.uuid))
     
     def __eq__(self, other):
         """Equality operator"""
@@ -36,10 +36,19 @@ class Sender:
     def __init__(self):
         """Initialise the Sender"""
         self.__signals = []
-        self.senderID = SenderID()
+        self.__senderID = SenderID()
+        
+    def senderID(self):
+        return self.__senderID
 
     def send(self, signal, *args, **kwargs):
-        """Send a signal"""
+        """Send a signal - convert all Senders to SenderIDs automatically.
+        If these don't exist on target, it's an error, but this is better
+        than trying to send a Sender, which can never happen."""
+        args = [arg.senderID() if isinstance(arg, Sender) else arg for arg in args]
+        for name in kwargs:
+            if isinstance(kwargs[name], Sender):
+                kwargs[name] = kwargs[name].senderID()
         self.__signals.append((signal, args, kwargs))
 
     def get(self):

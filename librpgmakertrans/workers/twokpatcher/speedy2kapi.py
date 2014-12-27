@@ -23,7 +23,7 @@ def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
             infn = os.path.join(inpath, fn)
             outfn = os.path.join(outpath, fn)
             jobs.append((process2kfile, (infn, outfn, mtimes, newmtimes,
-                        translator, 'outputcoms')))
+                        translator, comsout)))
     jobsTotal = len(jobs) 
     comsout.send('setProgressDiv', 'patching', jobsTotal)
     for fn, args in jobs:

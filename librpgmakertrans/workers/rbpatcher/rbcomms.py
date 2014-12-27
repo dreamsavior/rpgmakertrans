@@ -63,7 +63,7 @@ class RBComms(SocketComms):
     def makeFilesToProcess(indir, outdir):
         files = {}
         for fn in os.listdir(indir):
-            if fn.endswith('.rvdata'):
+            if fn.endswith('.rvdata') and not fn.endswith('Scripts.rvdata'):
                 files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])
         return files    
                 

@@ -15,7 +15,7 @@ import multiprocessing
 import time
 import signal
 from collections import defaultdict
-from .sender import SenderManager
+from .sender import SenderManager, SenderID
 from ..errorhook import setErrorOut
 import sys
 import collections
@@ -117,6 +117,8 @@ class CoreProtocol:
         self.combotriggers = {}
         self.subtriggers = defaultdict(list)
         self.errout = errout
+        self.senderIDsToSenders = {}
+        self.registerSenders(self.inputcoms, self.outputcoms, self.errout)
 
     def finished(self):
         return not self.going
@@ -125,6 +127,13 @@ class CoreProtocol:
         for pool in self.pools:
             pool.join()
         self.pools.clear()
+        
+    def registerSender(self, sender):
+        self.senderIDsToSenders[sender.senderID()] = sender
+        
+    def registerSenders(self, *senders):
+        for sender in senders:
+            self.registerSender(sender)
 
     def comboTrigger(self, triggername, subtriggers):
         subtriggerset = set(x for x in subtriggers if x not in self.dispatched)
@@ -146,17 +155,22 @@ class CoreProtocol:
             fn(*args, **kwargs)
         else:
             self.localWaiting[signal].append((fn, args, kwargs))
+            
+    def processArg(self, arg):
+        if isinstance(arg, SenderID):
+            if arg in self.senderIDsToSenders:
+                return self.senderIDsToSenders[arg]
+            else:
+                raise Exception('Unknown Sender ID')
+        else:
+            return arg
 
     def submit(self, pool, fn, *args, **kwargs):
         if pool == 'dbg':
             return fn(*args, **kwargs)
-        if 'outputcoms' in args:
-            args = list(args)
-            args[args.index('outputcoms')] = self.inputcoms
-        else:
-            for (key, value) in list(kwargs.items()):
-                if value == 'outputcoms':
-                    kwargs[key] = self.inputcoms
+        args = [self.processArg(arg) for arg in args]
+        for arg in kwargs:
+            kwargs[arg] = self.processArg(kwargs[arg])
         ret = self.pools[pool].apply_async(fn, args=args, kwds=kwargs)
         self.results.add(ret)
         return ret

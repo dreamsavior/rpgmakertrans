@@ -82,7 +82,7 @@ class FilePatcher(BasePatch):
         self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles,
                        indir=self.path, outdir=outpath, ignoredirs=[],
                        ignoreexts=[], ignorefiles=self.getNonCopyNames(),
-                       comsout='outputcoms', translator=translator,
+                       comsout=self.coms, translator=translator,
                        mtimes=mtimes, newmtimes=newmtimes,
                        progresssig='patchdata', dirssig=None)
 
