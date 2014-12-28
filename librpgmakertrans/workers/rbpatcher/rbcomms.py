@@ -35,12 +35,14 @@ class RBComms(SocketComms):
         self.scripts = []
         self.magicNumbers = {}
         self.translatedScripts = {}
-        self.scriptParams = None
+        self.scriptInput = None
+        self.scriptOutput = None
         self.scriptWaiting = False
         for item in [x for x in filesToProcess]:
             if item.endswith('Scripts.rvdata'):
                 self.scriptWaiting = True
-                self.scriptParams = item, filesToProcess.pop(item)
+                self.scriptInput = item
+                self.scriptOutput = filesToProcess.pop(item)[0]
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
         self.scriptsDumped = False
@@ -132,9 +134,9 @@ class RBComms(SocketComms):
             raise RBCommsError('Asked for translated script which does not exist')
     
     def getTaskParams(self):
-        if self.scriptParams is not None:
-            ret = ('translateScripts', self.scriptParams[0]) + self.scriptParams[1]
-            self.scriptParams = None
+        if self.scriptInput is not None:
+            ret = ('translateScripts', self.scriptInput)
+            self.scriptInput = None
             return ret
         elif len(self.filesToProcess) > 0:
             item = self.filesToProcess.popitem()
@@ -145,7 +147,7 @@ class RBComms(SocketComms):
               len(self.scripts) == len(self.translatedScripts)
               and not self.scriptsRebuilding):
             self.scriptsRebuilding = True
-            return ('rebuildScripts')
+            return ('rebuildScripts', self.scriptOutput)
         else:
             return ('wait')
         

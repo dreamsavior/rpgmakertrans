@@ -22,20 +22,24 @@ def translateFile(infile, outfile, context)
   doneTranslation(context)
 end
 
-def translateScripts(infile, outfile, context)
-  puts('working on %s' % context)
-  scriptsFile(infile, outfile, context)
-  puts('translated %s (%s)' % [context, infile])
-  doneTranslation(context)
+def translateScripts(infile)
+  puts('working on Scripts')
+  dumpScriptsFile(infile)
+  puts('translated Scripts (%s)' % infile)
+  doneTranslation('Scripts')
 end
 
-def rebuildScripts() 
+def rebuildScripts(outfile) 
   value = getTranslatedScript()
+  scripts = []
   while value[0].to_i > 0
-    puts('rebuilding %s (magicNo:%s)' % [value[1], value[2]])
+    scripts.push([value[2], value[1], value[3]])
+    puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
     value = getTranslatedScript()
   end
-  puts('rebuilding %s (magicNo:%s)' % [value[1], value[2]])
+  scripts.push([value[2], value[1], value[3]])
+  puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
+  writeScriptsFile(outfile, scripts)
 end
 
 while going 
@@ -45,11 +49,11 @@ while going
   if code == 'quit'
     going = false
   elsif code == 'translateScripts'
-    translateScripts(values[1], values[2], values[3])
+    translateScripts(values[1])
   elsif code == 'translateFile' 
     translateFile(values[1], values[2], values[3])
   elsif code == 'rebuildScripts'
-    rebuildScripts()
+    rebuildScripts(values[1])
   elsif code == 'wait'
     sleep(1.0) 
   end

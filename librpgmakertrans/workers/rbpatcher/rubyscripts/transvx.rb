@@ -171,7 +171,7 @@ def patchFile(infn, outfn, context)
 end
 
 
-def scriptsFile(infn, outfn, context)
+def dumpScriptsFile(infn)
   data = nil
   File.open(infn, "r+") do |datafile|
     data = Marshal.load(datafile)
@@ -186,20 +186,12 @@ def scriptsFile(infn, outfn, context)
   }
 end
 
-def scriptsFile2(infn, outfn, context)
-  # TODO: This will need a lot of work.
-  data = nil
-  File.open(infn, "r+") do |datafile|
-    data = Marshal.load(datafile)
-  end
+def writeScriptsFile(outfn, data)
   data.each_index{|x|
-    magicNo = data[x][0]
-    scriptName = data[x][1]
-    contextString = context + '/' + scriptName + '/' 
-    scriptStr = Zlib::Inflate.inflate(data[x][2])
+    scriptName = data[x][1] 
+    scriptStr = data[x][2]
     if scriptName != '' and scriptStr != ''
-      scriptStr2 = parseScript(scriptStr, context)
-      data[x][2] = Zlib::Deflate.deflate(scriptStr2)
+      data[x][2] = Zlib::Deflate.deflate(scriptStr)
     end
   }
   File.open( outfn, "w+") do |datafile|
