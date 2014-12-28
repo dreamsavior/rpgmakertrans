@@ -6,7 +6,7 @@ rbcomms
 :copyright: 2012-2014
 :license: GNU Public License version 3
 
-SocketCommsRB is the communicator to the child Ruby processes, which
+RBComms is the communicator to the child Ruby processes, which
 happens over sockets. It is given a list of files to process, and
 sorts things out from there.
 """
@@ -23,11 +23,16 @@ if os.name == 'posix':
 else:
     raise Exception('Unsupported Platform')
 
-class RBCommsError(Exception): pass
+class RBCommsError(Exception): 
+    """Error raised when something goes wrong in RBComms"""
 
 class RBComms(SocketComms):
+    """RBComms is the specific instance of SocketComms to handle talking
+    to Ruby processes. In general, I think I'd like to migrate away from
+    subprocess Senders to asyncio + sockets, but this can ultimately wait."""
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+        """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
         self.outputComs = outputComs
@@ -52,7 +57,6 @@ class RBComms(SocketComms):
                                   2: self.translateScript,
                                   3: self.getTaskParams,
                                   4: self.loadVersion,
-                                  5: self.setScripts,
                                   6: self.getTranslatedScript,
                                   7: self.doneTranslation})
         self.rawArgs.update({2: True})
@@ -65,13 +69,16 @@ class RBComms(SocketComms):
         
     @staticmethod
     def makeFilesToProcess(indir, outdir):
+        """Make the list of files to process."""
         files = {}
         for fn in os.listdir(indir):
-            if fn.endswith('.rvdata'):
-                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), fn.rpartition('.rvdata')[0])
+            if fn.endswith('.rvdata'): # TODO: Support for VX Ace + XP
+                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn), 
+                                                  fn.rpartition('.rvdata')[0])
         return files    
                 
     def start(self):
+        """Start the server, as well as Ruby subprocesses"""
         base = os.path.split(__file__)[0]
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
         piping = None if self.debugRb else subprocess.PIPE
@@ -82,6 +89,7 @@ class RBComms(SocketComms):
         
     @asyncio.coroutine
     def checkForQuit(self):
+        """Check to see if we should quit"""
         while self.going:
             yield from asyncio.sleep(0.1)
             for ruby in self.rubies[:]:
@@ -92,20 +100,20 @@ class RBComms(SocketComms):
             
     @asyncio.coroutine
     def getInputComs(self):
+        """Get input communications from inputcoms sender"""
         while self.going:
             yield from asyncio.sleep(0.1)
             for code, args, kwargs in self.inputComs.get():
-                assert code == 'setTranslatedScript', 'Can only respond to one event!'
+                if code != 'setTranslatedScript':
+                    raise RBCommsError('Cannot respond to event %s' % code)
                 self.setTranslatedScript(*args, **kwargs)
         
     def translate(self, string, context):
+        """Handler to translate a string"""
         return self.translator.translate(string, context)
-    
-    def setScripts(self, *scripts):
-        self.scripts = list(scripts)
-        self.scriptWaiting = False
-    
+        
     def translateScript(self, bName, bScript, magicNo):
+        """Handler to request translation of a string"""
         for encoding in ('utf-8', 'cp932'):
             try:
                 name = bName.decode(encoding)
@@ -117,23 +125,30 @@ class RBComms(SocketComms):
                 return
             except UnicodeDecodeError:
                 pass
-        raise UnicodeDecodeError('Couldn\'t find appropriate encoding for script')
+        # TODO: Send an error of errout, and set script to be raw script.
+        raise UnicodeDecodeError('Couldn\'t find appropriate'
+                                 'encoding for script')
             
     def setTranslatedScript(self, name, script):
+        """Handler to receive the translation of a script"""
         self.translatedScripts[name] = script
         
     def getTranslatedScript(self):
+        """Handler to output a translated script to Ruby"""
         if self.scripts:
             name = self.scripts.pop(0)
             script = self.translatedScripts.pop(name)
             if len(self.scripts) == 0:
                 self.scriptsAreTranslated = True
             print(self.magicNumbers[name])
-            return str(len(self.scripts)), name, self.magicNumbers[name], script
+            return (str(len(self.scripts)), name, self.magicNumbers[name],
+                    script)
         else:
-            raise RBCommsError('Asked for translated script which does not exist')
+            raise RBCommsError('Asked for translated script'
+                               'which does not exist')
     
     def getTaskParams(self):
+        """Handler to get parameters for next Ruby task"""
         if self.scriptInput is not None:
             ret = ('translateScripts', self.scriptInput)
             self.scriptInput = None
@@ -152,16 +167,21 @@ class RBComms(SocketComms):
             return ('wait')
         
     def doneTranslation(self, context):
+        """Handler to register completion of a task"""
         if context == 'Scripts':
             self.scriptsDumped = True
         self.outputComs.send('incProgress', 'patching')
         
     def loadVersion(self):
+        """Handler to tell Ruby what RPGMaker version to use"""
         return self.rpgversion
 
 @errorWrap
 def startRBComms(indir, outdir, translator, mtimes, newmtimes, 
                  outputComs, inputComs):
+    """Entry point for multiprocessing to start RBComms.
+    VX only at present. The input/output directories should be
+    the data directories (todo: recursive approach)"""
     filesToProcess = RBComms.makeFilesToProcess(indir, outdir)
     rpgversion = 'vx'
     subprocesses = 1
