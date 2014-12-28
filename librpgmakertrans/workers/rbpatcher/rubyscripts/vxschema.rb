@@ -90,7 +90,7 @@ $schema = {
         'message2' => true,
         'message3' => true,
         'message4' => true,
-      } 
+      }
     }
   },
   'System' => {

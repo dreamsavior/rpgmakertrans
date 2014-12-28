@@ -12,5 +12,5 @@ after it is changed.
 """
 
 from . import translator2 as __translator2
-from . import translator3 as __translator3 
+from . import translator3 as __translator3
 from .translatorbase import TranslatorManager

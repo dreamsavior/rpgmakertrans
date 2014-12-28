@@ -29,7 +29,7 @@ class SniffedType:
         elif isinstance(canonicalpath, str):
             self.canonicalpath = canonicalpath
         else:
-            raise Exception('Could not work out sniffed type data from a %s' % 
+            raise Exception('Could not work out sniffed type data from a %s' %
                             str(type(canonicalpath)))
 
     def __str__(self):
@@ -86,7 +86,7 @@ def sniffer(sniffedType):
 
 def checkForFiles(path, req):
     """Given a dictionary of filenames to true/false values (False being
-    file required, True being file required to not exist), assert a path 
+    file required, True being file required to not exist), assert a path
     meets these required"""
     if not os.path.isdir(path):
         return False
@@ -134,7 +134,7 @@ def sniffTransLocFile(path):
 @sniffer(NewDirTransLoc)
 def sniffNewDirTransLoc(path):
     """Sniffer for a new directory"""
-    if ((os.path.isdir(path) and len(os.listdir(path)) == 0) or 
+    if ((os.path.isdir(path) and len(os.listdir(path)) == 0) or
         (not os.path.exists(path))):
         return path
     return False
@@ -168,8 +168,8 @@ def sniff(path, positives=None, negatives=None, conflicts=None):
 def sniffAll(path):
     """Run all sniffers on given path; if directory, everything in directory"""
     if os.path.isdir(path):
-        pathsToSniff = [sniff(path2) for path2 in 
-                        (os.path.join(path, fn) for fn in os.listdir(path))] 
+        pathsToSniff = [sniff(path2) for path2 in
+                        (os.path.join(path, fn) for fn in os.listdir(path))]
         return list(itertools.chain.from_iterable(pathsToSniff))
     elif os.path.isfile(path):
         return sniff(path)

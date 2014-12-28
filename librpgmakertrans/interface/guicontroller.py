@@ -26,7 +26,7 @@ class IDStore(dict):
     of a unique ID that can be added into the IDStore, as well
     as the inverse dict"""
     def __init__(self, reverse=True, *args, **kwargs):
-        """Initialise hte ID store, creating an inverse dict if 
+        """Initialise hte ID store, creating an inverse dict if
         reverse=True"""
         super(IDStore, self).__init__(*args, **kwargs)
         self.nextid = 0
@@ -91,10 +91,10 @@ class GUIController(CoreProtocol):
 
         self.outputcoms.send('setMessage', 'Loading games, patches...')
         self.setupPool('worker', processes=1)
-        sniffDataRet = self.submit('worker', sniffAllTrigger, 
+        sniffDataRet = self.submit('worker', sniffAllTrigger,
                                    path=os.getcwd(), coms=self.inputcoms)
         self.submit('worker', versionCheck, coms=self.inputcoms)
-        self.localWaitUntil('sniffingDone', self.setUpSniffedData, 
+        self.localWaitUntil('sniffingDone', self.setUpSniffedData,
                             sniffDataRet)
 
     def newVerAvailable(self, version):
@@ -177,7 +177,7 @@ class GUIController(CoreProtocol):
 
     def addPatchFromPath(self, patchpath, select=False):
         """Add patch from path to UI"""
-        self.addItemFromPath(patchpath, ['PATCH'], self.patchDB, 'Patch', 
+        self.addItemFromPath(patchpath, ['PATCH'], self.patchDB, 'Patch',
                              select, prefix='[%s]')
 
     def addTrans(self, sniffData, select=False):
@@ -253,7 +253,7 @@ class GUIController(CoreProtocol):
         patchpath = self.patchDB.reverse[self.currentState['patchloc']]
         transpath = self.transDB.reverse[self.currentState['transloc']]
         useBOM = self.currentState['bom']
-        headless = self.runner.initialise(Headless2k, 
+        headless = self.runner.initialise(Headless2k,
                                           outputcoms=self.inputcoms)
         headless.go(gamepath, patchpath, transpath, useBOM)
         self.currentState['enabled'] = False

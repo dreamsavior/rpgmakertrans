@@ -15,28 +15,28 @@ from fuzzywuzzy import process
 
 from .translatorbase import Translator, TranslatorError
 
-class TranslationLine(namedtuple('TranslateableLine', 
+class TranslationLine(namedtuple('TranslateableLine',
                                    ['cType', 'data', 'comment'])):
     """A token representing a single line of a translation file"""
     def __new__(cls, cType, data, comment=''):
         """Give comment the a useful default argument"""
         return super().__new__(cls, cType, data, comment)
-    
+
     @classmethod
     def Context(cls, context):
         """Create a line which is a context"""
         return cls('context', context)
-    
+
     @classmethod
     def Begin(cls):
         """Create a begin line"""
         return cls('begin', '> BEGIN STRING')
-    
+
     @classmethod
     def Data(cls, data, comment=''):
         """Create a data line"""
         return cls('data', data, comment)
-    
+
     @classmethod
     def fromString(cls, string):
         """Instantiate a line from a string"""
@@ -47,14 +47,14 @@ class TranslationLine(namedtuple('TranslateableLine',
                 going = False
             else:
                 indx = string.find('#', indx + 1)
-        if indx == -1: 
+        if indx == -1:
             indx = len(string)
-        
+
         while indx > 1 and string[indx-1].isspace():
             indx -= 1
         comment = string[indx:]
         data = string[:indx]
-        
+
         if string.startswith('> BEGIN STRING'):
             cType = 'begin'
         elif string.startswith('> END STRING'):
@@ -68,20 +68,20 @@ class TranslationLine(namedtuple('TranslateableLine',
             cType = 'comment'
         else:
             cType = 'data'
-            
+
         return cls(cType, data, comment)
-            
+
     def asString(self, translations):
         """Return a line as a string"""
         if self.cType == 'context':
             translation = translations.get(self.data, '').strip()
-            translated = True if len(translation) > 0 else False 
+            translated = True if len(translation) > 0 else False
             translatedString = '' if translated else ' < UNTRANSLATED'
-            return '> CONTEXT: %s%s%s'% (self.data, translatedString, 
+            return '> CONTEXT: %s%s%s'% (self.data, translatedString,
                                          self.comment)
         else:
             return '%s%s' % (self.data, self.comment)
-    
+
 class Translation:
     """A single block of translations, usually referring to all instances
     of a single string in a game with 1 or more contexts."""
@@ -105,7 +105,7 @@ class Translation:
         self.__addTranslations(strings, currentString, currentContexts)
         self.raw = strings.pop('RAW')
         self.translations = strings
-    
+
     @classmethod
     def fromDesc(cls, raw, contexts):
         """Method to create a new Translation based on untranslated string
@@ -114,21 +114,21 @@ class Translation:
                  TranslationLine.Data(raw)] +
                 [TranslationLine.Context(context) for context in contexts]
                 + [TranslationLine.Data('')])
-        
+
     @classmethod
     def fromString(cls, string):
         """Create a Translation from a string of a translation"""
         itemsGen = (TranslationLine.fromString(line) for line in string.split('\n'))
         items = [item for item in itemsGen if item.cType not in ('begin', 'end')]
-        return items        
-    
+        return items
+
     @staticmethod
     def __addTranslations(stringDict, stringLS, contexts):
         """Add translations to a given dictionary"""
         string = '\n'.join(stringLS)
         for context in contexts:
             stringDict[context] = string
-            
+
     def insert(self, context, afterContext, translation):
         """Insert a new context (and translation) after a given context"""
         indx = 0
@@ -141,7 +141,7 @@ class Translation:
             line = self.items[indx]
         self.items.insert(indx, TranslationLine.Context(context))
         self.translations[context] = translation
-        
+
     def asString(self):
         return '\n'.join(item.asString(self.translations) for item in self.items)
 
@@ -154,7 +154,7 @@ class TranslationFile:
         """Initialise from a filename and list of translateables"""
         self.filename = filename
         self.translateables = translateables
-    
+
     @classmethod
     def fromString(cls, filename, string):
         """Initialiser from a filename and string"""
@@ -173,22 +173,22 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
         return cls(filename, translateables)
-        
+
     def __iter__(self):
         """Iterate over translateables"""
         return iter(self.translateables)
-    
+
     def asString(self):
         """Return the file in string form"""
-        output = ['> %s %s' % (type(self).header, 
+        output = ['> %s %s' % (type(self).header,
                               '.'.join(str(x) for x in type(self).version))]
         output.extend(x.asString() for x in self)
         return '\n'.join(output)
-    
+
     def addTranslation(self, translation):
         """Add a translation to the file"""
         self.translateables.append(translation)
-    
+
     @staticmethod
     def splitLines(lines):
         """Split a file into Translations composed of TranslationLines"""
@@ -196,7 +196,7 @@ class TranslationFile:
         for line in lines:
             translationLine = TranslationLine.fromString(line)
             if translationLine.cType in ('begin',):
-                if len(current) > 0: 
+                if len(current) > 0:
                     yield current
                     current = []
             if translationLine.cType in ('end',):
@@ -205,12 +205,12 @@ class TranslationFile:
                 current.append(translationLine)
         if current:
             yield current
-                
+
     @staticmethod
     def convertFrom30(lines):
         """Convert a file from 3.0 format"""
         return [TranslationFile.convertLineFrom30(line) for line in lines]
-    
+
     @staticmethod
     def convertLineFrom30(string):
         """Convert an individual line from 3.0 format"""
@@ -218,7 +218,7 @@ class TranslationFile:
         for indx in range(len(ls)):
             char = ls[indx]
             if char == '#':
-                if ls[indx-1:indx] != '\\' and ls[indx-2:indx] != '\\\\': 
+                if ls[indx-1:indx] != '\\' and ls[indx-2:indx] != '\\\\':
                     ls[indx] = '>'
             elif char == '>':
                 ls[indx] = '\>'
@@ -233,7 +233,7 @@ class CanonicalTranslation:
         self.raw = raw
         self.contexts = {}
         self.__default = None
-        
+
     @property
     def default(self):
         """Gives a default translation. This is simply the most popular
@@ -242,7 +242,7 @@ class CanonicalTranslation:
             tally = {}
             for context in self.contexts:
                 translationString = self.contexts[context][0]
-                if translationString not in tally: 
+                if translationString not in tally:
                     tally[translationString] = [0, context]
                 tally[translationString][0] += 1
             bestScore, bestContext = 0, None
@@ -252,16 +252,16 @@ class CanonicalTranslation:
                     bestScore, bestContext = score, context
             self.__default = bestContext, self.contexts[bestContext]
         return self.__default
-        
+
     def addTranslation(self, translation):
         """Add a Translation object to this CanonicalTranslation"""
         newContexts = {}
         for context in translation.translations:
             newContexts[context] = (translation, translation.translations[context])
         self.contexts.update(newContexts)
-        
+
     def translate(self, context):
-        """Return a translation for given context. If context is untranslated, 
+        """Return a translation for given context. If context is untranslated,
         try using FuzzyWuzzy to find a good match. If no match found, use
         default. Either way, update relevant translation with the new
         context"""
@@ -282,7 +282,7 @@ class TranslationDict(dict):
         """Lazily create a CanonicalTranslation"""
         self[key] = CanonicalTranslation(key)
         return self[key]
-    
+
 class Translator3(Translator):
     """A Version 3 Translator"""
     def __init__(self, namedStrings, debug = False, *args, **kwargs):
@@ -301,7 +301,7 @@ class Translator3(Translator):
                 self.translationDB[translation.raw].addTranslation(translation)
         self.newtranslations = OrderedDict()
         self.debug = debug
-        
+
     def getPatchData(self):
         """Return a dictionary of filenames to file contents of the patch"""
         super().getPatchData()

@@ -21,7 +21,7 @@ class FileCopier(object, metaclass=ErrorMeta):
     """Handles copying files from orig directory to target. Does *not* copy patch files."""
 
     def __init__(self, indir, outdir, ignoredirs, ignoreexts, ignorefiles,
-                 comsout, translator, mtimes, newmtimes, progresssig, 
+                 comsout, translator, mtimes, newmtimes, progresssig,
                  dirssig, *args, **kwargs):
         super(FileCopier, self).__init__(*args, **kwargs)
         self.indir = os.path.normcase(indir)
@@ -75,7 +75,7 @@ class FileCopier(object, metaclass=ErrorMeta):
                 shutil.copy(infn, outfn)
                 self.newmtimes[outfn] = infnmtime
             except IOError:
-                self.comsout.send('nonfatalError', 
+                self.comsout.send('nonfatalError',
                                   'Could not copy %s to %s' % (infn, outfn))
         else:
             self.newmtimes[outfn] = infnmtime
@@ -112,7 +112,7 @@ class FileCopier(object, metaclass=ErrorMeta):
 
 @errorWrap
 def copyfilesAndTrigger(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
-                        comsout, translator, mtimes, newmtimes, progresssig, 
+                        comsout, translator, mtimes, newmtimes, progresssig,
                         dirssig):
     copyfiles(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
               comsout, translator, mtimes, newmtimes, progresssig, dirssig)
@@ -120,7 +120,7 @@ def copyfilesAndTrigger(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
 
 
 @errorWrap
-def copyfiles(indir, outdir, ignoredirs, ignoreexts, ignorefiles, comsout, 
+def copyfiles(indir, outdir, ignoredirs, ignoreexts, ignorefiles, comsout,
               translator, mtimes, newmtimes, progresssig, dirssig):
     x = FileCopier(indir, outdir, ignoredirs, ignoreexts, ignorefiles,
                    comsout, translator, mtimes, newmtimes, progresssig,

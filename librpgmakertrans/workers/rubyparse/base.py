@@ -16,33 +16,33 @@ class Rule:
     successorClass = None
     def __init__(self, parser):
         pass
-    
+
     def __str__(self):
         return type(self).__name__
-    
+
     @classmethod
     def match(cls, parser):
         raise NotImplementedError('Needs to be overridden')
-    
+
     def advance(self, parser):
         return 1
-    
+
     def resume(self, parser):
         pass
-    
+
     def exit(self, parser):
         pass
-    
+
     def terminate(self, parser):
         raise NotImplementedError('Needs to be overridden')
-        
+
     @classmethod
     def getSuccessorRule(cls, parser):
         if cls.successorClass is None:
             return None
         else:
             return Rule.matchSuccessors(cls.successorClass, parser)
-    
+
     @staticmethod
     def matchSuccessors(cls, parser):
         for PotentialSuccessor in cls.get():
@@ -54,7 +54,7 @@ TranslationData = namedtuple('TranslationData', ['begin', 'end', 'file', 'line',
 
 class Translateable(Rule):
     focus = None
-    
+
     def __init__(self, parser):
         if Translateable.focus is None:
             self.beginsAt = parser.index
@@ -62,20 +62,19 @@ class Translateable(Rule):
             self.line = parser.line
             Translateable.focus = self
         super().__init__(parser)
-        
+
     def exit(self, parser):
         if Translateable.focus is self:
-            translationData = TranslationData(self.beginsAt, parser.index, 
+            translationData = TranslationData(self.beginsAt, parser.index,
                                               parser.filename, self.line, self.char)
             parser.scriptTranslator.addIndicies(translationData)
             Translateable.focus = None
-        super().exit(parser) 
-            
+        super().exit(parser)
+
 class Base(Rule):
     statementSeperators = ['\n', ';']
     successorClass = BaseSuccessor
-            
+
     def terminate(self, parser):
         return parser.index >= len(parser.string)
-    
-        
+

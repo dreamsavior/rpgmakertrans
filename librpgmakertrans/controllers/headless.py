@@ -25,7 +25,7 @@ class PatchEngineState:
 
 class Headless(CoreProtocol):
     """Headless Class"""
-    
+
     copyIgnoreDirs = []
     copyIgnoreExts = []
 
@@ -61,7 +61,7 @@ class Headless(CoreProtocol):
         else:
             if key in self.progress:
                 del self.progress[key]
-                
+
     def setProgressCompleteTrigger(self, key, trigger):
         """Emit a local trigger when a progress counter is complete"""
         self.progressCompleteTriggers[key] = trigger
@@ -97,12 +97,12 @@ class Headless(CoreProtocol):
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
         translatorRet = self.submit('patcher', makeTranslator, patcher,
                                     self.inputcoms)
-        self.comboTrigger('startTranslation', 
+        self.comboTrigger('startTranslation',
                           ['translatorReady', 'mtimesReady'])
         self.localWaitUntil('startTranslation', self.beginTranslation, patcher,
                             translatorRet, mtimesManager, indir, patchpath,
                             outdir, useBOM)
-        
+
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         raise NotImplementedError('Override this method')
 
@@ -115,7 +115,7 @@ class Headless(CoreProtocol):
         newmtimes = mtimesManager.getNewMTimes()
 
         self.submit('copier', copyfilesAndTrigger, indir=indir, outdir=outdir,
-                    ignoredirs=type(self).copyIgnoreDirs, 
+                    ignoredirs=type(self).copyIgnoreDirs,
                     ignoreexts=type(self).copyIgnoreExts,
                     ignorefiles=dontcopy, comsout=self.inputcoms,
                     translator=translator, mtimes=mtimes,
@@ -125,8 +125,8 @@ class Headless(CoreProtocol):
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.setProgressCompleteTrigger('patching', 'gamePatchingDone')
-        self.comboTrigger('patchingFinished', 
-                          ['fileCopyDone', 'gamePatchingDone', 
+        self.comboTrigger('patchingFinished',
+                          ['fileCopyDone', 'gamePatchingDone',
                            'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation,
                             patcher, translator, mtimesManager, indir,
@@ -138,7 +138,7 @@ class Headless(CoreProtocol):
         self.outputcoms.send('finalisingPatch')
         self.submit('patcher', writeTranslator, patcher, translator,
                     useBOM, self.inputcoms)
-        self.submit('copier', dumpMTimes, mtimesManager, 
+        self.submit('copier', dumpMTimes, mtimesManager,
                     translator.getMTime(), self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
         self.localWaitUntil('finish', self.finish, patcher)
@@ -151,12 +151,12 @@ class Headless(CoreProtocol):
         patcher.quit()
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()
-        
+
 class Headless2k(Headless):
     """Headless specialised for 2k games"""
     copyIgnoreExts = ['.lmu', '.ldb', '.lsd']
-    
+
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
-        self.submit('patcher', process2kgame, indir, outdir, 
-                    translator, mtimes=mtimes, newmtimes=newmtimes, 
+        self.submit('patcher', process2kgame, indir, outdir,
+                    translator, mtimes=mtimes, newmtimes=newmtimes,
                     comsout=self.inputcoms)

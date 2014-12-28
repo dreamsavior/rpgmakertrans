@@ -31,13 +31,13 @@ class Translator(metaclass=TranslatorMeta):
 
     def getMTime(self):
         return self.mtime
-    
+
     def translate(self, string, context):
         if self.final:
             raise TranslatorError('Cannot translate from finalised'
                                   'translator')
         return string
-            
+
     def getPatchData(self):
         self.final = True
         return {}

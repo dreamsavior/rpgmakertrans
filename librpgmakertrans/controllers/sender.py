@@ -22,11 +22,11 @@ class SenderID:
     def __init__(self):
         """Setup the ID"""
         self.uuid = uuid.uuid4()
-        
+
     def __hash__(self):
         """Hash function"""
         return hash((type(self), self.uuid))
-    
+
     def __eq__(self, other):
         """Equality operator"""
         return type(self) == type(other) and self.uuid == other.uuid
@@ -37,7 +37,7 @@ class Sender:
         """Initialise the Sender"""
         self.__signals = []
         self.__senderID = SenderID()
-        
+
     def senderID(self):
         return self.__senderID
 
@@ -65,7 +65,7 @@ class Sender:
         wrap.__name__ = 'send%s' % key
         self.key = wrap
         return self.key
-    
+
 class ErrorSender(Sender):
     """Version of Sender which dumps all signals to stderr"""
     def send(self, signal, *args, **kwargs):

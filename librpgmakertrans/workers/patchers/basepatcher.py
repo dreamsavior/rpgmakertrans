@@ -65,7 +65,7 @@ class BasePatch(metaclass=PatchMeta):
     def makeTranslator(self, coms):
         data, mtime = self.loadPatchData()
         translatorClass = getattr(self.translatorManager,
-                                  type(self).translatorClass) 
+                                  type(self).translatorClass)
         return translatorClass(data, mtime=mtime, coms=coms)
 
     def getAssetFiles(self):

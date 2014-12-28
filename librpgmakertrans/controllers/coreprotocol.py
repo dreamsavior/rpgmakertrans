@@ -127,10 +127,10 @@ class CoreProtocol:
         for pool in self.pools:
             pool.join()
         self.pools.clear()
-        
+
     def registerSender(self, sender):
         self.senderIDsToSenders[sender.senderID()] = sender
-        
+
     def registerSenders(self, *senders):
         for sender in senders:
             self.registerSender(sender)
@@ -155,7 +155,7 @@ class CoreProtocol:
             fn(*args, **kwargs)
         else:
             self.localWaiting[signal].append((fn, args, kwargs))
-            
+
     def processArg(self, arg):
         if isinstance(arg, SenderID):
             if arg in self.senderIDsToSenders:
@@ -232,10 +232,10 @@ class CoreProtocol:
         events = self.inputcoms.get()
         while events:
             code, args, kwargs = events.pop(0)
-            if (hasattr(self, code) and 
+            if (hasattr(self, code) and
                 isinstance(getattr(self, code), collections.Callable)):
                 getattr(self, code)(*args, **kwargs)
             else:
-                self.errout.send('ERROR', 
+                self.errout.send('ERROR',
                                  'Got an unknown code: %s ' % str(code))
         # self.checkResults()

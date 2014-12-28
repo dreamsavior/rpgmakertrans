@@ -20,7 +20,7 @@ class DummyTranslator:
             print('C::' + context)
             print('S::' + string)
         return string
- 
+
 dt = DummyTranslator()
 
 def test(string, verbose = None, filename = '', succeeds = True):
@@ -30,7 +30,7 @@ def test(string, verbose = None, filename = '', succeeds = True):
         print(string + ' ' +  str(succeeds))
     errored = False
     try:
-        outscript = translateRuby(string, filename = filename, 
+        outscript = translateRuby(string, filename = filename,
                                   translationHandler = dt, verbose = verbose)
         assert outscript == string, 'Did not get same string back with no translations'
     except (RubyParserException, HereDocError):
@@ -40,7 +40,7 @@ def test(string, verbose = None, filename = '', succeeds = True):
     if succeeds is False and errored is False:
         raise Exception('Succeeded when should have failed')
 
-test('')       
+test('')
 test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
 test('"%s" % @varName\n')
 test('"%s, %s" % (@varName, otherName)\n')

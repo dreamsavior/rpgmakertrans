@@ -23,12 +23,12 @@ def rbTranslationServer(inputComs, outputComs, translator):
             if code == 'quit':
                 return
             elif code == 'translateScript':
-                outputComs.send('setTranslatedScript', 
-                                translateRuby(translationHandler=translator, 
+                outputComs.send('setTranslatedScript',
+                                translateRuby(translationHandler=translator,
                                               *args, **kwargs))
             else:
                 raise Exception('Unknown code on input bus')
-            
+
 @errorWrap
 def rbOneOffTranslation(outputComs, scriptName, script, translator):
     tname, tscript = translateRuby(script, scriptName, translationHandler=translator)

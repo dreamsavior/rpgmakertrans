@@ -30,25 +30,25 @@ class RubyParserState:
         self.failed = False
         self.char = 1
         self.line = 1
-        
+
     def __str__(self):
-        """Give a human readable version of interesting bits of the 
+        """Give a human readable version of interesting bits of the
         RubyParserState"""
         indx1 = max(0, self.index-2)
         indx2 = min(self.index+3, len(self.string))
-        return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' % 
-                (repr(self.string[indx1:indx2]), 
+        return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' %
+                (repr(self.string[indx1:indx2]),
                  self.index, [str(rule) for rule in self.ruleStack]))
-        
+
     def __getitem__(self, indx):
-        """Get an item from the Ruby parsers string, offset by 
+        """Get an item from the Ruby parsers string, offset by
         the current position"""
         if isinstance(indx, slice):
-            if slice.start is not None and slice.start < 0: 
+            if slice.start is not None and slice.start < 0:
                 raise ValueError('No negative slices')
-            if slice.stop is not None and slice.stop < 0: 
+            if slice.stop is not None and slice.stop < 0:
                 raise ValueError('No negative slices')
-            if slice.step is not None and slice.step != 1: 
+            if slice.step is not None and slice.step != 1:
                 raise ValueError('No stepped slices')
             start = (slice.start + self.__index if slice.start is not None
                      else slice.start)
@@ -58,12 +58,12 @@ class RubyParserState:
         else:
             if indx < 0: raise ValueError('No negative indices')
             return self.string[self.__index+indx:self.__index+indx+1]
-        
+
     def setRollback(self):
         """Set a rollback at the current position"""
-        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:], 
+        self.rollbacks[self.__index] = (self.__index, self.ruleStack[:],
                                         self.char, self.line)
-        
+
     def resumeRollback(self):
         """Resume the last rollback"""
         if self.rollbacks:
@@ -79,12 +79,12 @@ class RubyParserState:
             return True
         else:
             return False
-    
+
     @property
     def index(self):
         """Return the current index"""
         return self.__index
-    
+
     @index.setter
     def index(self, newindex):
         """Set the current index, advancing the line/character counts
@@ -99,12 +99,12 @@ class RubyParserState:
             if self.verbose:
                 print(adv, self)
         assert self.__index == newindex
-    
+
     @property
     def rolledBack(self):
         """Determine if this state has just been rolled back"""
         return self.__index == self.currentRollBack
-        
+
     @property
     def currentRule(self):
         """Return the current rule if applicable"""
@@ -112,7 +112,7 @@ class RubyParserState:
             return self.ruleStack[-1]
         else:
             return None
-    
+
     @property
     def currentChar(self):
         """Return the current character"""
@@ -120,17 +120,17 @@ class RubyParserState:
             return self.string[self.__index]
         else:
             return ''
-                  
+
     def startswith(self, substring, index = None):
         """As string.startswith, but using current index"""
         if index is None:
             index = self.__index
         return self.string.startswith(substring, index)
-                    
+
     def addRule(self, rule):
         """Add a rule"""
         self.ruleStack.append(rule)
-        
+
     def checkNextRule(self):
         """Check applicable next rules, and add it if it matches"""
         result = self.currentRule.getSuccessorRule(self)
@@ -140,7 +140,7 @@ class RubyParserState:
             self.index += result[0]
             self.addRule(result[1])
             result = self.currentRule.getSuccessorRule(self)
-            
+
     def popRules(self):
         """Pop all rules which are terminated"""
         ruleFlux = True
@@ -148,7 +148,7 @@ class RubyParserState:
         while ruleFlux and self.ruleStack:
             if self.currentRule.terminate(self):
                 if self.verbose:
-                    print('released %s at %s' % 
+                    print('released %s at %s' %
                           (type(self.currentRule).__name__, self.index))
                 self.index += self.currentRule.advance(self)
                 self.currentRule.exit(self)
@@ -161,7 +161,7 @@ class RubyParserState:
         if not ruleTerminated:
             self.index += self.currentRule.advance(self)
 
-class RubyParserException(Exception): 
+class RubyParserException(Exception):
     """Exception raised for RubyParser errors"""
 
 def translateRuby(string, filename, translationHandler, verbose = False):
@@ -180,6 +180,5 @@ def translateRuby(string, filename, translationHandler, verbose = False):
                 raise RubyParserException('Entered failed state: %s' % state)
         state.checkNextRule()
         state.popRules()
-        
+
     return filename, scriptTranslator.translate()
-    

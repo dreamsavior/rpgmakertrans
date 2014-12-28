@@ -188,7 +188,7 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
 
     def translateString(self, string, context):
         if b'RPGMKTRANSKILL' in string:
-            self.coms.send('fatalError', 
+            self.coms.send('fatalError',
                            'Opt-out detected, stopping translation')
         try:
             ustring = string.decode(self.incodec)

@@ -21,11 +21,11 @@ class SocketComms:
         self.codeHandlers = {0: self.debug}
         self.rawArgs = {0: False}
         self.tickTasks = [self.checkForQuit]
-    
+
     def debug(self, *args):
         print('Debug got args: %s' % args)
         return 'Debug Test for Python'
-        
+
     @asyncio.coroutine
     def handleRequest(self, reader, writer):
         try:
@@ -63,13 +63,13 @@ class SocketComms:
             writer.close()
         except:
             handleError()
-            
+
     @asyncio.coroutine
     def checkForQuit(self):
         """By default, this loops forever. Override for other behaviours"""
         while True:
             yield from asyncio.sleep(5)
-            
+
     def start(self):
         coro = asyncio.start_server(self.handleRequest, '127.0.0.1', self.socket, loop=self.loop)
         self.server = self.loop.run_until_complete(coro)
@@ -86,7 +86,7 @@ class ControlableSocketComms(SocketComms):
         super().__init__(*args, **kwargs)
         self.inputcoms = inputcoms
         self.errorcoms = errorcoms
-    
+
     @asyncio.coroutine
     def checkForQuit(self):
         while True:

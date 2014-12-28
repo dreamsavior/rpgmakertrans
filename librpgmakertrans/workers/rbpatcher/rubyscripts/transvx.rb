@@ -36,7 +36,7 @@ def schemaMatch(schema, context)
     if schemaLevel.member?(x)
       schemaLevel = schemaLevel[x]
     elsif schemaLevel.member?(true)
-      schemaLevel = schemaLevel[true] 
+      schemaLevel = schemaLevel[true]
     else
       return -1 # Failure, do not iterate down here.
     end
@@ -85,7 +85,7 @@ def patchPage(page, context)
         while eventCommand.instance_variable_get(:@code) == 401 and currIndx < pageListLen do
           currentStr += eventCommand.instance_variable_get(:@parameters)[0] + "\n"
           currIndx += 1
-          eventCommand = page.instance_variable_get(:@list)[currIndx] 
+          eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
         currentStr.rstrip!
         translatedString = translate(currentStr, contextString + 'Dialogue/')
@@ -102,7 +102,7 @@ def patchPage(page, context)
           lineCount += 1
           newPageList.push(RPG::EventCommand.new(401, indent, [line]))
         }
-        
+
       elsif eventCommand.instance_variable_get(:@code) == 102
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
           choiceString = eventCommand.instance_variable_get(:@parameters)[0][y]
@@ -115,13 +115,13 @@ def patchPage(page, context)
         translatedChoice = translate(eventCommand.instance_variable_get(:@parameters)[1], contextString + 'Choice/')
         eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
-        currIndx += 1 
+        currIndx += 1
       else
         newPageList.push(eventCommand)
         currIndx += 1
-      end 
+      end
     end
-    #if newPageList != page.list 
+    #if newPageList != page.list
     #  puts contextString
     #end
     page.instance_variable_set(:@list, newPageList)
@@ -137,18 +137,18 @@ def patch(data, context)
     return patchPage(data, context)
   elsif schemaMatchResult == 0
     if data.class == Array
-      data.each_index{|x| 
+      data.each_index{|x|
          data[x] = patch(data[x], context + [x])
       }
     elsif data.class == Hash
-      data.each{|key, value| 
+      data.each{|key, value|
         data[key] = patch(value, context+[key])
       }
     else
       context += [data.class]
       data.instance_variables.each{|var|
-        data.instance_variable_set(var, 
-          patch(data.instance_variable_get(var), 
+        data.instance_variable_set(var,
+          patch(data.instance_variable_get(var),
                 context + [var.to_s.sub(/^@/,'')]))
         }
      return data
@@ -178,7 +178,7 @@ def dumpScriptsFile(infn)
   end
   data.each_index{|x|
     magicNo = data[x][0]
-    scriptName = data[x][1] 
+    scriptName = data[x][1]
     scriptStr = Zlib::Inflate.inflate(data[x][2])
     if scriptName != '' and scriptStr != ''
       sendScript(scriptName, scriptStr, magicNo.to_s)
@@ -188,7 +188,7 @@ end
 
 def writeScriptsFile(outfn, data)
   data.each_index{|x|
-    scriptName = data[x][1] 
+    scriptName = data[x][1]
     scriptStr = data[x][2]
     if scriptName != '' and scriptStr != ''
       data[x][2] = Zlib::Deflate.deflate(scriptStr)

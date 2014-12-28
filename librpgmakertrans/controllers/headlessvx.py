@@ -23,16 +23,16 @@ from ..workers.rubyparse import rbOneOffTranslation
 
 class HeadlessVX(Headless):
     copyIgnoreExts = ['.rvdata', '.rvdata2', '.rxdata']
-    
+
     def translateScript(self, scriptName, script, translator, outputComs):
         self.submit('patcher', rbOneOffTranslation, outputComs, scriptName,
                     script, translator)
-            
+
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         rbCommsIn = self.senderManager.Sender()
         self.registerSender(rbCommsIn)
         indir = os.path.join(indir, 'Data')
         outdir = os.path.join(outdir, 'Data')
-        self.submit('patcher', startRBComms, indir, outdir, 
-                    translator, mtimes=mtimes, newmtimes=newmtimes, 
+        self.submit('patcher', startRBComms, indir, outdir,
+                    translator, mtimes=mtimes, newmtimes=newmtimes,
                     outputComs=self.inputcoms, inputComs=rbCommsIn)

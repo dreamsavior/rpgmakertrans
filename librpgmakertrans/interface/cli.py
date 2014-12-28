@@ -60,7 +60,7 @@ class CLIMode(CoreProtocol):
         hashes = ('#' * int(70 * progress)).ljust(70)
         percent = str(int(progress * 100)).ljust(3)
         self.progressPrint('[%s] %s %%' % (hashes, percent))
-        
+
     def finalisingPatch(self):
         self.progressPrint('Finalising Patch..')
 

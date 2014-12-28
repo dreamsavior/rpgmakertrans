@@ -15,13 +15,13 @@ class ScriptTranslator:
         self.output = None
         self.translationIndices = []
         self.translationHandler = translationHandler
-        
+
     def addIndicies(self, indicies):
         self.translationIndices.append(indicies)
-        
+
     def rollback(self, index):
         self.translationIndices = [indices for indices in self.translationIndices if indices[0] < index]
-        
+
     def translate(self):
         lastIndex = 0
         output = []

@@ -3,7 +3,7 @@ A Translation Patching Engine for RPGMaker Games
 Copyright (C) 2012-2014 Habisain
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License Version 3 as 
+it under the terms of the GNU General Public License Version 3 as
 published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@ Most people will have this installed, but if not, that's where to get it.
 
 Usage:
 
-Simply select the game directory, patch and target directory. If you are 
+Simply select the game directory, patch and target directory. If you are
 starting a translation, select the 'create patch' checkbox to create an empty
 patch which can then be translated.
 
@@ -36,7 +36,7 @@ a game, then this checkbox has no effect; RPGMaker Trans will recognise
 patches with and without the UTF-8 BOM.
 
 RPGMaker Trans will attempt to automatically select appropriately named
-patches and target directories. 
+patches and target directories.
 
 Errors will appear in a text box in the GUI. Some errors will stop the
 patching process, others will not, depending on severity. Note that if

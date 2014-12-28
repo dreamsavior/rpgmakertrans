@@ -156,9 +156,9 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
-        iconimagefn = os.path.join(os.path.split(__file__)[0], 
+        iconimagefn = os.path.join(os.path.split(__file__)[0],
                                    'rpgtranslogo.svg')
-        if os.path.exists(iconimagefn): 
+        if os.path.exists(iconimagefn):
             with open(iconimagefn) as f:
                 svg = f.read()
         else:

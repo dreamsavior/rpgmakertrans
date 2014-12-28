@@ -27,7 +27,7 @@ class MetaMTimesManager(MetaCustomManager):
 class MTimesHandler(object, metaclass=MetaMTimesManager):
     """Provides a nice clean way to track the modification times of
     files being patched. There is a distinction between the current
-    mtimes and the ovserved (new) mtimes, which means that should there 
+    mtimes and the ovserved (new) mtimes, which means that should there
     be a high turnover of files, old mtimes won't clutter up the mtimes
     database."""
     def __init__(self, outpath):
@@ -61,7 +61,7 @@ class MTimesHandler(object, metaclass=MetaMTimesManager):
         return self.mtimes
 
     def getNewMTimes(self):
-        """Return multiprocess capable newmtimes dictionary""" 
+        """Return multiprocess capable newmtimes dictionary"""
         return self.newmtimes
 
 

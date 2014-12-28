@@ -103,7 +103,7 @@ class ZIPPatcherv2(ZIPPatcher):
                             'RPGMKTRANSPATCH file; cannot determine root')
         self.root = transpatches[0].rpartition('RPGMKTRANSPATCH')[0]
         patchbits = [x for x in contents if x.startswith(self.root)]
-        patchfiles = [x for x in patchbits if 
+        patchfiles = [x for x in patchbits if
                       not any(x.endswith(sep) for sep in SEPERATORS)]
         self.patchdirs = [x for x in patchbits if x not in patchfiles]
 

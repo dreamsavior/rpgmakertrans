@@ -37,7 +37,7 @@ class FilePatcher(BasePatch):
                 data[name] = decoded
         self.originalData = data.copy()
         return data, mtime
-    
+
     def patchMarkerText(self):
         return ''
 
@@ -75,7 +75,7 @@ class FilePatcher(BasePatch):
         return [os.path.relpath(fn, self.path) for fn in self.assetFiles]
 
     def getNonCopyNames(self):
-        return [os.path.relpath(fn, self.path) for fn in 
+        return [os.path.relpath(fn, self.path) for fn in
                 self.patchDataFiles] + ['RPGMKTRANSPATCH']
 
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
@@ -110,21 +110,21 @@ class FilePatcherv2(FilePatcher):
             else:
                 if not fn.upper().endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
-                    
+
 class FilePatcherv3(FilePatcher):
     translatorClass = 'Translator3'
     header = '> RPGMAKER TRANS PATCH'
-    
+
     def patchMarkerText(self):
         return '> RPGMAKER TRANS PATCH V3'
-    
+
     def categorisePatchFiles(self):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
         self.patchDataFiles = []
         rootls = set(os.listdir(self.path))
         for fn in self.allPaths():
-            if (fn.lower().endswith('.txt') and 
+            if (fn.lower().endswith('.txt') and
             os.path.normcase(os.path.split(fn)[1]) in rootls
             and os.path.isfile(fn)):
                 header = type(self).header

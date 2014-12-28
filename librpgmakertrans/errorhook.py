@@ -39,7 +39,7 @@ def handleError():
     else:
         sys.stderr.write(traceback.format_exc())
         sys.stderr.flush()
-    
+
 def errorWrap(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):

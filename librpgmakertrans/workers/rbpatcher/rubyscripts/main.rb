@@ -29,7 +29,7 @@ def translateScripts(infile)
   doneTranslation('Scripts')
 end
 
-def rebuildScripts(outfile) 
+def rebuildScripts(outfile)
   value = getTranslatedScript()
   scripts = []
   while value[0].to_i > 0
@@ -42,7 +42,7 @@ def rebuildScripts(outfile)
   writeScriptsFile(outfile, scripts)
 end
 
-while going 
+while going
   values = getTaskParams()
   code = values[0]
   puts(code)
@@ -50,11 +50,11 @@ while going
     going = false
   elsif code == 'translateScripts'
     translateScripts(values[1])
-  elsif code == 'translateFile' 
+  elsif code == 'translateFile'
     translateFile(values[1], values[2], values[3])
   elsif code == 'rebuildScripts'
     rebuildScripts(values[1])
   elsif code == 'wait'
-    sleep(1.0) 
+    sleep(1.0)
   end
 end

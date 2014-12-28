@@ -24,7 +24,7 @@ def process2kgame(inpath, outpath, translator, mtimes, newmtimes, comsout):
             outfn = os.path.join(outpath, fn)
             jobs.append((process2kfile, (infn, outfn, mtimes, newmtimes,
                         translator, comsout)))
-    jobsTotal = len(jobs) 
+    jobsTotal = len(jobs)
     comsout.send('setProgressDiv', 'patching', jobsTotal)
     for fn, args in jobs:
         comsout.send('waitUntil', 'dirsCopied', 'patcher', fn, *args)
@@ -35,7 +35,7 @@ def process2kfile(inFileName, outFileName, mtimes, newmtimes,
     """Process an individual 2k file"""
     name = os.path.split(inFileName)[1].rpartition('.')[0].upper()
     ret = (os.path.getmtime(inFileName), translator.getMTime())
-    needOutput = ((mtimes.get(name,None) != ret) or 
+    needOutput = ((mtimes.get(name,None) != ret) or
                   not os.path.exists(outFileName))
     if needOutput:
         rpgfile = TwoKRPGFile(name, inFileName, translator)
