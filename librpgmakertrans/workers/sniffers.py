@@ -49,16 +49,24 @@ class SniffedType:
             raise Exception('Invalid index %s' % str(item))
 
 class RPG2k(SniffedType):
-    """Sniffed type for an untranslated target game"""
-    maintype, subtypes = 'GAME', ['RPG2k']
+    """Sniffed type for an untranslated 2k game"""
+    maintype, subtypes = 'GAME', ['2k']
 
 class TransLoc(SniffedType):
     """Sniffed type for a translated game"""
-    maintype, subtypes = 'TRANS', ['RPG2k', 'translated']
+    maintype, subtypes = 'TRANS', ['2k', 'translated']
 
 class NewDirTransLoc(SniffedType):
     """Sniffed Type for a new directory"""
     maintype, subtypes = 'TRANS', ['create']
+
+class RPGVXUnencrypted(SniffedType):
+    """Sniffed type for an untranslated unencrypted VX game"""
+    maintype, subtypes = 'GAME', ['VX']
+
+class RPGVXEncrypted(SniffedType):
+    """Sniffed type for an untranslated encrypted VX game"""
+    maintype, subtypes = 'GAME', ['VX', 'ENC']
 
 class Sniffer:
     """Sniffer object; can be called with a path, and
@@ -114,6 +122,37 @@ def sniff2kGameFile(path):
     if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
         return sniff2kGame(os.path.split(path)[0])
     return False
+
+@sniffer(RPGVXEncrypted)
+def sniffVXEncryptedGame(path):
+    """Sniffer for encrypted VX games"""
+    if os.path.isfile(path):
+        if path.upper().endswith('GAME.RGSS2A'):
+            return os.path.split(path)[0]
+        else:
+            return sniffVXEncryptedGame(os.path.split(path[0]))
+    elif os.path.isdir(path):
+        return sniffVXEncryptedGame(os.path.join(path, 'GAME.RGSS2A'))
+    else:
+        return False
+
+@sniffer(RPGVXUnencrypted)
+def sniffVXUnencryptedGame(path):
+    """Sniffer for unencrypted VX games"""
+    if os.path.isfile(path) and path.upper().endswith('GAME.EXE'):
+        return sniffVXUnencryptedGame(os.path.split(path)[0])
+    elif os.path.isdir(path):
+        dataDir = os.path.join(path, 'Data')
+        if os.path.isdir(dataDir):
+            dataDirContents = os.listdir(dataDir)
+            if any(x.upper().endswith('.RVDATA') for x in dataDirContents):
+                return path
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False
 
 @sniffer(TransLoc)
 def sniffTransLoc(path):
