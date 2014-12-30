@@ -21,7 +21,7 @@ class SniffedType:
     """Represents a sniffed type, along with where that object
     resides on disk"""
     maintype = None
-    subtype = None
+    subtypes = []
 
     def __init__(self, canonicalpath=None):
         if isinstance(canonicalpath, type(self)):
@@ -50,15 +50,15 @@ class SniffedType:
 
 class RPG2k(SniffedType):
     """Sniffed type for an untranslated target game"""
-    maintype, subtype = 'GAME', 'RPG2k'
+    maintype, subtypes = 'GAME', ['RPG2k']
 
 class TransLoc(SniffedType):
     """Sniffed type for a translated game"""
-    maintype, subtype = 'TRANS', 'RPG2k][translated'
+    maintype, subtypes = 'TRANS', ['RPG2k', 'translated']
 
 class NewDirTransLoc(SniffedType):
     """Sniffed Type for a new directory"""
-    maintype, subtype = 'TRANS', 'create'
+    maintype, subtypes = 'TRANS', ['create']
 
 class Sniffer:
     """Sniffer object; can be called with a path, and

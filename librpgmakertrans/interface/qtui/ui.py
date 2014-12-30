@@ -56,10 +56,8 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         self.combobox.addItem(item, idtoken)
 
     def changedIndex(self, index):
-        self.outputComs.send(
-            'changeSelected',
-            self.idtoken,
-            self.getCurrentSelectedID())
+        self.outputComs.send('changeSelected', self.idtoken,
+                             self.getCurrentSelectedID())
 
     def enable(self, state):
         self.combobox.setEnabled(state)
@@ -97,14 +95,10 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
         self.setLayout(vbox)
-        self.create.toggled.connect(
-            lambda: self.toggle(
-                'create',
-                self.create.isChecked()))
-        self.useBOM.toggled.connect(
-            lambda: self.toggle(
-                'bom',
-                self.useBOM.isChecked()))
+        self.create.toggled.connect(lambda: self.toggle('create',
+                                    self.create.isChecked()))
+        self.useBOM.toggled.connect(lambda: self.toggle('bom',
+                                    self.useBOM.isChecked()))
 
     def toggle(self, signal, val):
         self.outputComs.send('optionChanged', signal, val)
@@ -120,21 +114,12 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
         self.outputComs = eventComms
-        self.game = SelectorBlock(
-            'Game location',
-            'gameloc',
-            self,
-            self.outputComs)
-        self.patch = SelectorBlock(
-            'Patch location',
-            'patchloc',
-            self,
-            self.outputComs)
-        self.trans = SelectorBlock(
-            'Translation Location',
-            'transloc',
-            self,
-            self.outputComs)
+        self.game = SelectorBlock('Game location', 'gameloc',
+                                  self, self.outputComs)
+        self.patch = SelectorBlock('Patch location', 'patchloc',
+                                   self, self.outputComs)
+        self.trans = SelectorBlock('Translation Location', 'transloc',
+                                   self, self.outputComs)
         self.patchopts = PatchOptions(self, self.outputComs)
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
@@ -145,7 +130,9 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.gobutton = QtGui.QPushButton('Go!')
         label = QtGui.QLabel(labelString)
         label.setWordWrap(True)
-        for x in self.game, self.patch, self.trans, self.patchopts, self.progress, self.comms, self.errorLog, self.gobutton, label:
+        for x in (self.game, self.patch, self.trans, self.patchopts,
+                  self.progress, self.comms, self.errorLog, self.gobutton,
+                  label):
             vbox.addWidget(x)
         self.setLayout(vbox)
         self.setWindowTitle('RPGMaker Trans v%s' % str(version))

@@ -141,7 +141,7 @@ class GUIController(CoreProtocol):
         path = sniffData.canonicalpath
         name = os.path.split(path)[1]
         if prefix is not None:
-            prefix = prefix % sniffData.subtype
+            prefix = prefix % ']['.join(sniffData.subtypes)
             name = '%s %s' % (prefix, name)
         if path not in idstore:
             tid = idstore.add(path)
@@ -155,7 +155,7 @@ class GUIController(CoreProtocol):
     def addItemFromPath(self, path, sniffDataTypes, idStore, signalSuffix,
                         select=False, prefix=None):
         """Add an item from path"""
-        sniffData = sniff(path)  # , positives=sniffDataTypes)
+        sniffData = sniff(path)
         for item in sniffData:
             self.addItem(item, sniffDataTypes, idStore,
                          signalSuffix, select, prefix)
@@ -199,7 +199,7 @@ class GUIController(CoreProtocol):
         defaultpatchpath = gamepath + '_patch'
         sniffData = sniff(defaultpatchpath, positives=['PATCH'])
         if self.currentState['create'] is False:
-            sniffData = [x for x in sniffData if x.subtype != 'create']
+            sniffData = [x for x in sniffData if 'create' in x.subtypes]
         if len(sniffData) > 0:
             for item in sniffData:
                 self.addPatch(item, select=True)
@@ -208,7 +208,7 @@ class GUIController(CoreProtocol):
             zipSniff = [
                 x for x in sniff(
                     defaultzippath,
-                    positives=['PATCH']) if x.subtype != 'create']
+                    positives=['PATCH']) if 'create' in x.subtypes]
             for item in zipSniff:
                 self.addPatch(item, select=True)
 
