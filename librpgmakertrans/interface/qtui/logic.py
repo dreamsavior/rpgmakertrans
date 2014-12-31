@@ -17,7 +17,7 @@ if __name__ == '__main__':
 from ...controllers.coreprotocol import CoreProtocol
 from .ui import MainWindow, Timer
 from PySide import QtGui
-
+from ...errorhook import errorWrap
 
 class QTLogic(CoreProtocol):
 
@@ -134,7 +134,7 @@ class QTLogic(CoreProtocol):
         else:
             print('Unknown button press %s' % str(button))
 
-
+@errorWrap
 def startView(*args, **kwargs):
     x = QTLogic(*args, **kwargs)
     x.start()

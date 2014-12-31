@@ -101,7 +101,7 @@ class CoreProtocol:
             self.senderManager.start()
         if inputcoms is None:
             inputcoms = self.senderManager.Sender()
-        if errout is None:
+        if errout is None and hasattr(self, 'senderManager'):
             errout = self.senderManager.ErrorSender()
         self.runner = runner
         self.inputcoms = inputcoms
@@ -129,7 +129,8 @@ class CoreProtocol:
         self.pools.clear()
 
     def registerSender(self, sender):
-        self.senderIDsToSenders[sender.senderID()] = sender
+        if sender:
+            self.senderIDsToSenders[sender.senderID()] = sender
 
     def registerSenders(self, *senders):
         for sender in senders:
