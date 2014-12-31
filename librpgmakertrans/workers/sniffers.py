@@ -127,12 +127,13 @@ def sniff2kGameFile(path):
 def sniffVXEncryptedGame(path):
     """Sniffer for encrypted VX games"""
     if os.path.isfile(path):
-        if path.upper().endswith('GAME.RGSS2A'):
-            return os.path.split(path)[0]
-        else:
-            return sniffVXEncryptedGame(os.path.split(path[0]))
+        return sniffVXEncryptedGame(os.path.split(path)[0])
     elif os.path.isdir(path):
-        return sniffVXEncryptedGame(os.path.join(path, 'GAME.RGSS2A'))
+        pathContents = os.listdir(path)
+        if any(x.upper().endswith('GAME.RGSS2A') for x in pathContents):
+            return path
+        else:
+            return False
     else:
         return False
 
