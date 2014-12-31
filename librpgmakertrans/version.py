@@ -13,8 +13,8 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import datetime
 
-version = 2.06
-expiry = datetime.date(2015, 4, 1)
+version = 3.0
+expiry = datetime.date(2016, 4, 1)
 
 
 def versionCheck(coms):
