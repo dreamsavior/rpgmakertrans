@@ -12,10 +12,13 @@ to crash.
 
 from PySide import QtGui
 
+BUGURL = \
+'https://bitbucket.org/habisain/rpgmakertrans/issues?status=new&status=open'
 
 class ErrorMsg(QtGui.QDialog):
-
+    """A very basic error box to give a traceback"""
     def __init__(self, clip):
+        """Setup the error message"""
         super(ErrorMsg, self).__init__()
         label = QtGui.QLabel(
             'An error has occurred and RPGMaker Trans has to close.\n'
@@ -34,18 +37,18 @@ class ErrorMsg(QtGui.QDialog):
         self.setLayout(vbox)
         self.setWindowTitle('RPGMaker Trans Error')
         button.released.connect(
-            lambda: (
-                clip.setText(
-                    self.msg),
-                QtGui.QDesktopServices.openUrl('https://bitbucket.org/habisain/rpgmakertrans/issues?status=new&status=open')))
+            lambda: (clip.setText(self.msg),
+                QtGui.QDesktopServices.openUrl(BUGURL)))
         button2.released.connect(lambda: self.done(0))
 
     def setMsg(self, msg):
+        """Set the message (typically a traceback)"""
         self.textArea.setPlainText(msg)
         self.msg = msg
 
 
 def errorMsg(msg):
+    """Display an error message"""
     app = QtGui.QApplication([])
     clip = app.clipboard()
     dlg = ErrorMsg(clip)

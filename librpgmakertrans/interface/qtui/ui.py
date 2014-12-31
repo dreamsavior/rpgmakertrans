@@ -11,7 +11,6 @@ The implementation of the QT user interface.
 
 import os
 from PySide import QtGui, QtCore, QtSvg
-from ...errorhook import ErrorClass, ErrorMeta
 from ...version import version
 
 from .logointernal import LOGOINTERNAL
@@ -24,9 +23,11 @@ labelString = ''.join([
     "authors permission, even for free games. "])
 
 
-class SelectorBlock(ErrorClass, QtGui.QGroupBox):
-
+class SelectorBlock(QtGui.QGroupBox):
+    """A Selector Block in the UI, comprising a combobox, browse button,
+    and box"""
     def __init__(self, name, idtoken, qtparent, eventComms):
+        """Setup the selector block"""
         super(SelectorBlock, self).__init__(name, qtparent)
         self.outputComs = eventComms
         self.name = name
@@ -53,28 +54,34 @@ class SelectorBlock(ErrorClass, QtGui.QGroupBox):
         self.combobox.currentIndexChanged.connect(self.changedIndex)
 
     def addItem(self, item, idtoken):
+        """Add an item to the combobox"""
         self.combobox.addItem(item, idtoken)
 
     def changedIndex(self, index):
+        """Trigger for when the combo box is changed"""
         self.outputComs.send('changeSelected', self.idtoken,
                              self.getCurrentSelectedID())
 
     def enable(self, state):
+        """Set if the block is enabled or not"""
         self.combobox.setEnabled(state)
         self.browseButton.setEnabled(state)
 
     def selectItem(self, idtoken):
+        """Select an item in the combo box"""
         self.combobox.setCurrentIndex(self.combobox.findData(idtoken))
 
     def getCurrentSelectedID(self):
+        """Get the ID of the current selected item"""
         return self.combobox.itemData(self.combobox.currentIndex())
 
     def browsePressed(self):
+        """Trigger for when the browse button is pressed"""
         self.outputComs.send('button', self.idtoken)
 
 
-class PatchOptions(ErrorClass, QtGui.QGroupBox):
-
+class PatchOptions(QtGui.QGroupBox):
+    """The block containing patch options"""
     def __init__(self, qtparent, outputComs):
         name = 'Patch Options'
         self.outputComs = outputComs
@@ -101,16 +108,20 @@ class PatchOptions(ErrorClass, QtGui.QGroupBox):
                                     self.useBOM.isChecked()))
 
     def toggle(self, signal, val):
+        """Trigger for when an item is toggled (use lambda
+        to specify signal)"""
         self.outputComs.send('optionChanged', signal, val)
 
     def enable(self, state):
+        """Enable or disable the block"""
         for widget in self.widgets:
             widget.setEnabled(state)
 
 
-class MainWindow(ErrorClass, QtGui.QWidget):
-
+class MainWindow(QtGui.QWidget):
+    """The main window for the QT UI"""
     def __init__(self, eventComms):
+        """Setup the main window - this is a big function"""
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
         self.outputComs = eventComms
@@ -137,9 +148,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.setLayout(vbox)
         self.setWindowTitle('RPGMaker Trans v%s' % str(version))
         self.gobutton.released.connect(
-            lambda: self.outputComs.send(
-                'button',
-                'go'))
+            lambda: self.outputComs.send('button', 'go'))
         hint = self.sizeHint()
         height = hint.height()
         width = hint.width()
@@ -169,21 +178,27 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         self.show()
 
     def enableElement(self, element, state):
+        """Enable an element"""
         self.enableElements[element](state)
 
     def nonfatalError(self, msg):
+        """Display a non-fatal error"""
         self.errorLog.show()
         self.errorLog.appendPlainText(msg)
 
     def resetNonfatalErrors(self):
+        """Reset the non-fatal errors"""
         self.errorLog.setPlainText('')
         self.errorLog.hide()
 
     def closeEvent(self, event):
+        """Override the close event to get confirmation from user if
+        patching"""
         self.outputComs.send('stop')
         event.ignore()
 
     def displayMessage(self, style, title, maintext):
+        """Display a message to the user"""
         msgBox = QtGui.QMessageBox(self)
         msgBox.setWindowTitle(title)
         msgBox.setText(maintext)
@@ -195,6 +210,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         return msgBox.exec_()
 
     def yesNoBox(self, title, maintext):
+        """Display a modal yes/no box"""
         msgBox = QtGui.QMessageBox(self)
         msgBox.setWindowTitle(title)
         msgBox.setText(maintext)
@@ -204,6 +220,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
         return msgBox.exec_() == QtGui.QMessageBox.Ok
 
     def getComboControl(self, controlID):
+        """From a name, get a selector block"""
         control = None
         for x in self.game, self.trans, self.patch:
             if controlID == x.idtoken:
@@ -215,22 +232,26 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             raise Exception('Unknown control ID')
 
     def comboBoxAdd(self, controlID, tokenName, tokenID, select=False):
+        """Add something to a selector blocks combobox"""
         control = self.getComboControl(controlID)
         control.addItem(tokenName, tokenID)
         if select:
             control.selectItem(tokenID)
 
     def comboBoxSelect(self, controlID, tokenID):
+        """Select an item in a combo box"""
         control = self.getComboControl(controlID)
         control.selectItem(tokenID)
 
     def getTransParams(self):
+        """Get the parameters for translation from the UI"""
         ret = {'gameid': self.game.getCurrentSelectedID(),
                'patchid': self.patch.getCurrentSelectedID(),
                'transid': self.trans.getCurrentSelectedID(), }
         return ret
 
     def setProgress(self, percent):
+        """Set the progress bar, in percent"""
         if percent == -1:
             self.progress.setMaximum(0)
         else:
@@ -238,6 +259,7 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             self.progress.setValue(percent)
 
     def setMessage(self, message):
+        """Set the message beneath the progress bar"""
         self.comms.setText(message)
 
     def fileDialog(self, title, wildcard):
@@ -252,8 +274,8 @@ class MainWindow(ErrorClass, QtGui.QWidget):
             caption=title)
 
 
-class Timer(object, metaclass=ErrorMeta):
-
+class Timer:
+    """A very simple timer using QT"""
     def __init__(self, period, connectTo):
         self.timer = QtCore.QTimer()
         self.timer.start(period)
