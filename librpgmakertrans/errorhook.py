@@ -50,17 +50,6 @@ def errorWrap(func):
     return wrap
 
 
-class ErrorClass(object):
-
-    def __init__(self, *args, **kwargs):
-        super(ErrorClass, self).__init__(*args, **kwargs)
-        for x in type(self).__dict__:
-            f = getattr(self, x)
-            if isinstance(f, collections.Callable):
-                setattr(self, x, errorWrap(f))
-#        print self.__init__
-
-
 class ErrorMeta(type):
 
     def __init__(cls, a, b, c):
@@ -68,7 +57,6 @@ class ErrorMeta(type):
         for x in cls.__dict__:
             f = getattr(cls, x)
             if isinstance(f, collections.Callable):
-                #                print f
                 setattr(cls, x, errorWrap(f))
 
 

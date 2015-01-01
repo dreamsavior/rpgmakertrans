@@ -10,13 +10,13 @@ Specifies the shared methods/interfaces of the Translator.
 """
 
 from ...metamanager import CustomManager, MetaCustomManager
-
+from ...errorhook import ErrorMeta
 
 class TranslatorError(Exception): pass
 
 class TranslatorManager(CustomManager): pass
 
-class TranslatorMeta(MetaCustomManager):
+class TranslatorMeta(MetaCustomManager, ErrorMeta):
     customManagerClass = TranslatorManager
 
 

@@ -15,7 +15,6 @@ These may be nicer in terms of performance/layout.
 
 from struct import unpack, Struct
 from .speedy2kconstants import schemas, containerTypes
-from ...errorhook import ErrorClass
 
 class BytesOrNoneList(list):
 
@@ -30,7 +29,7 @@ class BytesOrNoneList(list):
             self.append(x)
 
 
-class RPGFile(ErrorClass):
+class RPGFile:
 
     def __init__(self, name, string, schemas, translator, *args, **kwargs):
         super(RPGFile, self).__init__(*args, **kwargs)

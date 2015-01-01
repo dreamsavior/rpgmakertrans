@@ -17,12 +17,10 @@ class CustomManager(BaseManager):
 
     def start(self, errout=None):
         if errout is None:
-            raise Exception(
-                'Starting a %s without an errout' %
-                type(self).__name__)
-        super(
-            CustomManager,self).start(initializer=setErrorOut,
-                                      initargs=[errout])
+            raise Exception('Starting a %s without an errout' %
+                            type(self).__name__)
+        super(CustomManager,self).start(initializer=setErrorOut,
+                                        initargs=[errout])
 
 
 class MetaCustomManager(ErrorMeta):

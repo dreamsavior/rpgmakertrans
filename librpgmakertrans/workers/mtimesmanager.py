@@ -10,7 +10,7 @@ A multiprocess capable handler for the mtimes file, which is used
 to try and not redo everything with every single patch.
 """
 
-from ..errorhook import errorWrap
+from ..errorhook import errorWrap, ErrorMeta
 import os.path
 import pickle
 from ..metamanager import CustomManager, MetaCustomManager
@@ -20,11 +20,11 @@ import multiprocessing
 class MTimesHandlerManager(CustomManager):
     """Manager for MTimesHandler"""
 
-class MetaMTimesManager(MetaCustomManager):
+class MetaMTimesManager(MetaCustomManager, ErrorMeta):
     """Metaclass for automatic registering of MTimesHandler"""
     customManagerClass = MTimesHandlerManager
 
-class MTimesHandler(object, metaclass=MetaMTimesManager):
+class MTimesHandler(metaclass=MetaMTimesManager):
     """Provides a nice clean way to track the modification times of
     files being patched. There is a distinction between the current
     mtimes and the ovserved (new) mtimes, which means that should there

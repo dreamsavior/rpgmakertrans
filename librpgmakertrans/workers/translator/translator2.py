@@ -13,7 +13,6 @@ import random
 from ..twokpatcher.speedy2kconstants import contextDict, rtsubsections
 from .translatorbase import Translator
 from collections import defaultdict
-from ...errorhook import ErrorMeta
 
 # !######! TRANSLATED TEXT #############!###!
 shopMenu = '49 char limit'
@@ -171,7 +170,7 @@ compatRewrite['itemAttr/ItemDescription'] = 'itemAttr/Description'
 compatRewrite['skillAttr/SkillDescription'] = 'skillAttr/Description'
 
 
-class Translator2kv2f(object, metaclass=ErrorMeta):
+class Translator2kv2f:
 
     def __init__(self, coms, incodec='cp932', outcodec='cp932'):
         self.coms = coms
@@ -315,8 +314,8 @@ class Translator2kv2f(object, metaclass=ErrorMeta):
             if p1 >= p2:
                 brk = True
             else:
-                head, t, t2 = string.partition('\n# TEXT STRING')
-                translation, t, string = t2.partition('\n# END STRING')
+                t2 = string.partition('\n# TEXT STRING')[2]
+                translation, _, string = t2.partition('\n# END STRING')
                 self.loadTranslatable(translation.strip())
 
 
