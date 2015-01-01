@@ -48,6 +48,9 @@ class CoreRunner:
         """Kill all processes when receiving a sigint"""
         for runner in self.running:
             runner.terminate()
+        if hasattr(self, 'errorManager'):
+            self.errorManager.shutdown()
+        sys.exit(1)
 
     def initialise(self, cls, **kwargs):
         """Given a class of a given CoreProtocol, initialise an
