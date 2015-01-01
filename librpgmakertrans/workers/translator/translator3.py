@@ -38,6 +38,11 @@ class TranslationLine(namedtuple('TranslateableLine',
         return cls('data', data, comment)
 
     @classmethod
+    def End(cls):
+        """Create an end line"""
+        return cls('end', '> END STRING')
+
+    @classmethod
     def fromString(cls, string):
         """Instantiate a line from a string"""
         indx = string.find('#', 0)
@@ -89,17 +94,20 @@ class Translation:
         """Initialise, based on a list of translation lines"""
         if items[0].cType != 'begin':
             items.insert(0, TranslationLine('begin', '> BEGIN STRING'))
+        if not any(item.cType == 'end' for item in items):
+            items.append(TranslationLine.End())
         self.items = items
         currentContexts = ['RAW']
         currentString = []
         strings = {}
         for item in self.items:
-            if item.cType == 'context':
+            if item.cType != 'data':
                 if currentString:
                     self.__addTranslations(strings, currentString, currentContexts)
                     currentContexts = []
                     currentString = []
-                currentContexts.append(item.data)
+                if item.cType == 'context':
+                    currentContexts.append(item.data)
             elif item.cType == 'data':
                 currentString.append(item.data)
         self.__addTranslations(strings, currentString, currentContexts)
@@ -182,7 +190,7 @@ class TranslationFile:
         """Return the file in string form"""
         output = ['> %s %s' % (type(self).header,
                               '.'.join(str(x) for x in type(self).version))]
-        output.extend(x.asString() for x in self)
+        output.extend(x.asString() + '\n' for x in self)
         return '\n'.join(output)
 
     def addTranslation(self, translation):
