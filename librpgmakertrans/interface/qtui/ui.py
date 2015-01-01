@@ -11,7 +11,7 @@ The implementation of the QT user interface.
 
 import os
 from PySide import QtGui, QtCore, QtSvg
-from ...version import version
+from ...version import versionString
 
 from .logointernal import LOGOINTERNAL
 
@@ -146,7 +146,7 @@ class MainWindow(QtGui.QWidget):
                   label):
             vbox.addWidget(x)
         self.setLayout(vbox)
-        self.setWindowTitle('RPGMaker Trans v%s' % str(version))
+        self.setWindowTitle('RPGMaker Trans v%s' % versionString)
         self.gobutton.released.connect(
             lambda: self.outputComs.send('button', 'go'))
         hint = self.sizeHint()

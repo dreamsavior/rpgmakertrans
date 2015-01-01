@@ -13,11 +13,10 @@ this does not yet work on Windows.
 
 import sys
 import argparse
-from ..controllers.coreprotocol import CoreRunner, CoreProtocol
+from ..controllers.coreprotocol import CoreProtocol
 from ..controllers.headless import Headless2k
-from ..version import version
+from ..version import versionString
 
-VERSION = version
 CLI_LENGTH = 79
 
 
@@ -28,7 +27,7 @@ class CLIMode(CoreProtocol):
         super(CLIMode, self).__init__(*args, **kwargs)
         # TODO: Need to check if the arguments are actually valid.
         self.quiet = cargs.quiet
-        self.normalPrint('RPGMaker Trans v%s' % str(VERSION))
+        self.normalPrint('RPGMaker Trans v%s' % versionString)
         self.normalPrint('Input path : %s' % cargs.input)
         self.normalPrint('Patch path : %s' % cargs.patch)
         self.normalPrint('Output path: %s' % cargs.output)
