@@ -15,7 +15,7 @@ import datetime
 
 version = 3.0
 expiry = datetime.date(2016, 4, 1)
-
+debug = True
 
 def versionCheck(coms):
     if expiry < datetime.date.today():

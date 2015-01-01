@@ -9,11 +9,6 @@ errorhook
 Various tools to assist getting an error message with traceback string through
 multiprocessing. This is problematic because normally Python does not give
 this.
-
-TODO: Test if it is sufficient to just use setErrorOut and errorWrap on the API
-entry. If it is, this would be more beneficial than using the stuff like
-metaclasses etc, because I'd be able to put in additional hooks to get things
-like arguments passed into the API.
 """
 
 import traceback
@@ -21,18 +16,26 @@ import functools
 import sys
 import io
 import collections
+
+from .version import debug
+
 errorOut = None
 
 
-def setErrorOut(comsout):
+def setErrorOut(outputComs):
+    """Set the error output. If debug is defined in version file,
+    always print to stderr, otherwise suppress if applicable."""
     global errorOut
-    errorOut = comsout
-    if errorOut is None:
-        sys.stderr = sys.__stderr__
-    #else:
-    #    sys.stderr = io.StringIO()
+    errorOut = outputComs
+    if not debug:
+        if errorOut is None:
+            sys.stderr = sys.__stderr__
+        else:
+            sys.stderr = io.StringIO()
 
 def handleError():
+    """Handle an error either by putting it onto the error
+    sender or writing it to stderr."""
     global errorOut, caught
     if errorOut is not None:
         errorOut.send('ERROR', traceback.format_exc())
@@ -41,6 +44,7 @@ def handleError():
         sys.stderr.flush()
 
 def errorWrap(func):
+    """Wrap a function for multiprocess error handling."""
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         try:
@@ -51,17 +55,11 @@ def errorWrap(func):
 
 
 class ErrorMeta(type):
-
+    """A metaclass which automatically applies ErrorWrap to all
+    methods on the class"""
     def __init__(cls, a, b, c):
         super(ErrorMeta, cls).__init__(a, b, c)
         for x in cls.__dict__:
             f = getattr(cls, x)
             if isinstance(f, collections.Callable):
                 setattr(cls, x, errorWrap(f))
-
-
-@errorWrap
-def testExcept():
-    print('called')
-    raise Exception('Something went wrong, natch')
-    print('hmm')
