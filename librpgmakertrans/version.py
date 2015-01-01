@@ -3,7 +3,7 @@ version
 *******
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 Provides functionality related to versioning, including the version check.
@@ -20,6 +20,7 @@ debug = True
 versionString = '%s%s' % (str(version), ' [DEBUG]' if debug else '')
 
 def versionCheck(coms):
+    """Check to see if a new version is available"""
     if expiry < datetime.date.today():
         coms.send('expired')
         return

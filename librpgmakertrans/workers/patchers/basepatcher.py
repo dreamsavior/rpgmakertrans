@@ -3,26 +3,27 @@ basepatcher
 ***********
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 Contains the shared methods/interfaces of the patcher classes.
 """
 from ...metamanager import CustomManager, MetaCustomManager
 from ..translator import TranslatorManager
-
+from ...errorhook import ErrorMeta
 
 class PatchManager(CustomManager):
-    pass
+    """Custom Manager for Patch handlers"""
 
-
-class PatchMeta(MetaCustomManager):
+class PatchMeta(MetaCustomManager, ErrorMeta):
+    """Patch meta class"""
     customManagerClass = PatchManager
 
 
 class BasePatch(metaclass=PatchMeta):
-
+    """The basic class for Patch objects"""
     def __init__(self, path, coms, errout):
+        """Initialise the patch"""
         self.path = path
         self.coms = coms
         self.categorisePatchFiles()
@@ -30,9 +31,12 @@ class BasePatch(metaclass=PatchMeta):
         self.translatorManager.start(errout)
 
     def quit(self):
+        """Stop the associated translator manager"""
         self.translatorManager.shutdown()
 
     def tryDecodePatchFile(self, header, data, errors='strict'):
+        """Try to decode a file using utf-8 or utf-8-sig. If possible
+        return the decoded string"""
         for encoding in 'utf-8', 'utf-8-sig':
             try:
                 decoded = data.decode(encoding, errors=errors)
@@ -43,51 +47,63 @@ class BasePatch(metaclass=PatchMeta):
         return False, data
 
     def setPath(self, path):
+        """Set the path of the patch"""
         self.path = path
 
     def patchIsWriteable(self):
+        """Return if the patch is writeable"""
         return True
 
     def loadPatchData(self):
-        raise Exception('loading patch data not implemented')
+        """Load data from the patch; needs implementing"""
+        raise NotImplementedError('loading patch data not implemented')
 
     def writePatchData(self, data, encoding='utf-8'):
-        raise Exception('Writing patch data not implemented')
+        """Write data to the patch"""
+        raise NotImplementedError('Writing patch data not implemented')
 
     def categorisePatchFiles(self):
-        raise Exception('This method must be overridden')
+        """Categorise files in the patch"""
+        raise NotImplementedError('This method must be overridden')
 
     def writeTranslator(self, translator, encoding):
+        """Write a translator to the patch"""
         if self.patchIsWriteable():
             data = translator.getPatchData()
             self.writePatchData(data, encoding)
 
     def makeTranslator(self, coms):
+        """Make a translator object from this patch"""
         data, mtime = self.loadPatchData()
         translatorClass = getattr(self.translatorManager,
                                   type(self).translatorClass)
         return translatorClass(data, mtime=mtime, coms=coms)
 
     def getAssetFiles(self):
+        """Get asset files for this patch"""
         return self.assetFiles
 
     def getDataFiles(self):
+        """Get the patch data files for this patch"""
         return self.patchDataFiles
 
     def getAssetNames(self):
-        raise Exception('getAssetNames not implemented')
+        """Get the names of Assets of this patch"""
+        raise NotImplementedError('getAssetNames not implemented')
 
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
-        raise Exception('FullPatching not implemented')
+        """Do the full file patches for this patch"""
+        raise NotImplementedError('FullPatching not implemented')
 
 
 def makeTranslator(patcher, coms):
+    """Make a translator from this patch"""
     ret = patcher.makeTranslator(coms)
     coms.send('trigger', 'translatorReady')
     return ret
 
-
 def writeTranslator(patcher, translator, useBOM, coms):
+    """Write a translator for the patch"""
     encoding = 'utf-8-sig' if useBOM else 'utf-8'
     patcher.writeTranslator(translator, encoding)
     coms.send('trigger', 'translatorWritten')

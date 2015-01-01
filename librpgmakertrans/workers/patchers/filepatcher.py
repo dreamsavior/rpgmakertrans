@@ -3,7 +3,7 @@ filepatcher
 ***********
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 Provides a patcher for a patch contained in a directory.
@@ -16,13 +16,15 @@ from .registry import patcherSniffer, FilePatchv2, FilePatchv3
 
 
 class FilePatcher(BasePatch):
-
+    """A Patch which is just a directory on the file system"""
     def __init__(self, path, *args, **kwargs):
+        """Initialise the file patcher; corrects paths if necessary"""
         super(FilePatcher, self).__init__(path, *args, **kwargs)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
 
     def loadPatchData(self):
+        """Load patch data from files"""
         data = {}
         mtime = 0
         for fn in self.patchDataFiles:
@@ -39,9 +41,11 @@ class FilePatcher(BasePatch):
         return data, mtime
 
     def patchMarkerText(self):
+        """Return text for the patch marker"""
         return ''
 
     def writePatchData(self, data, encoding='utf-8'):
+        """Write patch data to files"""
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         patchmarkerfn = os.path.join(self.path, 'RPGMKTRANSPATCH')
@@ -59,6 +63,7 @@ class FilePatcher(BasePatch):
                     f.write(data[name])
 
     def allPaths(self):
+        """Get all paths of files in patch"""
         for dr, _, files in os.walk(self.path):
             if dr != self.path:
                 yield dr
@@ -68,17 +73,21 @@ class FilePatcher(BasePatch):
                     yield fpath
 
     def fileDirs(self):
+        """Get directories of files in patch"""
         for dr, _, _ in os.walk(self.path):
             yield dr
 
     def getAssetNames(self):
+        """Get names of assets in patch"""
         return [os.path.relpath(fn, self.path) for fn in self.assetFiles]
 
     def getNonCopyNames(self):
+        """Get names of files not to copy in patch"""
         return [os.path.relpath(fn, self.path) for fn in
                 self.patchDataFiles] + ['RPGMKTRANSPATCH']
 
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
+        """Do full file patches using a filecopier"""
         self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles,
                        indir=self.path, outdir=outpath, ignoredirs=[],
                        ignoreexts=[], ignorefiles=self.getNonCopyNames(),
@@ -88,6 +97,8 @@ class FilePatcher(BasePatch):
 
 
 class FilePatcherv2(FilePatcher):
+    """A file based patcher for v2 patches"""
+
     translatorClass = 'Translator2kv2'
     header = '# RPGMAKER TRANS PATCH'
 
@@ -112,6 +123,8 @@ class FilePatcherv2(FilePatcher):
                     self.assetFiles.append(fn)
 
 class FilePatcherv3(FilePatcher):
+    """A file patcher for v3 based patches"""
+
     translatorClass = 'Translator3'
     header = '> RPGMAKER TRANS PATCH'
 
@@ -141,6 +154,7 @@ class FilePatcherv3(FilePatcher):
 
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
+    """Sniffer for v2 file patches"""
     if os.path.isdir(path):
         cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
         if len(cands) == 1:
@@ -156,6 +170,7 @@ def sniffv2(path):
 
 @patcherSniffer(FilePatchv3, 'FilePatcherv3')
 def sniffv3(path):
+    """Sniffer for v3 file patches"""
     if os.path.isdir(path):
         cands = [x for x in os.listdir(path) if x.lower() == 'rpgmktranspatch']
         if len(cands) == 1:

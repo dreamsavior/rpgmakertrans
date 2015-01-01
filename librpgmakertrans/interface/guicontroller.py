@@ -3,7 +3,7 @@ guicontroller
 *************
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 The controller for the GUI, implementing the higher level functions that
@@ -129,13 +129,6 @@ class GUIController(CoreProtocol):
     def addItem(self, sniffData, sniffDataTypes, idstore,
                 signalSuffix, select, prefix=None):
         """This is the general 'add item to selector' logic"""
-        # Take care of stuff where we can't do anything...
-        # if sniffData is None:
-        #    sniffData = sniff(path, positives=sniffDataTypes)
-        #    for item in sniffData:
-        #        self.addItem(path, item, sniffDataTypes, idstore, sendSignal, select, prefix)
-        #    return
-        # if sniffData is False: return
         if sniffData.maintype not in sniffDataTypes:
             return
         path = sniffData.canonicalpath

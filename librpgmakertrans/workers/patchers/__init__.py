@@ -3,7 +3,7 @@ patchers
 ********
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 Contains an interface onto the various kinds of patch managers
@@ -18,6 +18,7 @@ from .registry import getClassName
 
 
 def getPatcher(manager, path, coms, errout, defaultVersion=2):
+    """Get a patcher"""
     className = getClassName(path)
     if className is None:
         if not os.path.exists(path):
@@ -34,5 +35,6 @@ def getPatcher(manager, path, coms, errout, defaultVersion=2):
 
 
 def doFullPatches(patcher, outdir, translator, mtimes, newmtimes, coms):
+    """Perform all full file patches with a given translator"""
     patcher.doFullPatches(outdir, translator, mtimes, newmtimes)
     coms.send('trigger', 'fullPatchesDone')

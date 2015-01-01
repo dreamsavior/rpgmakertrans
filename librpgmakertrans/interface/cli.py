@@ -3,7 +3,7 @@ cli
 ***
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 A CLI for RPGMaker Trans. Unfortunately, due to Windows being Windows,
@@ -61,6 +61,7 @@ class CLIMode(CoreProtocol):
         self.progressPrint('[%s] %s %%' % (hashes, percent))
 
     def finalisingPatch(self):
+        """Trigger for finalising patch"""
         self.progressPrint('Finalising Patch..')
 
     def finishedPatching(self):
