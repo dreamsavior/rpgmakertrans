@@ -8,9 +8,6 @@ registry
 
 Provides a repository for sniffer functions which can
 inform which type of backend to use.
-
-TODO: The subtype stuff contains stuff which should really be
-handled by the UI (i.e the ][ mark)
 """
 import os.path
 from ..sniffers import sniffer, sniff, SniffedType
