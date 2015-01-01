@@ -20,10 +20,20 @@ from ..errorhook import setErrorOut
 import sys
 import collections
 
+ERRORSTRING = """An error was found with the following traceback:
+
+%s
+
+If you believe this is a bug, please report it to habisain@gmail.com
+"""
 
 class CoreRunner:
-
+    """CoreRunner is the main scheduler that runs a set of CoreProtocol
+    derived tasks"""
     def __init__(self, runners=None, errors=None):
+        """Initialise the CoreRunner; can be given runners to run immediately,
+        as well as an error Sender (if not given, error sender will be
+        created automatically)"""
         if errors is None:
             self.errorManager = SenderManager()
             self.errorManager.start()
@@ -35,39 +45,47 @@ class CoreRunner:
         signal.signal(signal.SIGINT, self.sigint)
 
     def sigint(self, signal, frame):
+        """Kill all processes when receiving a sigint"""
         for runner in self.running:
             runner.terminate()
 
     def initialise(self, cls, **kwargs):
+        """Given a class of a given CoreProtocol, initialise an
+        instance of it. Supports kwargs"""
         newinstance = cls(runner=self, errout=self.errors, **kwargs)
         self.attach(newinstance)
         return newinstance
 
     def setErrorHandler(self, handler):
+        """Set an error handler"""
         self.errorHandler = handler
 
     def getErrorSender(self):
+        """Return the current error sender"""
         return self.errors
 
     def attach(self, runner):
+        """Attach a CoreProtocol runner to this CoreRunner"""
         self.running.append(runner)
 
     def detach(self, runner):
+        """Detach a runner from this CoreRunner"""
         if runner in self.running:
             self.running.remove(runner)
 
     def doError(self, errMsg):
+        """Handle an error message"""
         for x in self.running:
             x.terminate()
         if self.errorHandler is not None:
             self.errorHandler(errMsg)
         else:
-            sys.__stderr__.write(
-                'An error was found with the following traceback \n\n%s\n\nIf you believe this is a bug, please report it to habisain@gmail.com\n\n' %
-                errMsg)
+            sys.__stderr__.write(ERRORSTRING % errMsg)
             sys.__stderr__.flush()
 
     def run(self):
+        """The main loop for the CoreRunner; will run all attached
+        runners until all have died."""
         while self.running:
             detachments = []
             for runner in self.running:
@@ -89,13 +107,16 @@ class CoreRunner:
 
 
 class CoreProtocol:
-
+    """The CoreProtocol runner which all tasks should inherit from"""
     def __init__(self, runner=None, inputcoms=None, outputcoms=None,
                  errout=None):
+        """Initialise the CoreProtocol; normally should be on a runner
+        and with an errout, but not necessarily. Each runner can manage
+        one or more process pools."""
         if runner is None and errout is not None:
-            raise Exception(
-                '%s: Must supply runner and errout arguments as a pair or not at all' % str(
-                    type(self)))
+            errMsg = ('Must supply runner and errout arguments as '
+                      'a pair or not at all')
+            raise Exception(type(self).__name__ + errMsg)
         if inputcoms is None or outputcoms is None:
             self.senderManager = SenderManager()
             self.senderManager.start()
@@ -121,43 +142,58 @@ class CoreProtocol:
         self.registerSenders(self.inputcoms, self.outputcoms, self.errout)
 
     def finished(self):
+        """Return if the runner has finished"""
         return not self.going
 
     def reset(self):
+        """Wait for and reset all pools of the runner"""
         for pool in self.pools:
             pool.join()
         self.pools.clear()
 
     def registerSender(self, sender):
+        """Register a sender; the sender can then be automagically sent over
+        multiprocess function calls to this runner only."""
         if sender:
             self.senderIDsToSenders[sender.senderID()] = sender
 
     def registerSenders(self, *senders):
+        """Register a number of senders"""
         for sender in senders:
             self.registerSender(sender)
 
     def comboTrigger(self, triggername, subtriggers):
-        subtriggerset = set(x for x in subtriggers if x not in self.dispatched)
+        """Define a combotrigger; when all subtrigger signals have been
+        activated, the combotrigger signal will be activated."""
+        subtriggerset = set(x for x in subtriggers
+                            if x not in self.dispatched)
         if subtriggerset:
             for subtrigger in subtriggers:
-                self.subtriggers[subtrigger].append(
-                    (triggername, subtriggerset))
+                self.subtriggers[subtrigger].append((triggername,
+                                                     subtriggerset))
         else:
             self.trigger(triggername)
 
     def waitUntil(self, signal, pool, fn, *args, **kwargs):
+        """Wait until a given trigger signal, then activate the given
+        function with given arguments on a given pool"""
         if signal in self.dispatched:
             self.submit(pool, fn, *args, **kwargs)
         else:
             self.waiting[signal].append((pool, fn, args, kwargs))
 
     def localWaitUntil(self, signal, fn, *args, **kwargs):
+        """A version of waitUntil which dispatches the function on the
+        main process rather than a pool. Useful for coroutine type
+        pauses."""
         if signal in self.dispatched:
             fn(*args, **kwargs)
         else:
             self.localWaiting[signal].append((fn, args, kwargs))
 
     def processArg(self, arg):
+        """Process an argument, replacing any SenderID with the corresponding
+        sender"""
         if isinstance(arg, SenderID):
             if arg in self.senderIDsToSenders:
                 return self.senderIDsToSenders[arg]
@@ -167,6 +203,7 @@ class CoreProtocol:
             return arg
 
     def submit(self, pool, fn, *args, **kwargs):
+        """Submit a job to a pool"""
         if pool == 'dbg':
             return fn(*args, **kwargs)
         args = [self.processArg(arg) for arg in args]
@@ -177,6 +214,7 @@ class CoreProtocol:
         return ret
 
     def trigger(self, signal):
+        """Send a trigger singal"""
         if signal not in self.dispatched:
             self.dispatched.add(signal)
             for pool, fn, args, kwargs in self.waiting[signal]:
@@ -188,24 +226,17 @@ class CoreProtocol:
                 if not subtriggers:
                     self.trigger(combotrigger)
 
-    def checkResults(self):
-        remove = set()
-        for ret in self.results:
-            if ret.ready():
-                ret.get()
-                remove.add(ret)
-        for removal in remove:
-            self.results.remove(removal)
-
     def setupPool(self, pool, processes=None):
+        """Setup a pool with the given name."""
         if processes is None:
             processes = multiprocessing.cpu_count()
-        self.pools[pool] = multiprocessing.Pool(
-            processes=processes,
-            initializer=setErrorOut,
-            initargs=[self.errout])
+        self.pools[pool] = multiprocessing.Pool(processes=processes,
+                                                initializer=setErrorOut,
+                                                initargs=[self.errout])
 
     def shutdown(self, pools=None):
+        """Shutdown the CoreProtocol instance, stopping all associated
+        subprocesses."""
         if pools is None:
             poolobjs = list(self.pools.values())
         else:
@@ -221,6 +252,8 @@ class CoreProtocol:
         self.going = False
 
     def terminate(self, pools=None):
+        """Terminate all pools. This is somewhat more immediate than
+        shutdown."""
         if pools is None:
             poolobjs = list(self.pools.values())
         else:
@@ -230,6 +263,8 @@ class CoreProtocol:
         self.going = False
 
     def update(self, coms=None):
+        """The main function of the CoreProtocol, handles dispatch of
+        messages received of input coms."""
         events = self.inputcoms.get()
         while events:
             code, args, kwargs = events.pop(0)
@@ -237,6 +272,4 @@ class CoreProtocol:
                 isinstance(getattr(self, code), collections.Callable)):
                 getattr(self, code)(*args, **kwargs)
             else:
-                self.errout.send('ERROR',
-                                 'Got an unknown code: %s ' % str(code))
-        # self.checkResults()
+                self.errout.send('ERROR', 'Got an unknown code: ' + str(code))
