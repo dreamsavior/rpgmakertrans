@@ -28,7 +28,8 @@ class CLIMode(CoreProtocol):
         super(CLIMode, self).__init__(*args, **kwargs)
         self.quiet = cargs.quiet
         self.normalPrint('RPGMaker Trans v%s' % versionString)
-        game = self.handleInput(cargs.input, ['GAME'], 'Input path: %s',
+        game = self.handleInput(cargs.input, ['GAME', 'TRANS'],
+                                'Input path: %s',
                                 'ERROR: %s not a compatible game')
         patch = self.handleInput(cargs.patch, ['PATCH'], 'Patch path: %s',
                                  'ERROR: %s not a compatible patch')
@@ -40,9 +41,11 @@ class CLIMode(CoreProtocol):
 
     def handleInput(self, path, sniffedTypes, frmtString, errString):
         """Standard template function to sniff a path, output appropiately
-        and/or blow up if something is invalid"""
+        and/or blow up if something is invalid. sniffedTypes gives a list
+        of all types to check using sniffers, but only the first main type
+        is valid (as GAME has to checked with TRANS.)"""
         sniffedLS = sniff(path, sniffedTypes)
-        if not sniffedLS:
+        if not sniffedLS or sniffedLS[0].maintype != sniffedTypes[0]:
             self.errorMsgQuit(errString % path)
             return
         else:

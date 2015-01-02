@@ -55,10 +55,6 @@ class SniffedType:
         else:
             raise Exception('Invalid index %s' % str(item))
 
-class TransLoc(SniffedType):
-    """Sniffed type for a translated game"""
-    maintype, subtypes = 'TRANS', ['2k', 'translated']
-
 class NewDirTransLoc(SniffedType):
     """Sniffed Type for a new directory"""
     maintype, subtypes = 'TRANS', ['create']
@@ -91,6 +87,18 @@ def sniffer(sniffedType):
         return Sniffer(sniffedType, func)
     return f
 
+def translatedSniffer(translatedSniffedType, baseSniffer):
+    """A hack-ish method to create a translated sniffer from a base sniffer"""
+    def ret(path):
+        if (baseSniffer(path) and os.path.isdir(path) and
+            'RPGMKTRANSLATED' in (x.upper() for x in os.listdir(path))):
+            return translatedSniffedType(path)
+        else:
+            return False
+    ret.maintype = translatedSniffedType.maintype
+    SNIFFERS.add(ret)
+    return ret
+
 def checkForFiles(path, req):
     """Given a dictionary of filenames to true/false values (False being
     file required, True being file required to not exist), assert a path
@@ -121,22 +129,6 @@ def sniffVXEncryptedGame(path):
     else:
         return False
 
-@sniffer(TransLoc)
-def sniffTransLoc(path):
-    """Sniffer for a game translated by RPGMaker Trans"""
-    req = {'RPG_RT.LDB': False,
-           'RPGMKTRANSPATCH': True,
-           'RPGMKTRANSLATED': False, }
-    return checkForFiles(path, req)
-
-@sniffer(TransLoc)
-def sniffTransLocFile(path):
-    """Sniffer for a game translated by RPGMaker Trans, given
-    RPG_RT.EXE file"""
-    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
-        return sniffTransLoc(os.path.split(path)[0])
-    return False
-
 @sniffer(NewDirTransLoc)
 def sniffNewDirTransLoc(path):
     """Sniffer for a new directory"""
@@ -152,7 +144,7 @@ def sniff(path, positives=None, negatives=None, conflicts=None):
     if negatives is None:
         negatives = ()
     if conflicts is None:
-        conflicts = {'GAME': ['TRANS']}
+        conflicts = {'TRANS': ['GAME']} # A Translation overrides a Game
     results = defaultdict(list)
     for sniffer in SNIFFERS:
         if sniffer.maintype in negatives:
