@@ -45,6 +45,7 @@ class HeadlessVX(Headless):
 class RPGVXUnencrypted(SniffedType):
     """Sniffed type for an untranslated unencrypted VX game"""
     maintype, subtypes = 'GAME', ['VX']
+    headlessClass = HeadlessVX
 
 class RPGVXUnencryptedTranslated(SniffedType):
     """Sniffed type for an untranslated unencrypted VX game"""
