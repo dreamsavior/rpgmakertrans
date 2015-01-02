@@ -26,6 +26,9 @@ class Headless(CoreProtocol):
     copyIgnoreDirs = []
     copyIgnoreExts = []
 
+    defaultPatchVersion = None
+    minPatcherProcesses = None
+
     def __init__(self, *args, **kwargs):
         """Initialise Headless; for arguments see CoreProtocol"""
         super().__init__(*args, **kwargs)
@@ -84,21 +87,22 @@ class Headless(CoreProtocol):
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
 
-    def go(self, indir, patchpath, outdir, useBOM, defaultPatchVersion=2):
+    def go(self, indir, patchpath, outdir, useBOM):
         """Initiate the patching"""
-        self.setupPool('patcher')
+        self.setupPool('patcher', minProcesses=type(self).minPatcherProcesses)
         self.setupPool('copier', processes=1)
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
         patcher = getPatcher(self.patchManager, patchpath,
-                             self.inputcoms, self.errout, defaultPatchVersion)
+                             self.inputcoms, self.errout,
+                             type(self).defaultPatchVersion)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
         translatorRet = self.submit('patcher', makeTranslator, patcher,
                                     self.inputcoms)
         self.comboTrigger('startTranslation',
                           ['translatorReady', 'mtimesReady'])
-        self.localWaitUntil('startTranslation', self.beginTranslation, patcher,
-                            translatorRet, mtimesManager, indir, patchpath,
-                            outdir, useBOM)
+        self.localWaitUntil('startTranslation', self.beginTranslation,
+                            patcher, translatorRet, mtimesManager, indir,
+                            patchpath, outdir, useBOM)
 
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         raise NotImplementedError('Override this method')

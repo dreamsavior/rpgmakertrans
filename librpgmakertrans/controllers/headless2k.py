@@ -18,6 +18,8 @@ class Headless2k(Headless):
     """Headless specialised for 2k games"""
     copyIgnoreExts = ['.lmu', '.ldb', '.lsd']
 
+    defaultPatchVersion = 2
+
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         self.submit('patcher', process2kgame, indir, outdir,
                     translator, mtimes=mtimes, newmtimes=newmtimes,

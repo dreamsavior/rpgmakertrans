@@ -229,10 +229,12 @@ class CoreProtocol:
                 if not subtriggers:
                     self.trigger(combotrigger)
 
-    def setupPool(self, pool, processes=None):
+    def setupPool(self, pool, processes=None, minProcesses=None):
         """Setup a pool with the given name."""
         if processes is None:
             processes = multiprocessing.cpu_count()
+        if minProcesses is not None:
+            processes = max(processes, minProcesses)
         self.pools[pool] = multiprocessing.Pool(processes=processes,
                                                 initializer=setErrorOut,
                                                 initargs=[self.errout])
