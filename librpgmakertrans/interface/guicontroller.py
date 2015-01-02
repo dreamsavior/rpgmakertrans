@@ -99,11 +99,11 @@ class GUIController(CoreProtocol):
 
     def newVerAvailable(self, version):
         """Display a message+quit if new version available"""
+        newVers = str(round(version,2))
         self.outputcoms.send('displayOKKill', 'New Version Available',
-            'Version %s of RPGMaker Trans is available.\n'
+            'Version ' + newVers + ' of RPGMaker Trans is available.\n'
             'Please visit http://habisain.blogspot.co.uk to download it.\n'
-            'Press OK to close RPGMaker Trans' %
-            str(round(version,2)))
+            'Press OK to close RPGMaker Trans')
 
     def expired(self):
         """Display a message+quit if too old"""
