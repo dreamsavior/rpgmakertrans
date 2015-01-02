@@ -19,8 +19,6 @@ from collections import defaultdict
 from .coreprotocol import CoreProtocol
 from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
-class PatchEngineState:
-    pass
 
 class Headless(CoreProtocol):
     """Headless Class"""
