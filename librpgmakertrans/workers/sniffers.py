@@ -63,10 +63,6 @@ class NewDirTransLoc(SniffedType):
     """Sniffed Type for a new directory"""
     maintype, subtypes = 'TRANS', ['create']
 
-class RPGVXUnencrypted(SniffedType):
-    """Sniffed type for an untranslated unencrypted VX game"""
-    maintype, subtypes = 'GAME', ['VX']
-
 class RPGVXEncrypted(SniffedType):
     """Sniffed type for an untranslated encrypted VX game"""
     maintype, subtypes = 'GAME', ['VX', 'ENC']
@@ -120,27 +116,6 @@ def sniffVXEncryptedGame(path):
         pathContents = os.listdir(path)
         if any(x.upper().endswith('GAME.RGSS2A') for x in pathContents):
             return path
-        else:
-            return False
-    else:
-        return False
-
-@sniffer(RPGVXUnencrypted)
-def sniffVXUnencryptedGame(path):
-    """Sniffer for unencrypted VX games"""
-    if os.path.isfile(path) and path.upper().endswith('GAME.EXE'):
-        return sniffVXUnencryptedGame(os.path.split(path)[0])
-    elif os.path.isdir(path):
-        pathContents = os.listdir(path)
-        if 'RPGMKTRANSLATED' not in pathContents:
-            return False
-        dataDir = os.path.join(path, 'Data')
-        if os.path.isdir(dataDir):
-            dataDirContents = os.listdir(dataDir)
-            if any(x.upper().endswith('.RVDATA') for x in dataDirContents):
-                return path
-            else:
-                return False
         else:
             return False
     else:

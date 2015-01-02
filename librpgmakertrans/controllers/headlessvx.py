@@ -17,6 +17,7 @@ import os
 from .headless import Headless
 from ..workers.rbpatcher import startRBComms
 from ..workers.rubyparse import rbOneOffTranslation
+from ..workers.sniffers import sniffer, SniffedType
 
 class HeadlessVX(Headless):
     """Headless specialised for VX games."""
@@ -40,3 +41,28 @@ class HeadlessVX(Headless):
         self.submit('patcher', startRBComms, indir, outdir,
                     translator, mtimes=mtimes, newmtimes=newmtimes,
                     outputComs=self.inputcoms, inputComs=rbCommsIn)
+
+class RPGVXUnencrypted(SniffedType):
+    """Sniffed type for an untranslated unencrypted VX game"""
+    maintype, subtypes = 'GAME', ['VX']
+
+@sniffer(RPGVXUnencrypted)
+def sniffVXUnencryptedGame(path):
+    """Sniffer for unencrypted VX games"""
+    if os.path.isfile(path) and path.upper().endswith('GAME.EXE'):
+        return sniffVXUnencryptedGame(os.path.split(path)[0])
+    elif os.path.isdir(path):
+        pathContents = os.listdir(path)
+        if 'RPGMKTRANSLATED' not in pathContents:
+            return False
+        dataDir = os.path.join(path, 'Data')
+        if os.path.isdir(dataDir):
+            dataDirContents = os.listdir(dataDir)
+            if any(x.upper().endswith('.RVDATA') for x in dataDirContents):
+                return path
+            else:
+                return False
+        else:
+            return False
+    else:
+        return False

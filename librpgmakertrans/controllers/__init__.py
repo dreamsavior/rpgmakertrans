@@ -11,3 +11,4 @@ RPGMaker Trans
 """
 
 from . import headless2k as __headless2k
+from . import headlessvx as __headlessvx
