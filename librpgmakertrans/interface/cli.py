@@ -13,8 +13,9 @@ this does not yet work on Windows.
 
 import sys
 import argparse
+from ..workers.sniffers import sniff
 from ..controllers.coreprotocol import CoreProtocol
-from ..controllers.headless import Headless2k
+from ..controllers.headless import initialiseHeadless
 from ..version import versionString
 
 CLI_LENGTH = 79
@@ -25,21 +26,35 @@ class CLIMode(CoreProtocol):
     def __init__(self, cargs, *args, **kwargs):
         """Initialise the CLI mode, with given CLI arguments"""
         super(CLIMode, self).__init__(*args, **kwargs)
-        # TODO: Need to check if the arguments are actually valid.
         self.quiet = cargs.quiet
         self.normalPrint('RPGMaker Trans v%s' % versionString)
-        self.normalPrint('Input path : %s' % cargs.input)
-        self.normalPrint('Patch path : %s' % cargs.patch)
-        self.normalPrint('Output path: %s' % cargs.output)
+        game = self.handleInput(cargs.input, ['GAME'], 'Input path: %s',
+                                'ERROR: %s not a compatible game')
+        patch = self.handleInput(cargs.patch, ['PATCH'], 'Patch path: %s',
+                                 'ERROR: %s not a compatible patch')
+        trans = self.handleInput(cargs.output, ['TRANS'], 'Output path: %s',
+                                 'ERROR: %s not a valid target')
         self.progressPrint('Starting patcher...')
-        self.headless = self.runner.initialise(Headless2k,
-                                               outputcoms=self.inputcoms)
-        self.runner.attach(self.headless)
-        self.headless.go(cargs.input, cargs.patch, cargs.output, useBOM=False)
+        initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
+                           cargs.use_bom)
+
+    def handleInput(self, path, sniffedTypes, frmtString, errString):
+        """Standard template function to sniff a path, output appropiately
+        and/or blow up if something is invalid"""
+        sniffedLS = sniff(path, sniffedTypes)
+        if not sniffedLS:
+            self.errorMsgQuit(errString % path)
+            return
+        else:
+            sniffed = sniffedLS[0]
+            dataString = '[%s] %s' % (']['.join(sniffed.subtypes), path)
+            self.normalPrint(frmtString % dataString)
+            return sniffed
+
 
     def errorMsgQuit(self, string):
         """Write an error message to stderr"""
-        sys.stderr.write(string)
+        sys.stderr.write(string + '\n')
         sys.stderr.flush()
         sys.exit(1)
 
@@ -74,10 +89,12 @@ def CLIBackend(runner):
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Path of input game to patch")
     parser.add_argument("patch", help="Path of patch (directory or zip)")
-    parser.add_argument("output",
-                        help="Path to output directory (will create)")
+    parser.add_argument("output", help="Path to output directory"
+                        " (will create)")
     parser.add_argument('-q', '--quiet', help='Suppress all output',
                         action='store_true')
+    parser.add_argument('-b', '--use-bom', help='Use UTF-8 BOM in Patch'
+                        'files', action='store_true')
     t = sys.stderr # Hacks to ensure that custom error handling is suppressed
     sys.stderr = sys.__stderr__
     args = parser.parse_args()

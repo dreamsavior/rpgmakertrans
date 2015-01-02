@@ -192,9 +192,9 @@ def sniff(path, positives=None, negatives=None, conflicts=None):
         if maintype in results:
             delBases = [x.canonicalpath for x in results[maintype]]
             for conflicttype in conflicts[maintype]:
-                results[conflicttype] = [
-                    x for x in results[conflicttype] if x.canonicalpath not in delBases]
-    return list(itertools.chain.from_iterable(list(results.values())))
+                results[conflicttype] = [x for x in results[conflicttype]
+                                         if x.canonicalpath not in delBases]
+    return list(itertools.chain.from_iterable(results.values()))
 
 def sniffAll(path):
     """Run all sniffers on given path; if directory, everything in directory"""
