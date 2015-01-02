@@ -24,6 +24,7 @@ class SniffedType:
     subtypes = []
 
     def __init__(self, canonicalpath=None):
+        """Initialise the SniffedType"""
         if isinstance(canonicalpath, type(self)):
             self.canonicalpath = canonicalpath.canonicalpath
         elif isinstance(canonicalpath, str):
@@ -33,9 +34,15 @@ class SniffedType:
                             str(type(canonicalpath)))
 
     def __str__(self):
-        return '<%s:%s>' % (type(self).__name__, self.canonicalpath)
+        """Return a string representation"""
+        return '%s(%s)' % (type(self).__name__, self.canonicalpath)
+
+    def __hash__(self):
+        """Hash for sniffedtype"""
+        return hash((type(self), self.canonicalpath))
 
     def __getitem__(self, item):
+        """Tuple type access"""
         if isinstance(item, str):
             return self.__getattribute__(item)
         elif isinstance(item, int):
