@@ -9,3 +9,5 @@ controllers
 A module containing various controllers/control infrastructure used by
 RPGMaker Trans
 """
+
+from . import headless2k as __headless2k

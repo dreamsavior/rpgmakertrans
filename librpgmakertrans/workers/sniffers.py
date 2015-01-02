@@ -3,7 +3,7 @@ sniffers
 ********
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 Provides sniffers, which are used by the API to determine the types
@@ -54,10 +54,6 @@ class SniffedType:
                 return self.canonicalpath
         else:
             raise Exception('Invalid index %s' % str(item))
-
-class RPG2k(SniffedType):
-    """Sniffed type for an untranslated 2k game"""
-    maintype, subtypes = 'GAME', ['2k']
 
 class TransLoc(SniffedType):
     """Sniffed type for a translated game"""
@@ -114,21 +110,6 @@ def checkForFiles(path, req):
         return path
     else:
         return False
-
-@sniffer(RPG2k)
-def sniff2kGame(path):
-    """Sniffer for 2k games"""
-    req = {'RPG_RT.LDB': False,
-           'RPGMKTRANSPATCH': True,
-           'RPGMKTRANSLATED': True, }
-    return checkForFiles(path, req)
-
-@sniffer(RPG2k)
-def sniff2kGameFile(path):
-    """Sniffer for 2k games, given a RPG_RT.EXE file"""
-    if os.path.isfile(path) and path.upper().endswith('RPG_RT.EXE'):
-        return sniff2kGame(os.path.split(path)[0])
-    return False
 
 @sniffer(RPGVXEncrypted)
 def sniffVXEncryptedGame(path):

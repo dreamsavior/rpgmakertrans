@@ -16,7 +16,7 @@ import os
 
 from ..controllers.coreprotocol import CoreRunner, CoreProtocol
 from ..workers.sniffers import sniffAll, sniff
-from ..controllers.headless import Headless2k
+from ..controllers.headless import initialiseHeadless
 from .qtui import startView, errorMsg
 from ..version import versionCheck
 
@@ -136,12 +136,12 @@ class GUIController(CoreProtocol):
         if prefix is not None:
             prefix = prefix % ']['.join(sniffData.subtypes)
             name = '%s %s' % (prefix, name)
-        if path not in idstore:
-            tid = idstore.add(path)
+        if sniffData not in idstore:
+            tid = idstore.add(sniffData)
             self.outputcoms.send('add%s' % signalSuffix, name,
                                  tid, select=select)
         else:
-            tid = idstore[path]
+            tid = idstore[sniffData]
             if select:
                 self.outputcoms.send('select%s' % signalSuffix, tid)
 
@@ -189,7 +189,7 @@ class GUIController(CoreProtocol):
         if self.currentState['gameloc'] is None:
             return
         gamepath = self.gameDB.reverse[self.currentState['gameloc']]
-        defaultpatchpath = gamepath + '_patch'
+        defaultpatchpath = gamepath.canonicalpath + '_patch'
         sniffData = sniff(defaultpatchpath, positives=['PATCH'])
         if self.currentState['create'] is False:
             sniffData = [x for x in sniffData if 'create' in x.subtypes]
@@ -198,10 +198,8 @@ class GUIController(CoreProtocol):
                 self.addPatch(item, select=True)
         else:
             defaultzippath = defaultpatchpath + '.zip'
-            zipSniff = [
-                x for x in sniff(
-                    defaultzippath,
-                    positives=['PATCH']) if 'create' in x.subtypes]
+            zipSniff = [x for x in sniff(defaultzippath, positives=['PATCH'])
+                        if 'create' in x.subtypes]
             for item in zipSniff:
                 self.addPatch(item, select=True)
 
@@ -213,7 +211,7 @@ class GUIController(CoreProtocol):
         elif idtoken == 'patchloc':
             if self.currentState['gameloc'] is not None:
                 gamepath = self.gameDB.reverse[self.currentState['gameloc']]
-                defaulttranspath = gamepath + '_translated'
+                defaulttranspath = gamepath.canonicalpath + '_translated'
                 self.addTransFromPath(defaulttranspath, select=True)
 
     def optionChanged(self, option, value):
@@ -242,13 +240,12 @@ class GUIController(CoreProtocol):
         """The big GO button that starts the translation process
         based on current state"""
         self.outputcoms.send('resetNonfatalError')
-        gamepath = self.gameDB.reverse[self.currentState['gameloc']]
-        patchpath = self.patchDB.reverse[self.currentState['patchloc']]
-        transpath = self.transDB.reverse[self.currentState['transloc']]
+        gamedata = self.gameDB.reverse[self.currentState['gameloc']]
+        patchdata = self.patchDB.reverse[self.currentState['patchloc']]
+        transdata = self.transDB.reverse[self.currentState['transloc']]
         useBOM = self.currentState['bom']
-        headless = self.runner.initialise(Headless2k,
-                                          outputcoms=self.inputcoms)
-        headless.go(gamepath, patchpath, transpath, useBOM)
+        initialiseHeadless(self.runner, self.inputcoms, gamedata,
+                           patchdata, transdata, useBOM)
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
 

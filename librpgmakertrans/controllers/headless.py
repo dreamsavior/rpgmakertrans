@@ -3,7 +3,7 @@ headless
 ********
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 The Headless implementation is a completely blind patching engine, which
@@ -16,7 +16,6 @@ Obviously, the primary use for Headless is paired with an interface.
 from ..workers.patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
 from ..workers.filecopier2 import copyfilesAndTrigger
 from collections import defaultdict
-from ..workers.twokpatcher import process2kgame
 from .coreprotocol import CoreProtocol
 from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
@@ -152,11 +151,13 @@ class Headless(CoreProtocol):
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()
 
-class Headless2k(Headless):
-    """Headless specialised for 2k games"""
-    copyIgnoreExts = ['.lmu', '.ldb', '.lsd']
 
-    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
-        self.submit('patcher', process2kgame, indir, outdir,
-                    translator, mtimes=mtimes, newmtimes=newmtimes,
-                    comsout=self.inputcoms)
+def initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
+                       transSniffed, useBOM):
+    """Initialise a Headless instance on a given runner."""
+    gamePath = gameSniffed.canonicalpath
+    patchPath = patchSniffed.canonicalpath
+    transPath = transSniffed.canonicalpath
+    headlessClass = gameSniffed.headlessClass
+    headless = runner.initialise(headlessClass, outputcoms=outputComs)
+    headless.go(gamePath, patchPath, transPath, useBOM)
