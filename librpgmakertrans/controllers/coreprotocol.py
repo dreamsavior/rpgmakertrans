@@ -267,7 +267,7 @@ class CoreProtocol:
             pool.terminate()
         self.going = False
 
-    def update(self, coms=None):
+    def update(self):
         """The main function of the CoreProtocol, handles dispatch of
         messages received of input coms."""
         events = self.inputcoms.get()
