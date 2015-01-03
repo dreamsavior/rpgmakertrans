@@ -350,7 +350,8 @@ class Translator3(Translator):
         else:
             if string not in self.newtranslations:
                 self.newtranslations[string] = []
-            self.newtranslations[string].append(context)
+            if context not in self.newtranslations[string]:
+                self.newtranslations[string].append(context)
             ret = ''
         if len(ret.strip()) == 0:
             return string
@@ -379,8 +380,8 @@ if __name__ == '__main__':
     t = Translator3({'Actors': dummy3}, mtime=1)
     #print(t.translate('ローレル', 'Actors/2/Actor/name/'))
     #print(t.translate('Meh','Actors/3/Actor/name/'))
-    #print(t.translate('Meh','Blargh/3/Actor/name/'))
-    #print(t.translate('Eeh','Blargh/3/Actor/name/'))
+    print(t.translate('Meh','Blargh/3/Actor/name/'))
+    print(t.translate('Meh','Blargh/3/Actor/name/'))
     r = t.getPatchData()
     for name in sorted(r.keys()):
         print('FILENAME:%s' % name)
