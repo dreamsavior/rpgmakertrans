@@ -67,12 +67,15 @@ class TranslationLine:
             data = data.partition(':')[2].strip()
             if '<' in data:
                 data = data.rpartition('<')[0].strip()
-        elif not string.strip():
+        elif comment and not string.strip():
             cType = 'comment'
         else:
             cType = 'data'
 
         return cls(cType, data, comment)
+
+    def __str__(self):
+        return 'Translation(%r, %r, %r)' % (self.cType, self.data, self.comment)
 
     def asString(self, translations, contexts):
         """Return a line as a string"""
@@ -215,7 +218,7 @@ class TranslationFile:
                     yield current
                     current = []
             if translationLine.cType in ('end',):
-                pass
+                break
             else:
                 current.append(translationLine)
         if current:
@@ -369,15 +372,20 @@ dummy3 = """> RPGMAKER TRANS PATCH FILE VERSION 3.1
 > BEGIN STRING
 ローレル
 > CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED # Comment
-Laurel
+
 > END STRING"""
 
 if __name__ == '__main__':
     t = Translator3({'Actors': dummy3}, mtime=1)
-    print(t.translate('ローレル', 'Actors/2/Actor/name/'))
-    print(t.translate('Meh','Actors/3/Actor/name/'))
-    print(t.translate('Meh','Blargh/3/Actor/name/'))
-    print(t.translate('Eeh','Blargh/3/Actor/name/'))
+    #print(t.translate('ローレル', 'Actors/2/Actor/name/'))
+    #print(t.translate('Meh','Actors/3/Actor/name/'))
+    #print(t.translate('Meh','Blargh/3/Actor/name/'))
+    #print(t.translate('Eeh','Blargh/3/Actor/name/'))
+    r = t.getPatchData()
+    for name in sorted(r.keys()):
+        print('FILENAME:%s' % name)
+        print(r[name])
+    t = Translator3(r, mtime=1)
     r = t.getPatchData()
     for name in sorted(r.keys()):
         print('FILENAME:%s' % name)
