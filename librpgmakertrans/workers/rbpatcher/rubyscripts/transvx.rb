@@ -76,8 +76,7 @@ def patchPage(page, context)
     newPageList = []
     pageListLen = page.instance_variable_get(:@list).length
     currIndx = 0
-    choicePos = 0 # TODO: Replace these to with stacks to handle likely
-    choiceNo = 0 # TODO: nested choices.
+    choiceContextData = {}
     while currIndx < pageListLen
       eventCommand = page.instance_variable_get(:@list)[currIndx]
       if eventCommand.instance_variable_get(:@code) == 101
@@ -113,20 +112,21 @@ def patchPage(page, context)
         choiceNo = 0
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
           choiceString = eventCommand.instance_variable_get(:@parameters)[0][y]
+          choiceContextData[choiceString] = [choicePos, choiceNo]
           translatedChoice = translate(choiceString, contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
           eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
           choiceNo += 1
         }
         newPageList.push(eventCommand)
         currIndx += 1
-        choiceNo = 0
       elsif eventCommand.instance_variable_get(:@code) == 402
-        translatedChoice = translate(eventCommand.instance_variable_get(:@parameters)[1],
-                                     contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
+        choiceString = eventCommand.instance_variable_get(:@parameters)[1]
+        choiceData = choiceContextData[choiceString]
+        translatedChoice = translate(choiceString,
+                                     contextString + 'Choice/%s/%s' % [choiceData[0].to_s, choiceData[1].to_s])
         eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1
-        choiceNo += 1
       else
         newPageList.push(eventCommand)
         currIndx += 1
