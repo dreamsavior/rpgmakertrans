@@ -49,7 +49,6 @@ class CLIMode(CoreProtocol):
         sniffedLS = sniff(path, sniffedTypes)
         if not sniffedLS or sniffedLS[0].maintype != sniffedTypes[0]:
             self.errorMsgQuit(errString % path)
-            return
         else:
             sniffed = sniffedLS[0]
             dataString = '[%s] %s' % (']['.join(sniffed.subtypes), path)
@@ -107,6 +106,9 @@ class CLIMode(CoreProtocol):
         """Finish patching"""
         self.normalPrint('\nPatching finished')
         self.going = False
+
+    def resniffInput(self):
+        """On CLI, not required to do anything for this"""
 
 def CLIBackend(runner):
     """Function to run the CLI Backend"""

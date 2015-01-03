@@ -12,6 +12,7 @@ worker processes.
 
 Obviously, the primary use for Headless is paired with an interface.
 """
+import collections
 
 from ..workers.patchers import getPatcher, PatchManager, makeTranslator, writeTranslator, doFullPatches
 from ..workers.filecopier2 import copyfilesAndTrigger
@@ -85,6 +86,11 @@ class HeadlessUtils(CoreProtocol):
     def setMessage(self, message):
         """Display a message near progress bar. It may not be displayed."""
         self.outputcoms.send('setMessage', message)
+
+    def resniffInput(self):
+        """Send a message to resniff the input path;
+        necessary due to the GUI"""
+        self.outputcoms.send('resniffInput')
 
 class Headless(HeadlessUtils):
     """Headless Class"""
@@ -163,7 +169,6 @@ class Headless(HeadlessUtils):
     def finish(self, patcher):
         """End Headless"""
         self.going = False
-        self.outputcoms.send('finishedPatching')
         self.shutdown(['patcher', 'copier'])
         patcher.quit()
         self.patchManager.shutdown()
@@ -173,9 +178,30 @@ class Headless(HeadlessUtils):
 def initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
                        transSniffed, useBOM):
     """Initialise a Headless instance on a given runner."""
+    # TODO: Give arguments to GO as init arguments,
+    # and have runner.initialise have chaining. Then have the finished
+    # signal only sent by CoreRunner, and use message setting to set
+    # appropriate messages.
+    headlessClasses = gameSniffed.headlessClass
+    if not isinstance(headlessClasses, collections.Iterable):
+        headlessClasses = [headlessClasses]
+    else:
+        headlessClasses = list(headlessClasses)
+    __initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
+                         transSniffed, useBOM, headlessClasses)
+
+def __initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
+                         transSniffed, useBOM, headlessClasses):
+    if len(headlessClasses) == 1:
+        runOnFinished = lambda : outputComs.send('finishedPatching')
+    else:
+        runOnFinished = lambda : __initialiseHeadless(runner, outputComs,
+                                    gameSniffed, patchSniffed, transSniffed,
+                                    useBOM, headlessClasses)
     gamePath = gameSniffed.canonicalpath
     patchPath = patchSniffed.canonicalpath
     transPath = transSniffed.canonicalpath
-    headlessClass = gameSniffed.headlessClass
-    headless = runner.initialise(headlessClass, outputcoms=outputComs)
+    headless = runner.initialise(headlessClasses.pop(0),
+                runOnFinished=runOnFinished, outputcoms=outputComs)
     headless.go(gamePath, patchPath, transPath, useBOM)
+

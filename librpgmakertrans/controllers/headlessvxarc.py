@@ -11,6 +11,7 @@ A Headless implementation to unpack VX archives
 import os
 
 from .headless import HeadlessUtils
+from .headlessvx import HeadlessVX
 from ..workers.vxunpacker import unpackFile, unpackData
 from ..workers.sniffers import sniffer, SniffedType
 
@@ -35,15 +36,15 @@ class HeadlessVXArc(HeadlessUtils):
         self.submit('unpack', unpackDataAndNotify,
                     fileName, key, data, self.inputcoms)
 
-    def go(self, gamePath, patchPath, transPath, useBOM):
+    def go(self, indir, patchPath, outdir, useBOM):
         """Start decryption"""
         self.setupPool('unpack')
         # Slightly strange way to find something that's ultimately
         # case insensitive on potentially case sensitive file systems
-        arcNameLS = [x for x in os.listdir(gamePath)
+        arcNameLS = [x for x in os.listdir(indir)
                      if x.upper() == type(self).arcName.upper()]
         if arcNameLS:
-            arcFileName = os.path.join(gamePath, arcNameLS[0])
+            arcFileName = os.path.join(indir, arcNameLS[0])
             self.setMessage('Reading Archive Structure')
             unpackFile(arcFileName, self.unpackData)
             self.setMessage('Unpacking Archive')
@@ -54,22 +55,19 @@ class HeadlessVXArc(HeadlessUtils):
             raise Exception('Could not determine archive name')
 
     def finish(self, arcFileName):
-        """Finish the unpacking process.
-        TODO: I need to work out how to handle the fact that this normally
-        needs to chain onto HeadlessVX, but not necessarily. At present,
-        it issues the finishedPatching command and does nothing
-        FIXME"""
-        self.displayMessage('Deleting original archive')
-        self.displayMessage('Chaining not implemented, rerun to patch game')
+        """Finish the unpacking process."""
+        self.displayMessage('Finished Unpacking - Deleting original archive')
+        self.resniffInput()
+        self.setMessage('')
         self.shutdown(['unpack'])
         os.remove(arcFileName)
         self.going = False
-        self.outputcoms.send('finishedPatching')
 
 class RPGVXPacked(SniffedType):
-    """Sniffed type for an untranslated packed VX game"""
+    """Sniffed type for an untranslated packed VX game - set to chain
+    directly onto a VX game."""
     maintype, subtypes = 'GAME', ['VX', 'ARC']
-    headlessClass = HeadlessVXArc
+    headlessClass = (HeadlessVXArc, HeadlessVX)
 
 @sniffer(RPGVXPacked)
 def sniffVXEncryptedGame(path):

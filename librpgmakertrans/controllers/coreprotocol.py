@@ -40,6 +40,7 @@ class CoreRunner:
             errors = self.errorManager.Sender()
         self.errors = errors
         self.errorHandler = None
+        self.__runOnFinished = {}
         self.running = []
         setErrorOut(self.errors)
         signal.signal(signal.SIGINT, self.sigint)
@@ -52,12 +53,18 @@ class CoreRunner:
             self.errorManager.shutdown()
         sys.exit(1)
 
-    def initialise(self, cls, **kwargs):
+    def initialise(self, cls, runOnFinished=None, **kwargs):
         """Given a class of a given CoreProtocol, initialise an
         instance of it. Supports kwargs"""
         newinstance = cls(runner=self, errout=self.errors, **kwargs)
         self.attach(newinstance)
+        if runOnFinished is not None:
+            self.runOnFinished(newinstance, runOnFinished)
         return newinstance
+
+    def runOnFinished(self, runner, func):
+        """Run a function when a runner stops running"""
+        self.__runOnFinished[runner] = func
 
     def setErrorHandler(self, handler):
         """Set an error handler"""
@@ -94,6 +101,8 @@ class CoreRunner:
             for runner in self.running:
                 if runner.finished():
                     detachments.append(runner)
+                    if runner in self.__runOnFinished:
+                        self.__runOnFinished.pop(runner)()
                 else:
                     runner.update()
             for runner in detachments:
