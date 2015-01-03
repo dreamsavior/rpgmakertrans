@@ -66,7 +66,7 @@ class TranslationLine:
             cType = 'context'
             data = data.partition(':')[2].strip()
             if '<' in data:
-                data = data.rpartition('<')[0].strip()
+                data = data.partition('<')[0].strip()
         elif comment and not string.strip():
             cType = 'comment'
         else:
