@@ -59,10 +59,6 @@ class NewDirTransLoc(SniffedType):
     """Sniffed Type for a new directory"""
     maintype, subtypes = 'TRANS', ['create']
 
-class RPGVXEncrypted(SniffedType):
-    """Sniffed type for an untranslated encrypted VX game"""
-    maintype, subtypes = 'GAME', ['VX', 'ENC']
-
 class Sniffer:
     """Sniffer object; can be called with a path, and
     if it matches the sniffer function it returns the appropriate
@@ -112,20 +108,6 @@ def checkForFiles(path, req):
             req[fn] = not req[fn]
     if all([req[x] for x in req]):
         return path
-    else:
-        return False
-
-@sniffer(RPGVXEncrypted)
-def sniffVXEncryptedGame(path):
-    """Sniffer for encrypted VX games"""
-    if os.path.isfile(path):
-        return sniffVXEncryptedGame(os.path.split(path)[0])
-    elif os.path.isdir(path):
-        pathContents = os.listdir(path)
-        if any(x.upper().endswith('GAME.RGSS2A') for x in pathContents):
-            return path
-        else:
-            return False
     else:
         return False
 

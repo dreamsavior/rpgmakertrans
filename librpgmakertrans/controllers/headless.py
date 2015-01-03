@@ -19,24 +19,14 @@ from collections import defaultdict
 from .coreprotocol import CoreProtocol
 from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
-
-class Headless(CoreProtocol):
-    """Headless Class"""
-
-    copyIgnoreDirs = []
-    copyIgnoreExts = []
-
-    defaultPatchVersion = None
-    minPatcherProcesses = None
+class HeadlessUtils(CoreProtocol):
+    """Defines the utility functions that Headless uses to communicate with
+    the UI."""
 
     def __init__(self, *args, **kwargs):
-        """Initialise Headless; for arguments see CoreProtocol"""
+        """Initialise values"""
         super().__init__(*args, **kwargs)
-        self.patchManager = PatchManager()
-        self.patchManager.start(self.errout)
-        self.mtimesManager = MTimesHandlerManager()
-        self.mtimesManager.start(self.errout)
-        self.progress = defaultdict(lambda: [0, 1])
+        self.progress = defaultdict(lambda: [0, float('inf')])
         self.progressVal = 0
         self.progressCompleteTriggers = {}
 
@@ -74,9 +64,6 @@ class Headless(CoreProtocol):
     def incProgress(self, key):
         """Increment the progress for a given key"""
         self.progress[key][0] += 1
-        if self.progress[key][0] == self.progress[key][1]:
-            if key in self.progressCompleteTriggers:
-                self.trigger(self.progressCompleteTriggers.pop(key))
         self.updateProgress()
 
     def updateProgress(self):
@@ -86,6 +73,31 @@ class Headless(CoreProtocol):
         if newProgressVal != self.progressVal:
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
+        for key in self.progress:
+            if self.progress[key][0] == self.progress[key][1]:
+                if key in self.progressCompleteTriggers:
+                    self.trigger(self.progressCompleteTriggers.pop(key))
+
+    def displayMessage(self, message):
+        """Display a message on output coms. This will always be displayed."""
+        self.outputcoms.send('displayMessage', message)
+
+class Headless(HeadlessUtils):
+    """Headless Class"""
+
+    copyIgnoreDirs = []
+    copyIgnoreExts = []
+
+    defaultPatchVersion = None
+    minPatcherProcesses = None
+
+    def __init__(self, *args, **kwargs):
+        """Initialise Headless; for arguments see CoreProtocol"""
+        super().__init__(*args, **kwargs)
+        self.patchManager = PatchManager()
+        self.patchManager.start(self.errout)
+        self.mtimesManager = MTimesHandlerManager()
+        self.mtimesManager.start(self.errout)
 
     def go(self, indir, patchpath, outdir, useBOM):
         """Initiate the patching"""

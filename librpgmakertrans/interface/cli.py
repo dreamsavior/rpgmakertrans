@@ -54,6 +54,9 @@ class CLIMode(CoreProtocol):
             self.normalPrint(frmtString % dataString)
             return sniffed
 
+    def displayMessage(self, message):
+        self.normalPrint(message)
+
     def errorMsgQuit(self, string):
         """Write an error message to stderr"""
         sys.stderr.write(string + '\n')

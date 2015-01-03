@@ -57,6 +57,9 @@ def sniffVXUnencryptedGame(path):
     if os.path.isfile(path) and path.upper().endswith('GAME.EXE'):
         return sniffVXUnencryptedGame(os.path.split(path)[0])
     elif os.path.isdir(path):
+        contents = os.listdir(path)
+        if any(x.upper() == 'GAME.RGSS2A' for x in contents):
+            return False
         dataDir = os.path.join(path, 'Data')
         if os.path.isdir(dataDir):
             dataDirContents = os.listdir(dataDir)
