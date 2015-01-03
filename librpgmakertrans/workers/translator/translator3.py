@@ -10,17 +10,15 @@ Version 3 of the patch file format. Currently WIP. Different from experimental
 newtranslator, although backwards compatible with it.
 """
 
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 from fuzzywuzzy import process
 
 from .translatorbase import Translator, TranslatorError
 
-class TranslationLine(namedtuple('TranslateableLine',
-                                   ['cType', 'data', 'comment'])):
+class TranslationLine:
     """A token representing a single line of a translation file"""
-    def __new__(cls, cType, data, comment=''):
-        """Give comment the a useful default argument"""
-        return super().__new__(cls, cType, data, comment)
+    def __init__(self, cType, data, comment=''):
+        self.cType, self.data, self.comment = cType, data, comment
 
     @classmethod
     def Context(cls, context):
