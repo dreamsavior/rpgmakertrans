@@ -98,13 +98,9 @@ class CLIMode(CoreProtocol):
         percent = str(int(self.progress * 100)).ljust(3)
         self.progressPrint('%s[%s] %s %%' % (self.message, hashes, percent))
 
-    def finalisingPatch(self):
-        """Trigger for finalising patch"""
-        self.progressPrint('Finalising Patch..')
-
-    def finishedPatching(self):
+    def headlessFinished(self):
         """Finish patching"""
-        self.normalPrint('\nPatching finished')
+        self.normalPrint('\nFinished.')
         self.going = False
 
     def resniffInput(self):

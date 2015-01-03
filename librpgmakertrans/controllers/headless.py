@@ -144,6 +144,7 @@ class Headless(HeadlessUtils):
                     translator=translator, mtimes=mtimes,
                     newmtimes=newmtimes, progresssig='copying',
                     dirssig='dirsCopied')
+        self.setMessage('Patching game')
         self.processGame(indir, outdir, translator, mtimes, newmtimes)
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
@@ -158,7 +159,7 @@ class Headless(HeadlessUtils):
     def finaliseTranslation(self, patcher, translator, mtimesManager,
                             indir, patchpath, outdir, useBOM):
         """Finalise the translation; write the patch and get mtimes"""
-        self.outputcoms.send('finalisingPatch')
+        self.setMessage('Finalising Patch')
         self.submit('patcher', writeTranslator, patcher, translator,
                     useBOM, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager,
@@ -192,7 +193,7 @@ def __initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
     to execute in sequence before signalling completion to the UI, by a minor
     abuse of the runOnFinished functionality in CoreRunner"""
     if len(headlessClasses) == 1:
-        runOnFinished = lambda : outputComs.send('finishedPatching')
+        runOnFinished = lambda : outputComs.send('headlessFinished')
     else:
         runOnFinished = lambda : __initialiseHeadless(runner, outputComs,
                                     gameSniffed, patchSniffed, transSniffed,

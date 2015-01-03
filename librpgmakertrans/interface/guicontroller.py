@@ -253,15 +253,15 @@ class GUIController(CoreProtocol):
         """Display a non fatal error message"""
         self.outputcoms.send('nonfatalError', msg)
 
-    def finalisingPatch(self):
-        """Display the finalising patch message"""
-        self.outputcoms.send('setMessage', 'Finalising Patch')
+    def setMessage(self, message):
+        """Set the message beneath the progress bar"""
+        self.outputcoms.send('setMessage', message)
 
-    def finishedPatching(self):
+    def headlessFinished(self):
         """Update UI for finishing patch"""
         self.currentState['enabled'] = True
         self.currentState['gameloc'] = None
-        self.outputcoms.send('setMessage', 'Finished patching')
+        self.setMessage('Finished')
 
     def abortPatching(self):
         """Update UI when aborting patch"""
