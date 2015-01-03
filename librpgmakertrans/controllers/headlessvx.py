@@ -3,7 +3,7 @@ headlessvx
 **********
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 HeadlessVX is the blind patching engine for RPGMaker VX games. It
