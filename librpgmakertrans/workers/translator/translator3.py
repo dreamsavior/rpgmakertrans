@@ -326,7 +326,7 @@ class Translator3(Translator):
         """Return a dictionary of filenames to file contents of the patch"""
         super().getPatchData()
         for raw in self.newtranslations:
-            contexts = sorted(self.newtranslations[raw])
+            contexts = self.newtranslations[raw]
             baseContext = contexts[0]
             name = baseContext.partition('/')[0]
             transObj = Translation.fromDesc(raw, contexts)
