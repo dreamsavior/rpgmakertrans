@@ -178,10 +178,6 @@ class Headless(HeadlessUtils):
 def initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
                        transSniffed, useBOM):
     """Initialise a Headless instance on a given runner."""
-    # TODO: Give arguments to GO as init arguments,
-    # and have runner.initialise have chaining. Then have the finished
-    # signal only sent by CoreRunner, and use message setting to set
-    # appropriate messages.
     headlessClasses = gameSniffed.headlessClass
     if not isinstance(headlessClasses, collections.Iterable):
         headlessClasses = [headlessClasses]
@@ -192,6 +188,9 @@ def initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
 
 def __initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
                          transSniffed, useBOM, headlessClasses):
+    """A special chaining function; this allows multiple Headless classes
+    to execute in sequence before signalling completion to the UI, by a minor
+    abuse of the runOnFinished functionality in CoreRunner"""
     if len(headlessClasses) == 1:
         runOnFinished = lambda : outputComs.send('finishedPatching')
     else:
