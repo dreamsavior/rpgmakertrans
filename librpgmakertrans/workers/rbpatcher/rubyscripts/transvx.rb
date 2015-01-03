@@ -141,7 +141,7 @@ def patch(data, context)
          data[x] = patch(data[x], context + [x])
       }
     elsif data.class == Hash
-      data.each{|key, value|
+      data.sort.each{|key, value|
         data[key] = patch(value, context+[key])
       }
     else
