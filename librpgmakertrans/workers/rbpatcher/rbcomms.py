@@ -14,6 +14,7 @@ import asyncio
 import os
 import subprocess
 from collections import OrderedDict
+import multiprocessing
 
 from ...controllers.socketcomms import SocketComms
 from librpgmakertrans.errorhook import errorWrap
@@ -183,7 +184,7 @@ def startRBComms(indir, outdir, translator, mtimes, newmtimes,
     the data directories (todo: recursive approach)"""
     filesToProcess = RBComms.makeFilesToProcess(indir, outdir)
     rpgversion = 'vx'
-    subprocesses = 1
+    subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses)
     rbcomms.start()
