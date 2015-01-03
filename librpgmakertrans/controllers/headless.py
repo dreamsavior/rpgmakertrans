@@ -82,6 +82,10 @@ class HeadlessUtils(CoreProtocol):
         """Display a message on output coms. This will always be displayed."""
         self.outputcoms.send('displayMessage', message)
 
+    def setMessage(self, message):
+        """Display a message near progress bar. It may not be displayed."""
+        self.outputcoms.send('setMessage', message)
+
 class Headless(HeadlessUtils):
     """Headless Class"""
 

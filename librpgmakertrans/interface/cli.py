@@ -36,6 +36,8 @@ class CLIMode(CoreProtocol):
         trans = self.handleInput(cargs.output, ['TRANS'], 'Output path: %s',
                                  'ERROR: %s not a valid target')
         self.progressPrint('Starting patcher...')
+        self.message = ''
+        self.progress = 0
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
                            cargs.use_bom)
 
@@ -54,11 +56,22 @@ class CLIMode(CoreProtocol):
             self.normalPrint(frmtString % dataString)
             return sniffed
 
+    def setMessage(self, message):
+        """Set message to side of progress bar. If it's too long,
+        ignore it."""
+        message = message.strip()
+        if len(message) < 30:
+            self.message = message + ' '
+        else:
+            self.message = ''
+        self.printProgress()
+
     def displayMessage(self, message):
+        """Display a message"""
         self.normalPrint(message)
 
     def errorMsgQuit(self, string):
-        """Write an error message to stderr"""
+        """Write an error message to stderr and quit"""
         sys.stderr.write(string + '\n')
         sys.stderr.flush()
         sys.exit(1)
@@ -76,9 +89,15 @@ class CLIMode(CoreProtocol):
 
     def setProgress(self, progress):
         """Set the current progress"""
-        hashes = ('#' * int(70 * progress)).ljust(70)
-        percent = str(int(progress * 100)).ljust(3)
-        self.progressPrint('[%s] %s %%' % (hashes, percent))
+        self.progress = progress
+        self.printProgress()
+
+    def printProgress(self):
+        """Print current progress to screen"""
+        blocksInBar = CLI_LENGTH - 9 - len(self.message)
+        hashes = ('#' * int(blocksInBar * self.progress)).ljust(blocksInBar)
+        percent = str(int(self.progress * 100)).ljust(3)
+        self.progressPrint('%s[%s] %s %%' % (self.message, hashes, percent))
 
     def finalisingPatch(self):
         """Trigger for finalising patch"""

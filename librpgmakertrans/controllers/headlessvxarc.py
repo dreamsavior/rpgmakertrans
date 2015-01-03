@@ -44,8 +44,9 @@ class HeadlessVXArc(HeadlessUtils):
                      if x.upper() == type(self).arcName.upper()]
         if arcNameLS:
             arcFileName = os.path.join(gamePath, arcNameLS[0])
-            self.displayMessage('Reading Archive Structure')
+            self.setMessage('Reading Archive Structure')
             unpackFile(arcFileName, self.unpackData)
+            self.setMessage('Unpacking Archive')
             self.setProgressDiv('unpacking', self.tasks)
             self.setProgressCompleteTrigger('unpacking', 'finish')
             self.localWaitUntil('finish', self.finish, arcFileName)
@@ -58,11 +59,12 @@ class HeadlessVXArc(HeadlessUtils):
         needs to chain onto HeadlessVX, but not necessarily. At present,
         it issues the finishedPatching command and does nothing
         FIXME"""
-        self.outputcoms.send('finishedPatching')
         self.displayMessage('Deleting original archive')
+        self.displayMessage('Chaining not implemented, rerun to patch game')
         self.shutdown(['unpack'])
         os.remove(arcFileName)
         self.going = False
+        self.outputcoms.send('finishedPatching')
 
 class RPGVXPacked(SniffedType):
     """Sniffed type for an untranslated packed VX game"""
