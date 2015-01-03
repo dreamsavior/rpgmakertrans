@@ -31,7 +31,7 @@ class RBComms(SocketComms):
     to Ruby processes. In general, I think I'd like to migrate away from
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs

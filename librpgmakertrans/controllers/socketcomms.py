@@ -11,14 +11,14 @@ communicating with Ruby.
 '''
 
 import asyncio, struct
-
+import time
 from ..errorhook import handleError
 
 class SocketComms:
     def __init__(self, socket=None):
         self.loop = asyncio.get_event_loop()
         self.socket = 27899 if socket is None else socket
-        self.codeHandlers = {0: self.debug}
+        self.codeHandlers = {10: self.debug}
         self.rawArgs = {0: False}
         self.tickTasks = [self.checkForQuit]
 
@@ -28,41 +28,45 @@ class SocketComms:
 
     @asyncio.coroutine
     def handleRequest(self, reader, writer):
-        try:
-            header = yield from reader.read(8)
-            code, numberArgs = struct.unpack('II', header)
-            if code not in self.codeHandlers:
-                raise Exception('Unexpected Code %s' % code)
-            args = []
-            for _ in range(numberArgs):
-                rawLength = yield from reader.read(4)
-                length = struct.unpack('I', rawLength)[0]
-                nextArg = yield from reader.read(length)
-                args.append(nextArg)
-            rawArgs = self.rawArgs.get(code, False)
-            if not rawArgs:
-                args = [arg.decode('utf-8') for arg in args]
-            output = self.codeHandlers[code](*args)
-            if output is not None:
-                if isinstance(output, (bytes, str)):
-                    output = [output]
+        while True:
+            try:
+                header = yield from reader.read(8)
+                code, numberArgs = struct.unpack('II', header)
+                if code == 0:
+                    yield from writer.drain()
+                    writer.close()
+                    return
+                if code not in self.codeHandlers:
+                    raise Exception('Unexpected Code %s' % code)
+                args = []
+                for _ in range(numberArgs):
+                    rawLength = yield from reader.read(4)
+                    length = struct.unpack('I', rawLength)[0]
+                    nextArg = yield from reader.read(length)
+                    args.append(nextArg)
+                rawArgs = self.rawArgs.get(code, False)
                 if not rawArgs:
-                    output = [arg.encode('utf-8') for arg in output]
-                if isinstance(output, (tuple, list)):
-                    writer.write(struct.pack('I', len(output)))
-                    for returnVal in output:
-                        assert isinstance(returnVal, bytes), 'Only bytes value allowed, got %s' % returnVal
-                        writer.write(struct.pack('I', len(returnVal)))
-                        if len(returnVal) > 0:
-                            writer.write(returnVal)
+                    args = [arg.decode('utf-8') for arg in args]
+                output = self.codeHandlers[code](*args)
+                if output is not None:
+                    if isinstance(output, (bytes, str)):
+                        output = [output]
+                    if not rawArgs:
+                        output = [arg.encode('utf-8') for arg in output]
+                    if isinstance(output, (tuple, list)):
+                        writer.write(struct.pack('I', len(output)))
+                        for returnVal in output:
+                            assert isinstance(returnVal, bytes), 'Only bytes value allowed, got %s' % returnVal
+                            writer.write(struct.pack('I', len(returnVal)))
+                            if len(returnVal) > 0:
+                                writer.write(returnVal)
+                    else:
+                        raise Exception('Unhandled return type %s' % type(output).__name__)
                 else:
-                    raise Exception('Unhandled return type %s' % type(output).__name__)
-            else:
-                writer.write(struct.pack('I', 0))
-            yield from writer.drain()
-            writer.close()
-        except:
-            handleError()
+                    writer.write(struct.pack('I', 0))
+                yield from writer.drain()
+            except:
+                handleError()
 
     @asyncio.coroutine
     def checkForQuit(self):

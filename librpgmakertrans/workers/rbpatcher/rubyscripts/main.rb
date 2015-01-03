@@ -8,6 +8,9 @@
 # Provides the main loop for the Ruby patching engine
 #
 
+require 'socket'
+$SOCK = TCPSocket.new('127.0.0.1', 27899)
+
 require_relative 'socketcall.rb'
 require_relative 'rgss.rb'
 require_relative 'transvx.rb'
@@ -16,16 +19,16 @@ going = true
 versionString = getVersion()
 
 def translateFile(infile, outfile, context)
-  puts('working on %s' % context)
+  #puts('working on %s' % context)
   patchFile(infile, outfile, context)
-  puts('translated %s (%s=>%s)' % [context, infile, outfile])
+  #puts('translated %s (%s=>%s)' % [context, infile, outfile])
   doneTranslation(context)
 end
 
 def translateScripts(infile)
-  puts('working on Scripts')
+  #puts('working on Scripts')
   dumpScriptsFile(infile)
-  puts('translated Scripts (%s)' % infile)
+  #puts('translated Scripts (%s)' % infile)
   doneTranslation('Scripts')
 end
 
@@ -34,18 +37,18 @@ def rebuildScripts(outfile)
   scripts = []
   while value[0].to_i > 0
     scripts.push([value[2], value[1], value[3]])
-    puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
+    #puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
     value = getTranslatedScript()
   end
   scripts.push([value[2], value[1], value[3]])
-  puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
+  #puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
   writeScriptsFile(outfile, scripts)
 end
 
 while going
   values = getTaskParams()
   code = values[0]
-  puts(code)
+  #puts(code)
   if code == 'quit'
     going = false
   elsif code == 'translateScripts'
@@ -58,3 +61,6 @@ while going
     sleep(1.0)
   end
 end
+
+closeConnection()
+$SOCK.close()

@@ -11,7 +11,8 @@
 require 'socket'
 
 def socketCall(code, args)
-  sock = TCPSocket.new('localhost', 27899)
+  #sock = TCPSocket.new('127.0.0.1', 27899)
+  sock = $SOCK
   data = [code, args.length].pack('LL')
   sock.write(data)
   args.each do |arg|
@@ -24,12 +25,17 @@ def socketCall(code, args)
     arglen = sock.recv(4).unpack('L')[0]
     ret.push(sock.recv(arglen))
   end
-  sock.close()
+  sock.flush()
+  #sock.close()
   return ret
 end
 
+def closeConnection(sock)
+  return socketCall(0, [])
+end
+
 def debug(string)
-  puts socketCall(0, [string])
+  puts socketCall(10, [string])
 end
 
 def translate(string, context)
