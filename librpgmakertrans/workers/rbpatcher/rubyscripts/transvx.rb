@@ -76,9 +76,12 @@ def patchPage(page, context)
     newPageList = []
     pageListLen = page.instance_variable_get(:@list).length
     currIndx = 0
+    choicePos = 0 # TODO: Replace these to with stacks to handle likely
+    choiceNo = 0 # TODO: nested choices.
     while currIndx < pageListLen
       eventCommand = page.instance_variable_get(:@list)[currIndx]
       if eventCommand.instance_variable_get(:@code) == 101
+        dialogueLoc = currIndx
         currIndx += 1
         windowInit = eventCommand
         indent = windowInit.instance_variable_get(:@indent)
@@ -90,7 +93,7 @@ def patchPage(page, context)
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
         currentStr.rstrip!
-        translatedString = translate(currentStr, contextString + 'Dialogue/')
+        translatedString = translate(currentStr, contextString + 'Dialogue/' + dialogueLoc.to_s + '/')
         if translatedString == ''
           translatedString = ' '
         end
@@ -106,18 +109,24 @@ def patchPage(page, context)
         }
 
       elsif eventCommand.instance_variable_get(:@code) == 102
+        choicePos = currIndx
+        choiceNo = 0
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
           choiceString = eventCommand.instance_variable_get(:@parameters)[0][y]
-          translatedChoice = translate(choiceString, contextString + 'Choice/')
+          translatedChoice = translate(choiceString, contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
           eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
+          choiceNo += 1
         }
         newPageList.push(eventCommand)
         currIndx += 1
+        choiceNo = 0
       elsif eventCommand.instance_variable_get(:@code) == 402
-        translatedChoice = translate(eventCommand.instance_variable_get(:@parameters)[1], contextString + 'Choice/')
+        translatedChoice = translate(eventCommand.instance_variable_get(:@parameters)[1],
+                                     contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
         eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1
+        choiceNo += 1
       else
         newPageList.push(eventCommand)
         currIndx += 1
