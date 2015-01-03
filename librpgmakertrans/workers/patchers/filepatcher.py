@@ -28,7 +28,7 @@ class FilePatcher(BasePatch):
         data = {}
         mtime = 0
         for fn in self.patchDataFiles:
-            name = os.path.split(fn)[1].rpartition('.')[0].lower()
+            name = os.path.split(fn)[1].rpartition('.')[0]
             mtime = max(mtime, os.path.getmtime(fn))
             with open(fn, 'rb') as f:
                 raw = f.read()

@@ -74,14 +74,15 @@ class TranslationLine:
 
         return cls(cType, data, comment)
 
-    def asString(self, translations):
+    def asString(self, translations, contexts):
         """Return a line as a string"""
         if self.cType == 'context':
             translation = translations.get(self.data, '').strip()
             translated = True if len(translation) > 0 else False
             translatedString = '' if translated else ' < UNTRANSLATED'
-            return '> CONTEXT: %s%s%s'% (self.data, translatedString,
-                                         self.comment)
+            unusedString = '' if self.data in contexts else ' < UNUSED'
+            return '> CONTEXT: %s%s%s%s'% (self.data, translatedString,
+                                           unusedString, self.comment)
         else:
             return '%s%s' % (self.data, self.comment)
 
@@ -111,15 +112,19 @@ class Translation:
         self.__addTranslations(strings, currentString, currentContexts)
         self.raw = strings.pop('RAW')
         self.translations = strings
+        self.usedContexts = set()
 
     @classmethod
     def fromDesc(cls, raw, contexts):
         """Method to create a new Translation based on untranslated string
         and contexts it occurs in"""
-        return Translation([TranslationLine.Begin(),
+        ret =  Translation([TranslationLine.Begin(),
                  TranslationLine.Data(raw)] +
                 [TranslationLine.Context(context) for context in contexts]
                 + [TranslationLine.Data('')])
+        for context in contexts:
+            ret.useContext(context)
+        return ret
 
     @classmethod
     def fromString(cls, string):
@@ -149,7 +154,11 @@ class Translation:
         self.translations[context] = translation
 
     def asString(self):
-        return '\n'.join(item.asString(self.translations) for item in self.items)
+        return '\n'.join(item.asString(self.translations, self.usedContexts) for item in self.items)
+
+    def useContext(self, context):
+        """Mark a context as being currently in use"""
+        self.usedContexts.add(context)
 
 class TranslationFile:
     """Represents a v3.1 Translation File. Also has the capacity to convert
@@ -272,6 +281,7 @@ class CanonicalTranslation:
         default. Either way, update relevant translation with the new
         context"""
         if context in self.contexts:
+            self.contexts[context][0].useContext(context)
             return self.contexts[context][1] # Simple case
         else:
             bestMatch, confidence = process.extractOne(context, self.contexts.keys())
@@ -280,6 +290,7 @@ class CanonicalTranslation:
             else:
                 matchContext, matchTranslation = self.default
             matchTranslation[0].insert(context, matchContext, matchTranslation[1])
+            matchTranslation[0].useContext(context)
             return matchTranslation[1]
 
 class TranslationDict(dict):

@@ -37,7 +37,7 @@ class ZIPPatcher(BasePatch):
             raw = zfile.read(2 ** 22)
             matched, dec = self.tryDecodePatchFile(type(self).header, raw)
             name = (fn.partition(self.root)[2].strip(
-                    SEPERATORS).rpartition('.')[0].lower())
+                    SEPERATORS).rpartition('.')[0])
             data[name] = dec
         return data, self.mtime
 
