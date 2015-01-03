@@ -13,25 +13,31 @@ require 'socket'
 def socketCall(code, args)
   #sock = TCPSocket.new('127.0.0.1', 27899)
   sock = $SOCK
-  data = [code, args.length].pack('LL')
-  sock.write(data)
+  packet = ''
+  packet += [code].pack('L')
   args.each do |arg|
-    sock.write([arg.bytesize].pack('L'))
-    sock.write(arg)
+    packet += [arg.bytesize].pack('L')
+    packet += arg
   end
-  nargs = sock.recv(4).unpack('L')[0]
+  sock.write([packet.length].pack('L') + packet)
+  recvPacketLen = sock.recv(4).unpack('L')[0]
+  recvPacket = sock.recv(recvPacketLen)
+  #nargs = sock.recv(4).unpack('L')[0]
   ret = []
-  (1..nargs).each do |n|
-    arglen = sock.recv(4).unpack('L')[0]
-    ret.push(sock.recv(arglen))
+  pos = 4
+  while pos < recvPacket.length
+    argSize = recvPacket[pos, 4].unpack('L')[0]
+    pos += 4
+    arg = recvPacket[pos, argSize]
+    ret.push(arg)
+    pos += argSize
   end
-  sock.flush()
   #sock.close()
   return ret
 end
 
-def closeConnection(sock)
-  return socketCall(0, [])
+def closeConnection()
+  $SOCK.write([4, 0].pack('LL'))
 end
 
 def debug(string)

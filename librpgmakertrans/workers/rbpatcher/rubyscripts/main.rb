@@ -59,6 +59,9 @@ while going
     rebuildScripts(values[1])
   elsif code == 'wait'
     sleep(1.0)
+  else
+    puts('ERROR')
+    puts(code)
   end
 end
 
