@@ -252,7 +252,8 @@ class CanonicalTranslation:
     @property
     def default(self):
         """Gives a default translation. This is simply the most popular
-        translation"""
+        translation, unless it has been set by a translation with 'Default'
+        context"""
         if self.__default is None:
             tally = {}
             for context in self.contexts:
@@ -273,6 +274,8 @@ class CanonicalTranslation:
         newContexts = {}
         for context in translation.translations:
             newContexts[context] = (translation, translation.translations[context])
+            if context == 'Default':
+                self.__default = context, translation
         self.contexts.update(newContexts)
 
     def translate(self, context):
