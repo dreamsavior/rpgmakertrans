@@ -338,7 +338,8 @@ class Translator3(Translator):
 
     def translate(self, string, context):
         """Get translation of string in given context"""
-        if not string.strip():
+        string = string.strip() #'\n'.join(line.strip() for line in string.split('\n'))
+        if not string:
             return string
         if self.debug:
             print('TRANSLATORDEBUG: %s:%s' % (string, context))

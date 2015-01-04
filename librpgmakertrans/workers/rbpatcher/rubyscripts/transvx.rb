@@ -87,7 +87,7 @@ def patchPage(page, context)
         eventCommand = page.instance_variable_get(:@list)[currIndx]
         currentStr = ''
         while eventCommand.instance_variable_get(:@code) == 401 and currIndx < pageListLen do
-          currentStr += eventCommand.instance_variable_get(:@parameters)[0] + "\n"
+          currentStr += eventCommand.instance_variable_get(:@parameters)[0].strip + "\n"
           currIndx += 1
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
@@ -111,7 +111,7 @@ def patchPage(page, context)
         choicePos = currIndx
         choiceNo = 0
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
-          choiceString = eventCommand.instance_variable_get(:@parameters)[0][y]
+          choiceString = eventCommand.instance_variable_get(:@parameters)[0][y].strip
           choiceContextData[choiceString] = [choicePos, choiceNo]
           translatedChoice = translate(choiceString, contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
           eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
@@ -120,7 +120,7 @@ def patchPage(page, context)
         newPageList.push(eventCommand)
         currIndx += 1
       elsif eventCommand.instance_variable_get(:@code) == 402
-        choiceString = eventCommand.instance_variable_get(:@parameters)[1]
+        choiceString = eventCommand.instance_variable_get(:@parameters)[1].strip
         choiceData = choiceContextData[choiceString]
         translatedChoice = translate(choiceString,
                                      contextString + 'Choice/%s/%s' % [choiceData[0].to_s, choiceData[1].to_s])
