@@ -98,6 +98,7 @@ class Translation:
             items.insert(0, TranslationLine('begin', '> BEGIN STRING'))
         if not any(item.cType == 'end' for item in items):
             items.append(TranslationLine.End())
+            items.append(TranslationLine.Data(''))
         self.items = items
         currentContexts = ['RAW']
         currentString = []
@@ -132,8 +133,7 @@ class Translation:
     @classmethod
     def fromString(cls, string):
         """Create a Translation from a string of a translation"""
-        itemsGen = (TranslationLine.fromString(line) for line in string.split('\n'))
-        items = [item for item in itemsGen if item.cType not in ('begin', 'end')]
+        items = [TranslationLine.fromString(line) for line in string.split('\n')]
         return items
 
     @staticmethod
@@ -200,7 +200,7 @@ class TranslationFile:
         """Return the file in string form"""
         output = ['> %s %s' % (type(self).header,
                               '.'.join(str(x) for x in type(self).version))]
-        output.extend(x.asString() + '\n' for x in self)
+        output.extend(x.asString() for x in self)
         return '\n'.join(output)
 
     def addTranslation(self, translation):
@@ -217,10 +217,7 @@ class TranslationFile:
                 if len(current) > 0:
                     yield current
                     current = []
-            if translationLine.cType in ('end',):
-                break
-            else:
-                current.append(translationLine)
+            current.append(translationLine)
         if current:
             yield current
 
@@ -380,15 +377,15 @@ if __name__ == '__main__':
     t = Translator3({'Actors': dummy3}, mtime=1)
     #print(t.translate('ローレル', 'Actors/2/Actor/name/'))
     #print(t.translate('Meh','Actors/3/Actor/name/'))
-    print(t.translate('Meh','Blargh/3/Actor/name/'))
-    print(t.translate('Meh','Blargh/3/Actor/name/'))
+    print(t.translate('ローレル','Actors/3/Actor/name/'))
+    print(t.translate('ローレル','Actors/2/Actor/name/'))
     r = t.getPatchData()
     for name in sorted(r.keys()):
         print('FILENAME:%s' % name)
         print(r[name])
-    t = Translator3(r, mtime=1)
-    r = t.getPatchData()
-    for name in sorted(r.keys()):
-        print('FILENAME:%s' % name)
-        print(r[name])
+    #t = Translator3(r, mtime=1)
+    #r = t.getPatchData()
+    #for name in sorted(r.keys()):
+    #    print('FILENAME:%s' % name)
+    #    print(r[name])
     #print(Translateable(dummy))
