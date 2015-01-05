@@ -44,6 +44,8 @@ class RBComms(SocketComms):
         self.scriptInput = None
         self.scriptOutput = None
         self.scriptWaiting = False
+        self.outputComs.send('setProgressDiv', 'patching',
+                             len(filesToProcess))
         for item in [x for x in filesToProcess]:
             if item.endswith('Scripts.rvdata'):
                 self.scriptWaiting = True
@@ -65,8 +67,6 @@ class RBComms(SocketComms):
         self.debugRb = debugRb
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs]
-        self.outputComs.send('setProgressDiv', 'patching',
-                             len(self.filesToProcess))
 
     @staticmethod
     def makeFilesToProcess(indir, outdir):
@@ -168,9 +168,10 @@ class RBComms(SocketComms):
 
     def doneTranslation(self, context):
         """Handler to register completion of a task"""
-        if context == 'Scripts':
+        if context == 'ScriptsDumped':
             self.scriptsDumped = True
-        self.outputComs.send('incProgress', 'patching')
+        else:
+            self.outputComs.send('incProgress', 'patching')
 
     def loadVersion(self):
         """Handler to tell Ruby what RPGMaker version to use"""

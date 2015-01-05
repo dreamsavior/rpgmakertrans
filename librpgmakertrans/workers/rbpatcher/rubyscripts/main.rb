@@ -29,7 +29,7 @@ def translateScripts(infile)
   #puts('working on Scripts')
   dumpScriptsFile(infile)
   #puts('translated Scripts (%s)' % infile)
-  doneTranslation('Scripts')
+  doneTranslation('ScriptsDumped')
 end
 
 def rebuildScripts(outfile)
@@ -43,6 +43,7 @@ def rebuildScripts(outfile)
   scripts.push([value[2], value[1], value[3]])
   #puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
   writeScriptsFile(outfile, scripts)
+  doneTranslation('Scripts')
 end
 
 while going
