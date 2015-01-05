@@ -17,28 +17,30 @@ from .translatorbase import Translator, TranslatorError
 
 class TranslationLine:
     """A token representing a single line of a translation file"""
-    def __init__(self, cType, data, comment=''):
-        self.cType, self.data, self.comment = cType, data, comment
+    escapes = [('\\', '\\\\'), ('>', '\\>'), ('#', '\\#')]
+
+    def __init__(self, cType, data, command='', comment=''):
+        self.cType, self.data, self.command, self.comment = cType, data, command, comment
 
     @classmethod
     def Context(cls, context):
         """Create a line which is a context"""
-        return cls('context', context)
+        return cls('context', context, '> CONTEXT: ')
 
     @classmethod
     def Begin(cls):
         """Create a begin line"""
-        return cls('begin', '> BEGIN STRING')
+        return cls('begin', '', '> BEGIN STRING')
 
     @classmethod
     def Data(cls, data, comment=''):
         """Create a data line"""
-        return cls('data', data, comment)
+        return cls('data', data, comment=comment)
 
     @classmethod
     def End(cls):
         """Create an end line"""
-        return cls('end', '> END STRING')
+        return cls('end', '', '> END STRING')
 
     @classmethod
     def fromString(cls, string):
@@ -57,25 +59,45 @@ class TranslationLine:
             indx -= 1
         comment = string[indx:]
         data = string[:indx]
+        command = ''
 
         if string.startswith('> BEGIN STRING'):
             cType = 'begin'
+            command = data
+            data = ''
         elif string.startswith('> END STRING'):
             cType = 'end'
+            command = data
+            data = ''
         elif string.startswith('> CONTEXT:'):
             cType = 'context'
-            data = data.partition(':')[2].strip()
+            command, _, data = data.partition(':')
+            if data.startswith(' '):
+                data.lstrip()
+                command += ' '
             if '<' in data:
                 data = data.partition('<')[0].strip()
+            else:
+                data = data.strip()
         elif comment and not string.strip():
             cType = 'comment'
         else:
             cType = 'data'
 
-        return cls(cType, data, comment)
+        for orig, escaped in reversed(cls.escapes):
+            data = data.replace(escaped, orig)
+
+        return cls(cType, data, command, comment)
 
     def __str__(self):
         return 'Translation(%r, %r, %r)' % (self.cType, self.data, self.comment)
+
+    @classmethod
+    def escapeString(cls, unescaped):
+        escapedData = unescaped
+        for orig, escaped in cls.escapes:
+            escapedData = escapedData.replace(orig, escaped)
+        return escapedData
 
     def asString(self, translations, contexts):
         """Return a line as a string"""
@@ -84,10 +106,12 @@ class TranslationLine:
             translated = True if len(translation) > 0 else False
             translatedString = '' if translated else ' < UNTRANSLATED'
             unusedString = '' if self.data in contexts else ' < UNUSED'
-            return '> CONTEXT: %s%s%s%s'% (self.data, translatedString,
+            escapedData = self.escapeString(self.data)
+            return '> CONTEXT: %s%s%s%s'% (escapedData, translatedString,
                                            unusedString, self.comment)
         else:
-            return '%s%s' % (self.data, self.comment)
+            return '%s%s%s' % (self.command, self.escapeString(self.data),
+                               self.comment)
 
 class Translation:
     """A single block of translations, usually referring to all instances
@@ -95,7 +119,7 @@ class Translation:
     def __init__(self, items):
         """Initialise, based on a list of translation lines"""
         if items[0].cType != 'begin':
-            items.insert(0, TranslationLine('begin', '> BEGIN STRING'))
+            items.insert(0, TranslationLine.Begin())
         if not any(item.cType == 'end' for item in items):
             items.append(TranslationLine.End())
             items.append(TranslationLine.Data(''))
