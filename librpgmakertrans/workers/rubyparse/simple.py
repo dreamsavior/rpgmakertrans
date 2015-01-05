@@ -43,6 +43,10 @@ class Comment(SimpleRule, metaclass = AllCodeSuccessor):
     def terminate(self, parser):
         return parser.startswith('\n') or parser.index >= len(parser.string)
 
+class BeginEndComment(SimpleRule, metaclass = AllCodeSuccessor):
+    begins = '\n=begin'
+    escapeRules = []
+    terminator = '\n=end'
 
 class Bracket(SimpleCode, metaclass = FormatBaseSuccessor):
     begins = '('
