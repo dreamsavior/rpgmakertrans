@@ -44,7 +44,7 @@ class FilePatcher(BasePatch):
         """Return text for the patch marker"""
         return ''
 
-    def writePatchData(self, data, encoding='utf-8'):
+    def writePatchData(self, data, encoding='utf-8', baseDirectory=''):
         """Write patch data to files"""
         if not os.path.exists(self.path):
             os.mkdir(self.path)
@@ -58,7 +58,7 @@ class FilePatcher(BasePatch):
         for name in data:
             if data[name] != self.originalData.get(name.lower(), None):
                 fn = name + '.txt'
-                fullfn = os.path.join(self.path, fn)
+                fullfn = os.path.join(self.path, baseDirectory, fn)
                 with open(fullfn, 'w', encoding=encoding) as f:
                     f.write(data[name])
 
@@ -95,6 +95,13 @@ class FilePatcher(BasePatch):
                        mtimes=mtimes, newmtimes=newmtimes,
                        progresssig='patchdata', dirssig=None)
 
+    def categorisePatchFile(self, header, filename):
+        """Categorise a single file based on if it is a given directory
+        and if it has a given header when decoded with utf-8"""
+        if filename.lower().endswith('.txt') and os.path.isfile(filename):
+            with open(filename, 'rb') as f:
+                data = f.read(len(header) + 3)
+            return self.tryDecodePatchFile(header, data, 'ignore')[0]
 
 class FilePatcherv2(FilePatcher):
     """A file based patcher for v2 patches"""
@@ -108,13 +115,8 @@ class FilePatcherv2(FilePatcher):
         self.patchDataFiles = []
         rootls = set(os.listdir(self.path))
         for fn in self.allPaths():
-            if fn.lower().endswith('.txt') and os.path.normcase(
-                    os.path.split(fn)[1]) in rootls and os.path.isfile(fn):
-                header = type(self).header
-                with open(fn, 'rb') as f:
-                    data = f.read(len(header) + 3)
-                matched, _ = self.tryDecodePatchFile(header, data, 'ignore')
-                if matched:
+            if os.path.normcase(os.path.split(fn)[1]) in rootls:
+                if self.categorisePatchFile(type(self).header, fn):
                     self.patchDataFiles.append(fn)
                 else:
                     self.assetFiles.append(fn)
@@ -131,26 +133,33 @@ class FilePatcherv3(FilePatcher):
     def patchMarkerText(self):
         return '> RPGMAKER TRANS PATCH V3'
 
+    def writePatchData(self, data, encoding='utf-8', *args, **kwargs):
+        """Write patch data to files"""
+        for subDir in ('Assets', 'Patch'):
+            fullDir = os.path.join(self.path, subDir)
+            if not os.path.exists(fullDir):
+                os.mkdir(fullDir)
+        super().writePatchData(data, encoding, baseDirectory='Patch')
+
+    def isSubDir(self, base, subdir):
+        """A very primitive check to see if a file/directory is in a
+        sub directory"""
+        return subdir.startswith(base)
+
     def categorisePatchFiles(self):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
         self.patchDataFiles = []
-        rootls = set(os.listdir(self.path))
+        assetDir = os.path.normcase(os.path.join(self.path, 'Assets'))
+        patchDir = os.path.normcase(os.path.join(self.path, 'Patch'))
         for fn in self.allPaths():
-            if (fn.lower().endswith('.txt') and
-            os.path.normcase(os.path.split(fn)[1]) in rootls
-            and os.path.isfile(fn)):
-                header = type(self).header
-                with open(fn, 'rb') as f:
-                    data = f.read(len(header) + 3)
-                matched, _ = self.tryDecodePatchFile(header, data, 'ignore')
-                if matched:
+            fn = os.path.normcase(fn)
+            if self.isSubDir(patchDir, fn):
+                if self.categorisePatchFile(type(self).header, fn):
                     self.patchDataFiles.append(fn)
-                else:
-                    self.assetFiles.append(fn)
-            else:
-                if not fn.upper().endswith('RPGMKTRANSPATCH'):
-                    self.assetFiles.append(fn)
+            elif self.isSubDir(assetDir, fn):
+                self.assetFiles.append(fn)
+
 
 @patcherSniffer(FilePatchv2, 'FilePatcherv2')
 def sniffv2(path):
