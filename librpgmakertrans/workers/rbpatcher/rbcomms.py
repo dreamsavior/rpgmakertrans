@@ -66,7 +66,7 @@ class RBComms(SocketComms):
         self.subprocesses = subprocesses
         self.debugRb = debugRb
         self.going = True
-        self.tickTasks = [self.checkForQuit, self.getInputComs]
+        self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
 
     @staticmethod
     def makeFilesToProcess(indir, outdir):
@@ -86,9 +86,12 @@ class RBComms(SocketComms):
         return subprocess.Popen([RUBYPATH, rbScriptPath],
                                 stdin=piping, stdout=piping, stderr=piping)
 
+    @asyncio.coroutine
+    def startRubies(self):
+        self.rubies = [self.openRuby() for _ in range(self.subprocesses)]
+
     def start(self):
         """Start the server, as well as Ruby subprocesses"""
-        self.rubies = [self.openRuby() for _ in range(self.subprocesses)]
         super().start()
 
     @asyncio.coroutine
