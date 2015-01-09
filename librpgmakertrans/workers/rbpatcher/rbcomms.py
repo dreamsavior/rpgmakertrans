@@ -94,8 +94,13 @@ class RBComms(SocketComms):
         while self.going:
             yield from asyncio.sleep(0.1)
             for ruby in self.rubies[:]:
-                if ruby.poll() is not None:
+                rbpoll = ruby.poll()
+                if rbpoll is not None:
                     self.rubies.remove(ruby)
+                    if rbpoll != 0:
+                        print('WARNING: Ruby with nonzero exit code')
+                        if not self.debugRb:
+                            print(ruby.stderr.read())
             if len(self.rubies) == 0:
                 self.going = False
 
