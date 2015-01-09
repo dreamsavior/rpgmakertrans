@@ -93,11 +93,8 @@ class RBComms(SocketComms):
 
     @asyncio.coroutine
     def startRubies(self):
+        """Start ruby processes"""
         self.rubies = [self.openRuby() for _ in range(self.subprocesses)]
-
-    def start(self):
-        """Start the server, as well as Ruby subprocesses"""
-        super().start()
 
     @asyncio.coroutine
     def checkForQuit(self):
