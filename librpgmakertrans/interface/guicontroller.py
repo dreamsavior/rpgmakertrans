@@ -94,7 +94,7 @@ class GUIController(CoreProtocol):
         sniffDataRet = self.submit('worker', sniffAllTrigger,
                                    path=os.getcwd(), coms=self.inputcoms)
         self.submit('worker', versionCheck, coms=self.inputcoms)
-        self.localWaitUntil('sniffingDone', self.setUpSniffedData,
+        self.localWaitUntil('sniffingDone', self.setUpSniffedDataMP,
                             sniffDataRet)
 
     def newVerAvailable(self, version):
@@ -112,9 +112,13 @@ class GUIController(CoreProtocol):
             'Please visit http://habisain.blogspot.co.uk to download a new version.'
             'Press OK to close RPGMaker Trans')
 
-    def setUpSniffedData(self, sniffDataRet):
-        """Put sniffed data into the GUI"""
+    def setUpSniffedDataMP(self, sniffDataRet):
+        """Put sniffed data into the GUI, after retrieving from multiprocessing"""
         sniffData = sniffDataRet.get()
+        self.setUpSniffedData(sniffData)
+
+    def setUpSniffedData(self, sniffData):
+        """Put sniffed data into the GUI"""
         for item in sniffData:
             if item is False:
                 pass
