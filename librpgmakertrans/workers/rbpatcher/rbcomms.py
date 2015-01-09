@@ -78,14 +78,17 @@ class RBComms(SocketComms):
                                                   fn.rpartition('.rvdata')[0])
         return files
 
-    def start(self):
-        """Start the server, as well as Ruby subprocesses"""
+    def openRuby(self):
+        """Open a ruby process"""
         base = os.path.split(__file__)[0]
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
-        piping = None if self.debugRb else subprocess.PIPE
-        openRuby = lambda: subprocess.Popen([RUBYPATH, rbScriptPath],
+        piping = None if self.debugRB else subprocess.PIPE
+        return subprocess.Popen([RUBYPATH, rbScriptPath],
                                 stdin=piping, stdout=piping, stderr=piping)
-        self.rubies = [openRuby() for _ in range(self.subprocesses)]
+
+    def start(self):
+        """Start the server, as well as Ruby subprocesses"""
+        self.rubies = [self.openRuby() for _ in range(self.subprocesses)]
         super().start()
 
     @asyncio.coroutine
@@ -101,6 +104,7 @@ class RBComms(SocketComms):
                         print('WARNING: Ruby with nonzero exit code')
                         if not self.debugRb:
                             print(ruby.stderr.read())
+                        self.rubies.append(self.openRuby())
             if len(self.rubies) == 0:
                 self.going = False
 
