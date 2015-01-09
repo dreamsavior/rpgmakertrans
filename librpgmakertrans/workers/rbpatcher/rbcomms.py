@@ -31,6 +31,9 @@ class RBComms(SocketComms):
     """RBComms is the specific instance of SocketComms to handle talking
     to Ruby processes. In general, I think I'd like to migrate away from
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
+
+    maxRubyErrors = 10
+
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
                  outputComs, subprocesses, debugRb = False, *args, **kwargs):
         """Initialise RBComms"""
@@ -67,6 +70,8 @@ class RBComms(SocketComms):
         self.debugRb = debugRb
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
+        self.rubyErrorMessages = set()
+        self.rubyErrors = 0
 
     @staticmethod
     def makeFilesToProcess(indir, outdir):
@@ -84,7 +89,7 @@ class RBComms(SocketComms):
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
         piping = None if self.debugRb else subprocess.PIPE
         return subprocess.Popen([RUBYPATH, rbScriptPath],
-                                stdin=piping, stdout=piping, stderr=piping)
+                                stdin=piping, stdout=piping, stderr=subprocess.PIPE)
 
     @asyncio.coroutine
     def startRubies(self):
@@ -105,6 +110,18 @@ class RBComms(SocketComms):
                     self.rubies.remove(ruby)
                     if rbpoll != 0:
                         print('WARNING: Ruby with nonzero exit code')
+                        errMsg = ruby.stderr.read()
+                        self.rubyErrors += 1
+                        if errMsg in self.rubyErrorMessages:
+                            # TODO: Replace these errors with fatal error messages
+                            raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
+                            self.going = False
+                        elif self.rubyErrors >= type(self).maxRubyErrors:
+                            errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
+                            errorMessageLS.extend(self.rubyErrors)
+                            raise RBCommsError('\n'.join(errorMessageLS))
+                            self.going = False
+                        self.rubyErrorMessages.add(errMsg)
                         if not self.debugRb:
                             print(ruby.stderr.read())
                         self.rubies.append(self.openRuby())
