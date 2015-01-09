@@ -108,7 +108,7 @@ class TranslationLine:
         """Return a line as a string"""
         if self.cType == 'context':
             translation = translations.get(self.data, '').strip()
-            translated = True if len(translation) > 0 else False
+            translated = len(translation) > 0 or self.data == 'None'
             translatedString = '' if translated else ' < UNTRANSLATED'
             unusedString = '' if self.data in contexts else ' < UNUSED'
             escapedData = self.escapeString(self.data)
@@ -186,6 +186,8 @@ class Translation:
         self.translations[context] = translation
 
     def asString(self):
+        if self.items[-1].cType != 'data':
+            self.items.append(TranslationLine.Data(''))
         return '\n'.join(item.asString(self.translations, self.usedContexts) for item in self.items)
 
     def useContext(self, context):
