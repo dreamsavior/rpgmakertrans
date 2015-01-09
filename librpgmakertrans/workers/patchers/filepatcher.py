@@ -23,6 +23,14 @@ class FilePatcher(BasePatch):
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
 
+    @property
+    def patchPath(self):
+        return self.path
+
+    @property
+    def assetPath(self):
+        return self.path
+
     def loadPatchData(self):
         """Load patch data from files"""
         data = {}
@@ -44,10 +52,11 @@ class FilePatcher(BasePatch):
         """Return text for the patch marker"""
         return ''
 
-    def writePatchData(self, data, encoding='utf-8', baseDirectory=''):
+    def writePatchData(self, data, encoding='utf-8'):
         """Write patch data to files"""
-        if not os.path.exists(self.path):
-            os.mkdir(self.path)
+        for directory in (self.path, self.patchPath, self.assetPath):
+            if not os.path.exists(directory):
+                os.mkdir(directory)
         patchmarkerfn = os.path.join(self.path, 'RPGMKTRANSPATCH')
         if not os.path.exists(patchmarkerfn):
             if os.path.isdir(patchmarkerfn):
@@ -58,7 +67,7 @@ class FilePatcher(BasePatch):
         for name in data:
             if data[name] != self.originalData.get(name.lower(), None):
                 fn = name + '.txt'
-                fullfn = os.path.join(self.path, baseDirectory, fn)
+                fullfn = os.path.join(self.patchPath, fn)
                 with open(fullfn, 'w', encoding=encoding) as f:
                     f.write(data[name])
 
@@ -78,18 +87,19 @@ class FilePatcher(BasePatch):
             yield dr
 
     def getAssetNames(self):
-        """Get names of assets in patch"""
-        return [os.path.relpath(fn, self.path) for fn in self.assetFiles]
+        """Get names of assets in patch; so that files which are replaced
+        are not copied."""
+        return [os.path.relpath(fn, self.assetPath) for fn in self.assetFiles]
 
     def getNonCopyNames(self):
         """Get names of files not to copy in patch"""
-        return [os.path.relpath(fn, self.path) for fn in
+        return [os.path.relpath(fn, self.assetPath) for fn in
                 self.patchDataFiles] + ['RPGMKTRANSPATCH']
 
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
         """Do full file patches using a filecopier"""
         self.coms.send('waitUntil', 'dirsCopied', 'copier', copyfiles,
-                       indir=self.path, outdir=outpath, ignoredirs=[],
+                       indir=self.assetPath, outdir=outpath, ignoredirs=[],
                        ignoreexts=[], ignorefiles=self.getNonCopyNames(),
                        comsout=self.coms, translator=translator,
                        mtimes=mtimes, newmtimes=newmtimes,
@@ -130,16 +140,16 @@ class FilePatcherv3(FilePatcher):
     translatorClass = 'Translator3'
     header = '> RPGMAKER TRANS PATCH'
 
+    @property
+    def patchPath(self):
+        return os.path.join(self.path, 'Patch')
+
+    @property
+    def assetPath(self):
+        return os.path.join(self.path, 'Assets')
+
     def patchMarkerText(self):
         return '> RPGMAKER TRANS PATCH V3'
-
-    def writePatchData(self, data, encoding='utf-8', *args, **kwargs):
-        """Write patch data to files"""
-        for subDir in ('Assets', 'Patch'):
-            fullDir = os.path.join(self.path, subDir)
-            if not os.path.exists(fullDir):
-                os.mkdir(fullDir)
-        super().writePatchData(data, encoding, baseDirectory='Patch')
 
     def isSubDir(self, base, subdir):
         """A very primitive check to see if a file/directory is in a
@@ -150,14 +160,12 @@ class FilePatcherv3(FilePatcher):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
         self.patchDataFiles = []
-        assetDir = os.path.normcase(os.path.join(self.path, 'Assets'))
-        patchDir = os.path.normcase(os.path.join(self.path, 'Patch'))
         for fn in self.allPaths():
             fn = os.path.normcase(fn)
-            if self.isSubDir(patchDir, fn):
+            if self.isSubDir(self.patchPath, fn):
                 if self.categorisePatchFile(type(self).header, fn):
                     self.patchDataFiles.append(fn)
-            elif self.isSubDir(assetDir, fn):
+            elif self.isSubDir(self.assetPath, fn):
                 self.assetFiles.append(fn)
 
 
