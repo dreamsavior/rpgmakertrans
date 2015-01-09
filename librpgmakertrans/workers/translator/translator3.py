@@ -284,7 +284,7 @@ class TranslationFile:
     @staticmethod
     def convertFrom30(lines):
         """Convert a file from 3.0 format"""
-        return [TranslationFile.convertLineFrom30(line) for line in lines]
+        return [TranslationFile.convertLineFrom30(line) for line in lines if not line.startswith('# UNTRANSLATED')]
 
     @staticmethod
     def convertLineFrom30(string):
