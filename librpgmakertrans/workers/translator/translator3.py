@@ -221,11 +221,11 @@ class TranslationFile:
     v3.0 patch files"""
     version = (3, 1)
     header = 'RPGMAKER TRANS PATCH FILE VERSION'
-    def __init__(self, filename, translateables, converted=False):
+    def __init__(self, filename, translateables, enablePruning=True):
         """Initialise from a filename and list of translateables"""
         self.filename = filename
         self.translateables = translateables
-        self.converted = converted
+        self.enablePruning = enablePruning
 
     @classmethod
     def fromString(cls, filename, string):
@@ -246,7 +246,7 @@ class TranslationFile:
         if fileVersion[1] != 1:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
-        return cls(filename, translateables, converted)
+        return cls(filename, translateables)
 
     def __iter__(self):
         """Iterate over translateables"""
@@ -258,7 +258,7 @@ class TranslationFile:
 
     def asString(self):
         """Return the file in string form"""
-        if self.converted:
+        if self.enablePruning:
             self.prune()
         output = ['> %s %s' % (type(self).header,
                               '.'.join(str(x) for x in type(self).version))]
