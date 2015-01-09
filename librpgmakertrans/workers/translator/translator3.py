@@ -99,6 +99,11 @@ class TranslationLine:
             escapedData = escapedData.replace(orig, escaped)
         return escapedData
 
+    def isUsed(self, contexts):
+        """Determine if a line is used by a list of contexts"""
+        return (self.cType != 'context' or self.data in contexts
+                or self.comment.strip())
+
     def asString(self, translations, contexts):
         """Return a line as a string"""
         if self.cType == 'context':
@@ -187,20 +192,44 @@ class Translation:
         """Mark a context as being currently in use"""
         self.usedContexts.add(context)
 
+    def prune(self):
+        """Prune unused contexts from translation file. If a translation
+        has no context available to it, then it is given the special
+        context 'None'"""
+        self.items = [item if item.isUsed(self.usedContexts) else None
+                      for item in self.items]
+        while None in self.items:
+            neighbourContexts = False
+            for direction in (-1, +1):
+                indx = self.items.index(None)
+                while 0 < indx < len(self.items) and self.items[indx] is None:
+                    indx += direction
+                if (isinstance(self.items[indx], TranslationLine)
+                    and self.items[indx].cType == 'context'):
+                    neighbourContexts = True
+                    break
+            if not neighbourContexts:
+                self.items.insert(self.items.index(None),
+                                  TranslationLine.Context('None'))
+            self.items.remove(None)
+
+
 class TranslationFile:
     """Represents a v3.1 Translation File. Also has the capacity to convert
     v3.0 patch files"""
     version = (3, 1)
     header = 'RPGMAKER TRANS PATCH FILE VERSION'
-    def __init__(self, filename, translateables):
+    def __init__(self, filename, translateables, converted=False):
         """Initialise from a filename and list of translateables"""
         self.filename = filename
         self.translateables = translateables
+        self.converted = converted
 
     @classmethod
     def fromString(cls, filename, string):
         """Initialiser from a filename and string"""
         lines = string.split('\n')
+        converted = False
         versionLine = lines.pop(0)
         versionString = versionLine.partition(cls.header)[2].strip()
         if not versionString:
@@ -210,18 +239,25 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         if fileVersion[1] == 0:
             lines = cls.convertFrom30(lines)
+            converted = True
             fileVersion[1] = 1
         if fileVersion[1] != 1:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
-        return cls(filename, translateables)
+        return cls(filename, translateables, converted)
 
     def __iter__(self):
         """Iterate over translateables"""
         return iter(self.translateables)
 
+    def prune(self):
+        for translateable in self:
+            translateable.prune()
+
     def asString(self):
         """Return the file in string form"""
+        if self.converted:
+            self.prune()
         output = ['> %s %s' % (type(self).header,
                               '.'.join(str(x) for x in type(self).version))]
         output.extend(x.asString() for x in self)
