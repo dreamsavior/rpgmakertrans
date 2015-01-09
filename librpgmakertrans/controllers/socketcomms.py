@@ -33,6 +33,8 @@ def writePacket(args):
     packet = struct.pack('I', len(packet)) + packet
     return packet
 
+class SocketCommsMisread(Exception): pass
+
 class SocketComms:
     def __init__(self, socket=None):
         self.loop = asyncio.get_event_loop()
@@ -50,6 +52,8 @@ class SocketComms:
         while True:
             try:
                 packetSizeB = yield from reader.read(4)
+                if len(packetSizeB) != 4:
+                    raise SocketCommsMisread('Wrong size')
                 packetSize = struct.unpack('I', packetSizeB)[0]
                 packet = yield from reader.read(packetSize)
                 code, args = readPacket(packet)
@@ -74,6 +78,8 @@ class SocketComms:
                 else:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
                 yield from writer.drain()
+            except SocketCommsMisread:
+                pass
             except:
                 handleError()
 
