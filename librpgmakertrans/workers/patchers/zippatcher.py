@@ -35,7 +35,7 @@ class ZIPPatcher(BasePatch):
         for fn in self.patchDataFiles:
             zfile = self.zip.open(fn)
             raw = zfile.read(2 ** 22)
-            matched, dec = self.tryDecodePatchFile(type(self).header, raw)
+            dec = self.tryDecodePatchFile(type(self).header, raw)[1]
             name = (fn.partition(self.root)[2].strip(
                     SEPERATORS).rpartition('.')[0])
             data[name] = dec
@@ -106,12 +106,12 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
         self.patchdirs = [x for x in patchbits if x not in patchfiles]
 
         if self.root.strip():
-            rootfiles = [x for x in patchfiles if all(
-                [y not in x.partition(self.root)[2] for y in SEPERATORS])]
+            rootfiles = [x for x in patchfiles
+                        if all([y not in x.partition(self.root)[2]
+                                for y in SEPERATORS])]
         else:
-            rootfiles = [
-                x for x in patchfiles if all(
-                    sep not in x for sep in SEPERATORS)]
+            rootfiles = [x for x in patchfiles
+                         if all(sep not in x for sep in SEPERATORS)]
 
         self.assetFiles = []
         self.patchDataFiles = []
@@ -121,8 +121,8 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
                 header = type(self).header
                 z = self.zip.open(fn)
                 raw = z.read(2 ** 22)
-                matched, _ = self.tryDecodePatchFile(header, raw,
-                                                     errors='ignore')
+                matched = self.tryDecodePatchFile(header, raw,
+                                                  errors='ignore')[0]
                 if matched:
                     self.patchDataFiles.append(fn)
                 else:
