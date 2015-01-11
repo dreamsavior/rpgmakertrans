@@ -10,7 +10,7 @@ Provides a patcher for a patch contained in a directory.
 """
 
 import os
-from .basepatcher import BasePatch
+from .basepatcher import BasePatch, BasePatcherV2, BasePatcherV3
 from ..filecopier2 import copyfiles
 from .registry import patcherSniffer, FilePatchv2, FilePatchv3
 
@@ -47,10 +47,6 @@ class FilePatcher(BasePatch):
                 data[name] = decoded
         self.originalData = data.copy()
         return data, mtime
-
-    def patchMarkerText(self):
-        """Return text for the patch marker"""
-        return ''
 
     def writePatchData(self, data, encoding='utf-8'):
         """Write patch data to files"""
@@ -113,11 +109,8 @@ class FilePatcher(BasePatch):
                 data = f.read(len(header) + 3)
             return self.tryDecodePatchFile(header, data, 'ignore')[0]
 
-class FilePatcherv2(FilePatcher):
+class FilePatcherv2(FilePatcher, BasePatcherV2):
     """A file based patcher for v2 patches"""
-
-    translatorClass = 'Translator2kv2'
-    header = '# RPGMAKER TRANS PATCH'
 
     def categorisePatchFiles(self):
         """Work out if a file is an asset or patch data"""
@@ -134,11 +127,8 @@ class FilePatcherv2(FilePatcher):
                 if not fn.upper().endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
 
-class FilePatcherv3(FilePatcher):
+class FilePatcherv3(FilePatcher, BasePatcherV3):
     """A file patcher for v3 based patches"""
-
-    translatorClass = 'Translator3'
-    header = '> RPGMAKER TRANS PATCH'
 
     @property
     def patchPath(self):
@@ -147,9 +137,6 @@ class FilePatcherv3(FilePatcher):
     @property
     def assetPath(self):
         return os.path.join(self.path, 'Assets')
-
-    def patchMarkerText(self):
-        return '> RPGMAKER TRANS PATCH V3'
 
     def isSubDir(self, base, subdir):
         """A very primitive check to see if a file/directory is in a

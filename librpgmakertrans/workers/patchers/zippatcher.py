@@ -9,7 +9,7 @@ zippatcher
 Provides a patcher for patches contained in a zip file.
 """
 
-from .basepatcher import BasePatch
+from .basepatcher import BasePatch, BasePatcherV2
 import zipfile
 import os.path
 from .registry import patcherSniffer, ZipPatchv2
@@ -89,10 +89,8 @@ class ZIPPatcher(BasePatch):
             newmtimes[outfn] = self.mtime
 
 
-class ZIPPatcherv2(ZIPPatcher):
+class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
     """Provides a ZIP patch loader specialised for v2 Patches"""
-    translatorClass = 'Translator2kv2'
-    header = '# RPGMAKER TRANS PATCH'
 
     def categorisePatchFiles(self):
         """Categorise the patch files"""

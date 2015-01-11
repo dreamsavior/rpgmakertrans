@@ -95,6 +95,23 @@ class BasePatch(metaclass=PatchMeta):
         """Do the full file patches for this patch"""
         raise NotImplementedError('FullPatching not implemented')
 
+class BasePatcherV2(BasePatch):
+    """Contains information for v2 patches"""
+    translatorClass = 'Translator2kv2'
+    header = '# RPGMAKER TRANS PATCH'
+
+    def patchMarkerText(self):
+        """Return text for the patch marker"""
+        return ''
+
+class BasePatcherV3(BasePatch):
+    """Contains information for v3 patches"""
+    translatorClass = 'Translator3'
+    header = '> RPGMAKER TRANS PATCH'
+
+    def patchMarkerText(self):
+        """Retrun text for the patch marker"""
+        return '> RPGMAKER TRANS PATCH V3'
 
 def makeTranslator(patcher, coms):
     """Make a translator from this patch"""
