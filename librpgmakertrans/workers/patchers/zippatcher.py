@@ -175,9 +175,3 @@ def sniffzipv2(path):
             if not x.strip():
                 return path
     return False
-
-if __name__ == '__main__':
-    zipfn = '/home/habisain/tr/cr_p.zip'
-    print(sniffzipv2(zipfn))
-    x = ZIPPatcherv2(zipfn, None)
-    x.doFullPatches('/home/habisain/tr/cr_pzip_test', None, {}, {})
