@@ -88,22 +88,52 @@ class ZIPPatcher(BasePatch):
                         data = z.read(2 ** 20)
             newmtimes[outfn] = self.mtime
 
+    def __citer(self, directory, condition = lambda x: True):
+        for name in self.zip.namelist():
+            if (name.startswith(directory) and condition(name)):
+                yield name
+
+    def iterDirs(self, directory):
+        condition = lambda x: any(x.endswith(sep) for sep in SEPERATORS)
+        return self.__citer(directory, condition)
+
+    def iterFiles(self, directory):
+        condition = lambda x: not any(x.endswith(sep) for sep in SEPERATORS)
+        return self.__citer(directory, condition)
+
+    def isPatchMarker(self, name):
+        if name.endswith('RPGMKTRANSPATCH'):
+            with self.zip.open(name) as z:
+                data = z.read(len(self.patchMarkerText()))
+            return data == self.patchMarkerText()
+        else:
+            return False
+
+    def patchRoots(self):
+        return [x.rpartition('RPGMKTRANSPATCH')[0]
+                for x in self.__citer('', self.isPatchMarker)]
+
+    def categorisePatchFile(self, header, name):
+        """Categorise a single file based on if it is a given directory
+        and if it has a given header when decoded with utf-8"""
+        if name.lower().endswith('.txt'):
+            with self.zip.open(name, 'rb') as f:
+                data = f.read(len(header) + 3)
+            return self.tryDecodePatchFile(header, data, 'ignore')[0]
+
 
 class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
     """Provides a ZIP patch loader specialised for v2 Patches"""
 
     def categorisePatchFiles(self):
         """Categorise the patch files"""
-        contents = self.zip.namelist()
-        transpatches = [x for x in contents if x.endswith('RPGMKTRANSPATCH')]
-        if len(transpatches) > 1:
+        roots = self.patchRoots()
+        if len(roots) > 1:
             raise Exception('ZIP file contains more than one'
                             'RPGMKTRANSPATCH file; cannot determine root')
-        self.root = transpatches[0].rpartition('RPGMKTRANSPATCH')[0]
-        patchbits = [x for x in contents if x.startswith(self.root)]
-        patchfiles = [x for x in patchbits if
-                      not any(x.endswith(sep) for sep in SEPERATORS)]
-        self.patchdirs = [x for x in patchbits if x not in patchfiles]
+        self.root = roots[0]
+        patchfiles = list(self.iterFiles(self.root))
+        self.patchdirs = list(self.iterDirs(self.root))
 
         if self.root.strip():
             rootfiles = [x for x in patchfiles
