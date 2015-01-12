@@ -19,7 +19,6 @@ class PatchMeta(MetaCustomManager, ErrorMeta):
     """Patch meta class"""
     customManagerClass = PatchManager
 
-
 class BasePatch(metaclass=PatchMeta):
     """The basic class for Patch objects"""
     def __init__(self, path, coms, errout):
@@ -95,23 +94,24 @@ class BasePatch(metaclass=PatchMeta):
         """Do the full file patches for this patch"""
         raise NotImplementedError('FullPatching not implemented')
 
+    @property
+    def patchMarkerID(self):
+        """Return the patch marker ID, which is the first line of
+        the patchMarker text. This should be constant for a patch
+        version"""
+        return type(self).patchMarker.partition('\n')[0]
+
 class BasePatcherV2(BasePatch):
     """Contains information for v2 patches"""
     translatorClass = 'Translator2kv2'
     header = '# RPGMAKER TRANS PATCH'
-
-    def patchMarkerText(self):
-        """Return text for the patch marker"""
-        return ''
+    patchMarker = ''
 
 class BasePatcherV3(BasePatch):
     """Contains information for v3 patches"""
     translatorClass = 'Translator3'
     header = '> RPGMAKER TRANS PATCH'
-
-    def patchMarkerText(self):
-        """Retrun text for the patch marker"""
-        return '> RPGMAKER TRANS PATCH V3'
+    patchMarker = '> RPGMAKER TRANS PATCH V3'
 
 def makeTranslator(patcher, coms):
     """Make a translator from this patch"""

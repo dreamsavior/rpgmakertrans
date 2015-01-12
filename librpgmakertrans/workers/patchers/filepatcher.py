@@ -59,7 +59,7 @@ class FilePatcher(BasePatch):
                 raise Exception(
                     'Can\'t create patch marker file due to directory name conflict')
             with open(patchmarkerfn, 'w') as f:
-                f.write(self.patchMarkerText())
+                f.write(self.patchMarker)
         for name in data:
             if data[name] != self.originalData.get(name.lower(), None):
                 fn = name + '.txt'
