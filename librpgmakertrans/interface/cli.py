@@ -10,15 +10,13 @@ A CLI for RPGMaker Trans. Unfortunately, due to Windows being Windows,
 this does not yet work on Windows.
 """
 
-
 import sys
 import argparse
+import shutil
 from ..workers.sniffers import sniff
 from ..controllers.coreprotocol import CoreProtocol
 from ..controllers.headless import initialiseHeadless
 from ..version import versionString
-
-CLI_LENGTH = 79
 
 
 class CLIMode(CoreProtocol):
@@ -83,7 +81,8 @@ class CLIMode(CoreProtocol):
     def progressPrint(self, string):
         """Print something using a progress bar style print"""
         if not self.quiet:
-            print('\r' + string.ljust(CLI_LENGTH), end=' ')
+            columns = shutil.get_terminal_size().columns - 1
+            print('\r' + string.ljust(columns), end=' ')
             sys.stdout.flush()
 
     def setProgress(self, progress):
@@ -93,10 +92,12 @@ class CLIMode(CoreProtocol):
 
     def printProgress(self):
         """Print current progress to screen"""
-        blocksInBar = CLI_LENGTH - 9 - len(self.message)
-        hashes = ('#' * int(blocksInBar * self.progress)).ljust(blocksInBar)
-        percent = str(int(self.progress * 100)).ljust(3)
-        self.progressPrint('%s[%s] %s %%' % (self.message, hashes, percent))
+        if not self.quiet:
+            columns = shutil.get_terminal_size().columns - 1
+            blocksInBar = columns - 9 - len(self.message)
+            hashes = ('#' * int(blocksInBar * self.progress)).ljust(blocksInBar)
+            percent = str(int(self.progress * 100)).ljust(3)
+            self.progressPrint('%s[%s] %s %%' % (self.message, hashes, percent))
 
     def headlessFinished(self):
         """Finish patching"""
