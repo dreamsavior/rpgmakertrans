@@ -57,8 +57,8 @@ def errorWrap(func):
 class ErrorMeta(type):
     """A metaclass which automatically applies ErrorWrap to all
     methods on the class"""
-    def __init__(cls, a, b, c):
-        super(ErrorMeta, cls).__init__(a, b, c)
+    def __init__(cls, name, bases, dict_):
+        super().__init__(name, bases, dict_)
         for x in cls.__dict__:
             f = getattr(cls, x)
             if isinstance(f, collections.Callable):

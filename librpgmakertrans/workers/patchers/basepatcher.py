@@ -19,6 +19,13 @@ class PatchMeta(MetaCustomManager, ErrorMeta):
     """Patch meta class"""
     customManagerClass = PatchManager
 
+    @property
+    def patchMarkerID(cls):
+        """Return the patch marker ID, which is the first line of
+        the patchMarker text. This should be constant for a patch
+        version"""
+        return cls.patchMarker.partition('\n')[0]
+
 class BasePatch(metaclass=PatchMeta):
     """The basic class for Patch objects"""
     def __init__(self, path, coms, errout):
@@ -93,13 +100,6 @@ class BasePatch(metaclass=PatchMeta):
     def doFullPatches(self, outpath, translator, mtimes, newmtimes):
         """Do the full file patches for this patch"""
         raise NotImplementedError('FullPatching not implemented')
-
-    @property
-    def patchMarkerID(self):
-        """Return the patch marker ID, which is the first line of
-        the patchMarker text. This should be constant for a patch
-        version"""
-        return type(self).patchMarker.partition('\n')[0]
 
 class BasePatcherV2(BasePatch):
     """Contains information for v2 patches"""

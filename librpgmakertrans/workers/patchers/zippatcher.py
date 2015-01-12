@@ -105,8 +105,8 @@ class ZIPPatcher(BasePatch):
         if name.endswith('RPGMKTRANSPATCH'):
             try:
                 with self.zip.open(name) as z:
-                    data = z.read(len(self.patchMarkerID)).decode('utf-8')
-                return data == self.patchMarkerID
+                    data = z.read(len(type(self).patchMarkerID)).decode('utf-8')
+                return data == type(self).patchMarkerID
             except UnicodeDecodeError:
                 return False
         else:

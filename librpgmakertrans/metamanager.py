@@ -26,6 +26,6 @@ class CustomManager(BaseManager):
 class MetaCustomManager(ErrorMeta):
     customManagerClass = None
 
-    def __init__(cls, a, b, c):
-        super(MetaCustomManager, cls).__init__(a, b, c)
+    def __init__(cls, name, bases, dict_):
+        super().__init__(name, bases, dict_)
         type(cls).customManagerClass.register(cls.__name__, cls)
