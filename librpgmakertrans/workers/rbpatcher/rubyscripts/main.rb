@@ -8,8 +8,13 @@
 # Provides the main loop for the Ruby patching engine
 #
 
+socketNo = ARGV[0].to_i
+if socketNo == 0
+  socketNo = 27899
+end
+
 require 'socket'
-$SOCK = TCPSocket.new('127.0.0.1', 27899)
+$SOCK = TCPSocket.new('127.0.0.1', socketNo)
 
 require_relative 'socketcall.rb'
 require_relative 'rgss.rb'

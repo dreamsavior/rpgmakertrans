@@ -88,7 +88,7 @@ class RBComms(SocketComms):
         base = os.path.split(__file__)[0]
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
         piping = None if self.debugRb else subprocess.PIPE
-        return subprocess.Popen([RUBYPATH, rbScriptPath],
+        return subprocess.Popen([RUBYPATH, rbScriptPath, str(self.socket)],
                                 stdin=piping, stdout=piping, stderr=subprocess.PIPE)
 
     @asyncio.coroutine
