@@ -3,7 +3,7 @@ rbcomms
 *******
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 RBComms is the communicator to the child Ruby processes, which
@@ -17,7 +17,7 @@ from collections import OrderedDict
 import multiprocessing
 
 from ...controllers.socketcomms import SocketComms
-from librpgmakertrans.errorhook import errorWrap
+from librpgmakertrans.errorhook import errorWrap, handleError
 
 if os.name == 'posix':
     RUBYPATH = 'ruby'
@@ -94,46 +94,55 @@ class RBComms(SocketComms):
     @asyncio.coroutine
     def startRubies(self):
         """Start ruby processes"""
-        self.rubies = [self.openRuby() for _ in range(self.subprocesses)]
+        try:
+            self.rubies = [self.openRuby() for _ in range(self.subprocesses)]
+        except:
+            handleError()
 
     @asyncio.coroutine
     def checkForQuit(self):
         """Check to see if we should quit"""
-        while self.going:
-            yield from asyncio.sleep(0.1)
-            for ruby in self.rubies[:]:
-                rbpoll = ruby.poll()
-                if rbpoll is not None:
-                    self.rubies.remove(ruby)
-                    if rbpoll != 0:
-                        print('WARNING: Ruby with nonzero exit code')
-                        errMsg = ruby.stderr.read()
-                        self.rubyErrors += 1
-                        if errMsg in self.rubyErrorMessages:
-                            # TODO: Replace these errors with fatal error messages
-                            raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
-                            self.going = False
-                        elif self.rubyErrors >= type(self).maxRubyErrors:
-                            errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
-                            errorMessageLS.extend(self.rubyErrors)
-                            raise RBCommsError('\n'.join(errorMessageLS))
-                            self.going = False
-                        self.rubyErrorMessages.add(errMsg)
-                        if not self.debugRb:
-                            print(ruby.stderr.read())
-                        self.rubies.append(self.openRuby())
-            if len(self.rubies) == 0:
-                self.going = False
+        try:
+            while self.going:
+                yield from asyncio.sleep(0.1)
+                for ruby in self.rubies[:]:
+                    rbpoll = ruby.poll()
+                    if rbpoll is not None:
+                        self.rubies.remove(ruby)
+                        if rbpoll != 0:
+                            print('WARNING: Ruby with nonzero exit code')
+                            errMsg = ruby.stderr.read()
+                            self.rubyErrors += 1
+                            if errMsg in self.rubyErrorMessages:
+                                # TODO: Replace these errors with fatal error messages
+                                raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
+                                self.going = False
+                            elif self.rubyErrors >= type(self).maxRubyErrors:
+                                errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
+                                errorMessageLS.extend(self.rubyErrors)
+                                raise RBCommsError('\n'.join(errorMessageLS))
+                                self.going = False
+                            self.rubyErrorMessages.add(errMsg)
+                            if not self.debugRb:
+                                print(errMsg)
+                            self.rubies.append(self.openRuby())
+                if len(self.rubies) == 0:
+                    self.going = False
+        except:
+            handleError()
 
     @asyncio.coroutine
     def getInputComs(self):
         """Get input communications from inputcoms sender"""
-        while self.going:
-            yield from asyncio.sleep(0.1)
-            for code, args, kwargs in self.inputComs.get():
-                if code != 'setTranslatedScript':
-                    raise RBCommsError('Cannot respond to event %s' % code)
-                self.setTranslatedScript(*args, **kwargs)
+        try:
+            while self.going:
+                yield from asyncio.sleep(0.1)
+                for code, args, kwargs in self.inputComs.get():
+                    if code != 'setTranslatedScript':
+                        raise RBCommsError('Cannot respond to event %s' % code)
+                    self.setTranslatedScript(*args, **kwargs)
+        except:
+            handleError()
 
     def translate(self, string, context):
         """Handler to translate a string"""

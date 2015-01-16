@@ -2,7 +2,7 @@
 # **********
 #
 # :author: Aleph Fell <habisain@gmail.com>
-# :copyright: 2012-2014
+# :copyright: 2012-2015
 # :license: GNU Public License version 3
 #
 # Script that contains most of the functions needed to translate Ruby
