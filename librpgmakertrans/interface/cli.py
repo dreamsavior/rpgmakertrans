@@ -36,7 +36,7 @@ class CLIMode(CoreProtocol):
         self.progressPrint('Starting patcher...')
         self.message = ''
         self.progress = 0
-        config = HeadlessConfig(useBOM=cargs.use_bom)
+        config = HeadlessConfig(useBOM=cargs.use_bom, socket=cargs.socket)
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
                            config)
 
@@ -119,6 +119,9 @@ def CLIBackend(runner):
                         action='store_true')
     parser.add_argument('-b', '--use-bom', help='Use UTF-8 BOM in Patch'
                         'files', action='store_true')
+    parser.add_argument('-s', '--socket', type=int, default=27899,
+                        help='Socket to use for XP/VX/VX Ace patching'
+                        '(default: 27899)')
     t = sys.stderr # Hacks to ensure that custom error handling is suppressed
     sys.stderr = sys.__stderr__
     args = parser.parse_args()
