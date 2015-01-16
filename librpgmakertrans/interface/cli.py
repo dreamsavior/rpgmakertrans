@@ -15,7 +15,7 @@ import argparse
 import shutil
 from ..workers.sniffers import sniff
 from ..controllers.coreprotocol import CoreProtocol
-from ..controllers.headless import initialiseHeadless
+from ..controllers.headless import initialiseHeadless, HeadlessConfig
 from ..version import versionString
 
 
@@ -36,8 +36,9 @@ class CLIMode(CoreProtocol):
         self.progressPrint('Starting patcher...')
         self.message = ''
         self.progress = 0
+        config = HeadlessConfig(useBOM=cargs.use_bom)
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
-                           cargs.use_bom)
+                           config)
 
     def handleInput(self, path, sniffedTypes, frmtString, errString):
         """Standard template function to sniff a path, output appropiately

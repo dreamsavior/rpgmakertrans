@@ -20,6 +20,16 @@ from collections import defaultdict
 from .coreprotocol import CoreProtocol
 from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
+class HeadlessConfig:
+    """Simple container to contain all config variables"""
+    def __init__(self, useBOM=False, socket=27899):
+        """Current variables in config:
+          - useBOM: If the patch should be written with byte order marks
+          - socket: Name of socket to use in SocketComms
+        """
+        self.useBOM = useBOM
+        self.socket = socket
+
 class HeadlessUtils(CoreProtocol):
     """Defines the utility functions that Headless uses to communicate with
     the UI."""
@@ -109,7 +119,7 @@ class Headless(HeadlessUtils):
         self.mtimesManager = MTimesHandlerManager()
         self.mtimesManager.start(self.errout)
 
-    def go(self, indir, patchpath, outdir, useBOM):
+    def go(self, indir, patchpath, outdir, config):
         """Initiate the patching"""
         self.setupPool('patcher', minProcesses=type(self).minPatcherProcesses)
         self.setupPool('copier', processes=1)
@@ -124,13 +134,13 @@ class Headless(HeadlessUtils):
                           ['translatorReady', 'mtimesReady'])
         self.localWaitUntil('startTranslation', self.beginTranslation,
                             patcher, translatorRet, mtimesManager, indir,
-                            patchpath, outdir, useBOM)
+                            patchpath, outdir, config)
 
     def processGame(self, indir, outdir, translator, mtimes, newmtimes):
         raise NotImplementedError('Override this method')
 
     def beginTranslation(self, patcher, translatorRet, mtimesManager,
-                         indir, patchpath, outdir, useBOM):
+                         indir, patchpath, outdir, config):
         """Begin the translation phase of patching"""
         translator = translatorRet.get()
         dontcopy = patcher.getAssetNames()
@@ -154,14 +164,14 @@ class Headless(HeadlessUtils):
                            'fullPatchesDone'])
         self.localWaitUntil('patchingFinished', self.finaliseTranslation,
                             patcher, translator, mtimesManager, indir,
-                            patchpath, outdir, useBOM)
+                            patchpath, outdir, config)
 
     def finaliseTranslation(self, patcher, translator, mtimesManager,
-                            indir, patchpath, outdir, useBOM):
+                            indir, patchpath, outdir, config):
         """Finalise the translation; write the patch and get mtimes"""
         self.setMessage('Finalising Patch')
         self.submit('patcher', writeTranslator, patcher, translator,
-                    useBOM, self.inputcoms)
+                    config.useBOM, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager,
                     translator.getMTime(), self.inputcoms)
         self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
@@ -188,7 +198,7 @@ def initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
                          transSniffed, useBOM, headlessClasses)
 
 def __initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
-                         transSniffed, useBOM, headlessClasses):
+                         transSniffed, config, headlessClasses):
     """A special chaining function; this allows multiple Headless classes
     to execute in sequence before signalling completion to the UI, by a minor
     abuse of the runOnFinished functionality in CoreRunner"""
@@ -197,11 +207,11 @@ def __initialiseHeadless(runner, outputComs, gameSniffed, patchSniffed,
     else:
         runOnFinished = lambda : __initialiseHeadless(runner, outputComs,
                                     gameSniffed, patchSniffed, transSniffed,
-                                    useBOM, headlessClasses)
+                                    config, headlessClasses)
     gamePath = gameSniffed.canonicalpath
     patchPath = patchSniffed.canonicalpath
     transPath = transSniffed.canonicalpath
     headless = runner.initialise(headlessClasses.pop(0),
                 runOnFinished=runOnFinished, outputcoms=outputComs)
-    headless.go(gamePath, patchPath, transPath, useBOM)
+    headless.go(gamePath, patchPath, transPath, config)
 
