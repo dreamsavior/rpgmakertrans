@@ -16,7 +16,7 @@ import os
 
 from ..controllers.coreprotocol import CoreRunner, CoreProtocol
 from ..workers.sniffers import sniffAll, sniff
-from ..controllers.headless import initialiseHeadless
+from ..controllers.headless import initialiseHeadless, HeadlessConfig
 from .qtui import startView, errorMsg
 from ..version import versionCheck
 
@@ -248,8 +248,9 @@ class GUIController(CoreProtocol):
         patchdata = self.patchDB.reverse[self.currentState['patchloc']]
         transdata = self.transDB.reverse[self.currentState['transloc']]
         useBOM = self.currentState['bom']
+        config = HeadlessConfig(useBOM=useBOM)
         initialiseHeadless(self.runner, self.inputcoms, gamedata,
-                           patchdata, transdata, useBOM)
+                           patchdata, transdata, config)
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
 
