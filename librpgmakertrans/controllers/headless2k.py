@@ -21,7 +21,8 @@ class Headless2k(Headless):
 
     defaultPatchVersion = 2
 
-    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
+    def processGame(self, indir, outdir, translator, mtimes, newmtimes,
+                    config):
         self.submit('patcher', process2kgame, indir, outdir,
                     translator, mtimes=mtimes, newmtimes=newmtimes,
                     comsout=self.inputcoms)

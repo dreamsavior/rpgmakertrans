@@ -136,7 +136,8 @@ class Headless(HeadlessUtils):
                             patcher, translatorRet, mtimesManager, indir,
                             patchpath, outdir, config)
 
-    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
+    def processGame(self, indir, outdir, translator, mtimes, newmtimes,
+                    config):
         raise NotImplementedError('Override this method')
 
     def beginTranslation(self, patcher, translatorRet, mtimesManager,
@@ -155,7 +156,7 @@ class Headless(HeadlessUtils):
                     newmtimes=newmtimes, progresssig='copying',
                     dirssig='dirsCopied')
         self.setMessage('Patching game')
-        self.processGame(indir, outdir, translator, mtimes, newmtimes)
+        self.processGame(indir, outdir, translator, mtimes, newmtimes, config)
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.setProgressCompleteTrigger('patching', 'gamePatchingDone')

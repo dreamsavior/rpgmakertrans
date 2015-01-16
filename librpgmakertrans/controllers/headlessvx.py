@@ -32,7 +32,8 @@ class HeadlessVX(Headless):
         self.submit('patcher', rbOneOffTranslation, outputComs, scriptName,
                     script, translator)
 
-    def processGame(self, indir, outdir, translator, mtimes, newmtimes):
+    def processGame(self, indir, outdir, translator, mtimes, newmtimes,
+                    config):
         """Process a VX game"""
         rbCommsIn = self.senderManager.Sender()
         self.registerSender(rbCommsIn)
@@ -40,7 +41,8 @@ class HeadlessVX(Headless):
         outdir = os.path.join(outdir, 'Data')
         self.submit('patcher', startRBComms, indir, outdir,
                     translator, mtimes=mtimes, newmtimes=newmtimes,
-                    outputComs=self.inputcoms, inputComs=rbCommsIn)
+                    outputComs=self.inputcoms, inputComs=rbCommsIn,
+                    socket=config.socket)
 
 class RPGVXUnencrypted(SniffedType):
     """Sniffed type for an untranslated unencrypted VX game"""
