@@ -68,10 +68,20 @@ class CLIMode(CoreProtocol):
         """Display a message"""
         self.normalPrint(message)
 
-    def errorMsgQuit(self, string):
+    def errorPrint(self, message):
+        """Print to stderr, removing the rerouting normally used.
+        This is also not silenced."""
+        t = sys.stderr
+        print(message, file=sys.stderr)
+        sys.stderr = t
+
+    def nonFatalError(self, message):
+        """Print a non fatal error message"""
+        self.errorPrint(message)
+
+    def errorMsgQuit(self, message):
         """Write an error message to stderr and quit"""
-        sys.stderr.write(string + '\n')
-        sys.stderr.flush()
+        self.errorPrint(message)
         sys.exit(1)
 
     def normalPrint(self, string):
