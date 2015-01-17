@@ -168,10 +168,12 @@ def patch(data, context)
       data.each_index{|x|
          data[x] = patch(data[x], context + [x])
       }
+      return data
     elsif data.class == Hash
       data.sort.each{|key, value|
         data[key] = patch(value, context+[key])
       }
+      return data
     else
       context += [data.class]
       data.instance_variables.each{|var|
