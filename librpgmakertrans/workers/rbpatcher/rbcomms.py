@@ -112,7 +112,8 @@ class RBComms(SocketComms):
                     if rbpoll is not None:
                         self.rubies.remove(ruby)
                         if rbpoll != 0:
-                            print('WARNING: Ruby with nonzero exit code')
+                            self.outputComs.send('nonfatalError',
+                                                 'WARNING: Ruby with nonzero exit code %s' % rbpoll)
                             errMsg = ruby.stderr.read()
                             self.rubyErrors += 1
                             if errMsg in self.rubyErrorMessages:
