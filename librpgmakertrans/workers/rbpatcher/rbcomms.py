@@ -17,7 +17,8 @@ from collections import OrderedDict
 import multiprocessing
 
 from ...controllers.socketcomms import SocketComms
-from librpgmakertrans.errorhook import errorWrap, handleError
+from ..rubyparse import translateRuby
+from ...errorhook import errorWrap, handleError
 
 if os.name == 'posix':
     RUBYPATH = 'ruby'
@@ -64,7 +65,8 @@ class RBComms(SocketComms):
                                   3: self.getTaskParams,
                                   4: self.loadVersion,
                                   6: self.getTranslatedScript,
-                                  7: self.doneTranslation})
+                                  7: self.doneTranslation,
+                                  8: self.translateInlineScript})
         self.rawArgs.update({2: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
@@ -165,9 +167,25 @@ class RBComms(SocketComms):
         self.outputComs.send('Couldn\'t find appropiate encoding for script %s, so script is untranslated' % name)
         self.scripts.append(name)
         self.translatedScripts[name] = bScript
-        # TODO: Send an error of errout, and set script to be raw script.
-        raise UnicodeDecodeError('Couldn\'t find appropriate'
-                                 'encoding for script')
+
+    def translateInlineScript(self, bScript, bContext):
+        """Translate an inline script. These are typically short, so they're
+        done in the main process.
+        TODO: If encountering a big inline script, offload it"""
+        context = bContext.decode('utf-8')
+        for encoding in ('utf-8', 'cp932'):
+            try:
+                script = bScript.decode(encoding)
+                try:
+                    return translateRuby(script, context, self.translator)[1]
+                except Exception as excpt:
+                    errmsg = 'Error parsing inline script: %s; script not translated' % str(excpt)
+                    self.outputComs.send('nonfatalError', errmsg)
+                    return script
+            except UnicodeDecodeError:
+                pass
+        self.outputComs.send('Couldn\'t find appropiate encoding for inline script %s, so script is untranslated' % context)
+        return bScript
 
     def setTranslatedScript(self, name, script):
         """Handler to receive the translation of a script"""
