@@ -8,6 +8,7 @@ common
 
 Provides the common functions to unpack RPGMaker XP/VX/VX Ace files.
 """
+
 import multiprocessing
 import struct
 import os

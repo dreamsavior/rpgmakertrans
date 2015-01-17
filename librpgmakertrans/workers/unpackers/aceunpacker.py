@@ -8,15 +8,19 @@ aceunpacker
 
 Provides the functions to unpack an RPGMaker VX Ace file.
 """
-import struct, os
+
+import struct
+
 from .common import Splitter
 
 def infIter(iterable):
+    """Iterate over an iterable forever"""
     while True:
         yield from iterable
 
 @Splitter(3)
 def rgss3aSplitter(rgss3aData):
+    """Splitter for rgss3a files."""
     pos = 8
     key = struct.unpack('I', rgss3aData[pos:pos+4])[0] * 9 + 3
     keyBytes = struct.pack('I', key)
