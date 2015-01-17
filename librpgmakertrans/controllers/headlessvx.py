@@ -15,7 +15,7 @@ progress/errors to an interface and coordinates worker progress
 import os
 
 from .headless import Headless
-from ..workers.rbpatcher import startRBComms
+from ..workers.rbpatcher import startRBComms, patchGameIni
 from ..workers.rubyparse import rbOneOffTranslation
 from ..workers.sniffers import sniffer, SniffedType, translatedSniffer
 
@@ -37,6 +37,14 @@ class HeadlessVX(Headless):
         """Process a VX game"""
         rbCommsIn = self.senderManager.Sender()
         self.registerSender(rbCommsIn)
+        inifn = os.path.join(indir, 'Game.ini')
+        if os.path.isfile(inifn):
+            self.submit('patcher', patchGameIni, inifn,
+                        os.path.join(outdir, 'Game.ini'), translator,
+                        self.outputcoms)
+        else:
+            self.outputcoms.send('nonfatalError',
+                                 'Could not find Game.ini file')
         indir = os.path.join(indir, 'Data')
         outdir = os.path.join(outdir, 'Data')
         self.submit('patcher', startRBComms, indir, outdir,

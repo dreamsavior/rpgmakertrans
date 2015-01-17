@@ -10,3 +10,4 @@ Patching engine for Ruby based RPGMaker games.
 """
 
 from .rbcomms import RBComms, startRBComms
+from .inipatcher import patchGameIni
