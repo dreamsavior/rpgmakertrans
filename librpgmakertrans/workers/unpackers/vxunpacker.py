@@ -9,34 +9,11 @@ vxunpacker
 Provides the functions to unpack an RPGMaker VX file. Would also work on XP.
 """
 
-import os
 import struct
-import multiprocessing
 
-from .common import unpackFile
+from .common import keyGen, Splitter
 
-def keyGen(baseKey):
-    """Generate keys. Can be communicated to to get a key without advancing"""
-    current = baseKey
-    while True:
-        stay = yield current
-        if not stay:
-            current = (current * 7 + 3) & 0xFFFFFFFF
-
-def unpackData(fileName, key, data):
-    """Write unpacked data to the given filename, using key to
-    unscramble the given data"""
-    fileSize = len(data)
-    padding = b'\x00' * (4 - len(data) % 4)
-    data += padding
-    frmt = 'I' * (len(data) // 4)
-    unpacked = struct.unpack(frmt, data)
-    decrypted = [x ^ k for x, k in zip(unpacked, keyGen(key))]
-    decryptedPacked = struct.pack(frmt, *decrypted)[:fileSize]
-    f = open(fileName, 'wb')
-    f.write(decryptedPacked)
-    f.close()
-
+@Splitter(1)
 def rgssadSplitter(rgssadData):
     """Given the contents of an rgssad file, extract the appropriate
     parameters for use in unpacking the file"""
@@ -54,22 +31,6 @@ def rgssadSplitter(rgssadData):
         fileSize = struct.unpack('I', rgssadData[pos:pos+4])[0] ^ next(keys)
         pos += 4
         fileKey = next(keys)
-        if os.name == 'posix':
-            fileName = fileName.replace('\\', '/')
         yield (fileName, fileKey, rgssadData[pos:pos+fileSize])
         pos += fileSize
 
-def unpackVXFile(fileName, unpackFunc=unpackData):
-    unpackFile(fileName, rgssadSplitter, unpackData)
-
-def mpunpackFile(fileName):
-    """Multiprocessing version of unpackFile to test flexibility
-    of the unpackFunc parameter in unpackFile"""
-    pool = multiprocessing.Pool()
-    mpunpack = lambda x,y,z: pool.apply_async(unpackData, [x,y,z])
-    unpackVXFile(fileName, mpunpack)
-    pool.close()
-    pool.join()
-
-if __name__ == '__main__':
-    unpackVXFile('/home/habisain/workspace/liliumunion/Game.rgss2a')
