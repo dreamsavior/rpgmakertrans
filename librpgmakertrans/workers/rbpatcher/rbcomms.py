@@ -64,10 +64,10 @@ class RBComms(SocketComms):
                                   2: self.translateScript,
                                   3: self.getTaskParams,
                                   4: self.loadVersion,
+                                  5: self.translateInlineScript,
                                   6: self.getTranslatedScript,
-                                  7: self.doneTranslation,
-                                  8: self.translateInlineScript})
-        self.rawArgs.update({2: True})
+                                  7: self.doneTranslation,})
+        self.rawArgs.update({2: True, 5: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
         self.going = True
@@ -118,11 +118,12 @@ class RBComms(SocketComms):
                             self.rubyErrors += 1
                             if errMsg in self.rubyErrorMessages:
                                 # TODO: Replace these errors with fatal error messages
+                                errMsg = errMsg.decode('utf-8')
                                 raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
                                 self.going = False
                             elif self.rubyErrors >= type(self).maxRubyErrors:
                                 errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
-                                errorMessageLS.extend(self.rubyErrors)
+                                errorMessageLS.extend(errMsg.decode('utf-8') for errMsg in self.rubyErrorMessages)
                                 raise RBCommsError('\n'.join(errorMessageLS))
                                 self.going = False
                             self.rubyErrorMessages.add(errMsg)

@@ -66,6 +66,10 @@ def patchPage(page, context)
   # do so.
   # code 108/408 are most likely dev comments. Interpreter ignores them
   # completely.
+  # code 355/655 are inline scripts. Similar to 101/401 for dialogue
+  # code 111 may also have a script, if param[0] = 12, param[1] is a
+  # script. However, this is for conditional branching, and anyone putting
+  # a text based script here would be mad!
   # Note: This function TRIMs trailing newlines. This means that
   # it is not guaranteed to be an identity if it translates nothing.
   # It doesn't eliminate empty dialogue boxes
@@ -79,7 +83,8 @@ def patchPage(page, context)
     choiceContextData = {}
     while currIndx < pageListLen
       eventCommand = page.instance_variable_get(:@list)[currIndx]
-      if eventCommand.instance_variable_get(:@code) == 101
+      case eventCommand.instance_variable_get(:@code)
+      when 101
         dialogueLoc = currIndx
         currIndx += 1
         windowInit = eventCommand
@@ -106,8 +111,7 @@ def patchPage(page, context)
           lineCount += 1
           newPageList.push(RPG::EventCommand.new(401, indent, [line]))
         }
-
-      elsif eventCommand.instance_variable_get(:@code) == 102
+      when 102
         choicePos = currIndx
         choiceNo = 0
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
@@ -119,7 +123,7 @@ def patchPage(page, context)
         }
         newPageList.push(eventCommand)
         currIndx += 1
-      elsif eventCommand.instance_variable_get(:@code) == 402
+      when 402
         choiceString = eventCommand.instance_variable_get(:@parameters)[1].strip
         choiceData = choiceContextData[choiceString]
         translatedChoice = translate(choiceString,
@@ -127,6 +131,19 @@ def patchPage(page, context)
         eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1
+      when 355
+        script = eventCommand.instance_variable_get(:@parameters)[0].strip + '\n'
+        indent = eventCommand.instance_variable_get(:@indent)
+        currIndx += 1
+        while eventCommand.instance_variable_get(:@code) == 655 and currIndx < pageListLen do
+          script += eventCommand.instance_variable_get(:@parameters)[0].strip + '\n'
+        end
+        translatedscript = translateInlineScript(script, contextString + 'InlineScript/').lines
+        code = 355
+        translatedscript.each { |line|
+          newPageList.push(RPG::EventCommand.new(code, indent, [line]))
+          code = 655
+        }
       else
         newPageList.push(eventCommand)
         currIndx += 1

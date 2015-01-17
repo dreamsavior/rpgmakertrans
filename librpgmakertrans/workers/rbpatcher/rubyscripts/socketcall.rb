@@ -60,8 +60,8 @@ def getVersion()
   return socketCall(4, [])
 end
 
-def setScripts(scripts)
-  return socketCall(5, scripts)
+def translateInlineScript(script, context)
+  return socketCall(5, [script, context])[0]
 end
 
 def getTranslatedScript()
