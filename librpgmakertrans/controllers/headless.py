@@ -156,7 +156,9 @@ class Headless(HeadlessUtils):
                     newmtimes=newmtimes, progresssig='copying',
                     dirssig='dirsCopied')
         self.setMessage('Patching game')
-        self.processGame(indir, outdir, translator, mtimes, newmtimes, config)
+        self.setProgressDiv('patching', 1)
+        self.localWaitUntil('dirsCopied', self.processGame, indir, outdir,
+                            translator, mtimes, newmtimes, config)
         self.waitUntil('dirsCopied', 'copier', doFullPatches, patcher,
                        outdir, translator, mtimes, newmtimes, self.inputcoms)
         self.setProgressCompleteTrigger('patching', 'gamePatchingDone')
