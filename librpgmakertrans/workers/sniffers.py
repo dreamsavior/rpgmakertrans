@@ -32,6 +32,8 @@ class SniffedType:
         else:
             raise Exception('Could not work out sniffed type data from a %s' %
                             str(type(canonicalpath)))
+        if self.canonicalpath.endswith(os.path.sep):
+            self.canonicalpath = self.canonicalpath.rstrip(os.path.sep)
 
     def __str__(self):
         """Return a string representation"""
