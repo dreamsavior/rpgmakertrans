@@ -13,6 +13,8 @@ import os
 import struct
 import multiprocessing
 
+from .common import unpackFile
+
 def keyGen(baseKey):
     """Generate keys. Can be communicated to to get a key without advancing"""
     current = baseKey
@@ -57,31 +59,17 @@ def rgssadSplitter(rgssadData):
         yield (fileName, fileKey, rgssadData[pos:pos+fileSize])
         pos += fileSize
 
-def unpackFile(fileName, unpackFunc=unpackData):
-    """Unpack an rgssad file; creates directory structure as needed"""
-    with open(fileName, 'rb') as f:
-        rgssadData = f.read()
-    flag1, flag2 = struct.unpack('II', rgssadData[0:8])
-    if flag1 != 0x53534752 or flag2 != 0x01004441:
-        raise ValueError('Game File is corrupt')
-
-    gameDirName = os.path.abspath(os.path.dirname(fileName))
-
-    for archiveFileName, fileKey, data in rgssadSplitter(rgssadData):
-        fileName = os.path.join(gameDirName, archiveFileName)
-        dirName = os.path.dirname(fileName)
-        if not os.path.exists(dirName):
-            os.makedirs(dirName)
-        unpackFunc(fileName, fileKey, data)
+def unpackVXFile(fileName, unpackFunc=unpackData):
+    unpackFile(fileName, rgssadSplitter, unpackData)
 
 def mpunpackFile(fileName):
     """Multiprocessing version of unpackFile to test flexibility
     of the unpackFunc parameter in unpackFile"""
     pool = multiprocessing.Pool()
     mpunpack = lambda x,y,z: pool.apply_async(unpackData, [x,y,z])
-    unpackFile(fileName, mpunpack)
+    unpackVXFile(fileName, mpunpack)
     pool.close()
     pool.join()
 
 if __name__ == '__main__':
-    mpunpackFile('/home/habisain/workspace/liliumunion/Game.rgss2a')
+    unpackVXFile('/home/habisain/workspace/liliumunion/Game.rgss2a')

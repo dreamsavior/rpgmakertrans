@@ -12,7 +12,7 @@ import os
 
 from .headless import HeadlessUtils
 from .headlessvx import HeadlessVX
-from ..workers.vxunpacker import unpackFile, unpackData
+from ..workers.unpackers.vxunpacker import unpackVXFile, unpackData
 from ..workers.sniffers import sniffer, SniffedType
 
 def unpackDataAndNotify(fileName, key, data, outputComs):
@@ -46,7 +46,7 @@ class HeadlessVXArc(HeadlessUtils):
         if arcNameLS:
             arcFileName = os.path.join(indir, arcNameLS[0])
             self.setMessage('Reading Archive Structure')
-            unpackFile(arcFileName, self.unpackData)
+            unpackVXFile(arcFileName, self.unpackData)
             self.setMessage('Unpacking Archive')
             self.setProgressDiv('unpacking', self.tasks)
             self.setProgressCompleteTrigger('unpacking', 'finish')
