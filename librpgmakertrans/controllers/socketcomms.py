@@ -79,7 +79,11 @@ class SocketComms:
                     raise Exception('Unhandled return type %s' % type(output).__name__)
                 yield from writer.drain()
             except SocketCommsMisread:
-                pass
+                # Somethings gone wrong with, so close socket to kill what
+                # is being talked to as all future comms are suspect.
+                yield from writer.drain()
+                writer.close()
+                return
             except:
                 handleError()
 
