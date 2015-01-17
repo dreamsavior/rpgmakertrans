@@ -9,13 +9,10 @@ zippatcher
 Provides a patcher for patches contained in a zip file.
 """
 
-from .basepatcher import BasePatch, BasePatcherV2
+from .basepatcher import BasePatch, BasePatcherV2, BasePatcherV3
 import zipfile
 import os.path
 from .registry import patcherSniffer, ZipPatchv2
-
-SEPERATORS = '\\/'
-
 
 class ZIPPatcher(BasePatch):
     """Provides a patch loader for ZIP based patches"""
@@ -36,8 +33,7 @@ class ZIPPatcher(BasePatch):
             zfile = self.zip.open(fn)
             raw = zfile.read(2 ** 22)
             dec = self.tryDecodePatchFile(type(self).header, raw)[1]
-            name = (fn.partition(self.root)[2].strip(
-                    SEPERATORS).rpartition('.')[0])
+            name = (fn.partition(self.root)[2].strip('/').rpartition('.')[0])
             data[name] = dec
         return data, self.mtime
 
@@ -45,11 +41,9 @@ class ZIPPatcher(BasePatch):
         """Dummy write patch data"""
 
     def toOSFileStyle(self, path):
-        """Convert all possible separators to OS style seperators, as
+        """Convert all a zip path to OS style seperators, as
         in a zip file they are always UNIX style"""
-        for sep in SEPERATORS:
-            path = path.replace(sep, os.path.sep)
-        return path
+        return os.path.join(*path.split('/'))
 
     def getAssetNames(self):
         """Get the names of the asset files"""
@@ -57,8 +51,8 @@ class ZIPPatcher(BasePatch):
 
     def toAssetName(self, string):
         """Convert a zip name to an name for use on file system"""
-        return self.toOSFileStyle(
-                    string.partition(self.root)[2].strip(SEPERATORS))
+        name = string.partition(self.root)[2].strip('/')
+        return self.toOSFileStyle(name)
 
     def makeDir(self, dirname):
         """Make a directory"""
@@ -94,11 +88,11 @@ class ZIPPatcher(BasePatch):
                 yield name
 
     def iterDirs(self, directory):
-        condition = lambda x: any(x.endswith(sep) for sep in SEPERATORS)
+        condition = lambda x: x.endswith('/')
         return self.__citer(directory, condition)
 
     def iterFiles(self, directory):
-        condition = lambda x: not any(x.endswith(sep) for sep in SEPERATORS)
+        condition = lambda x: not x.endswith('/')
         return self.__citer(directory, condition)
 
     def isPatchMarker(self, name):
@@ -139,12 +133,9 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
         self.patchdirs = list(self.iterDirs(self.root))
 
         if self.root.strip():
-            rootfiles = [x for x in patchfiles
-                        if all([y not in x.partition(self.root)[2]
-                                for y in SEPERATORS])]
+            rootfiles = [x for x in patchfiles if '/' not in x.partition(self.root)[2]]
         else:
-            rootfiles = [x for x in patchfiles
-                         if all(sep not in x for sep in SEPERATORS)]
+            rootfiles = [x for x in patchfiles if '/' not in x]
 
         self.assetFiles = []
         self.patchDataFiles = []
@@ -163,6 +154,16 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
             else:
                 if not fn.endswith('RPGMKTRANSPATCH'):
                     self.assetFiles.append(fn)
+
+class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
+    def categorisePatchFile(self, header, name):
+        roots = self.patchRoots()
+        if len(roots) > 1:
+            raise Exception('ZIP file contains more than one'
+                            'RPGMKTRANSPATCH file; cannot determine root')
+        self.root = roots[0]
+        patchfiles = list(self.iterFiles(self.root))
+        self.patchdirs = list(self.iterDirs(self.root))
 
 
 @patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
