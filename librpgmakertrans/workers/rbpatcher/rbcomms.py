@@ -150,17 +150,21 @@ class RBComms(SocketComms):
 
     def translateScript(self, bName, bScript, magicNo):
         """Handler to request translation of a string"""
+        name = bName.decode('utf-8')
         for encoding in ('utf-8', 'cp932'):
             try:
-                name = bName.decode(encoding)
                 script = bScript.decode(encoding)
                 self.outputComs.send('translateScript', name, script,
-                                     self.translator, self.inputComs)
+                                     self.translator, self.inputComs,
+                                     self.outputComs)
                 self.scripts.append(name)
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:
                 pass
+        self.outputComs.send('Couldn\'t find appropiate encoding for script %s, so script is untranslated' % name)
+        self.scripts.append(name)
+        self.translatedScripts[name] = bScript
         # TODO: Send an error of errout, and set script to be raw script.
         raise UnicodeDecodeError('Couldn\'t find appropriate'
                                  'encoding for script')

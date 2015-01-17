@@ -30,6 +30,14 @@ def rbTranslationServer(inputComs, outputComs, translator):
                 raise Exception('Unknown code on input bus')
 
 @errorWrap
-def rbOneOffTranslation(outputComs, scriptName, script, translator):
-    tname, tscript = translateRuby(script, scriptName, translationHandler=translator)
+def rbOneOffTranslation(outputComs, errorComs, scriptName, script, translator):
+    """Perform a simple Ruby translation. Should the parser blow up anywhere,
+    the error message get's propagated out to the GUI"""
+    try:
+        tname, tscript = translateRuby(script, scriptName, translationHandler=translator)
+    except Exception as excpt:
+        tname, tscript = scriptName, script
+        errorComs.send('nonfatalError',
+                        'Error parsing Script %s: %s; leaving untranslated' %
+                        (tname, str(excpt)))
     outputComs.send('setTranslatedScript', tname, tscript)

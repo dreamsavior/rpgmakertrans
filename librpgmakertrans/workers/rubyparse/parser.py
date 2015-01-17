@@ -182,3 +182,4 @@ def translateRuby(string, filename, translationHandler, verbose = False):
         state.popRules()
 
     return filename, scriptTranslator.translate()
+

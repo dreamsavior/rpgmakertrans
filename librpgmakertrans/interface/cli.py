@@ -75,7 +75,7 @@ class CLIMode(CoreProtocol):
         print(message, file=sys.stderr)
         sys.stderr = t
 
-    def nonFatalError(self, message):
+    def nonfatalError(self, message):
         """Print a non fatal error message"""
         self.errorPrint(message)
 

@@ -71,8 +71,8 @@ class SocketComms:
                     output = []
                 elif isinstance(output, (bytes, str)):
                     output = [output]
-                if not rawArgs:
-                    output = [arg.encode('utf-8') for arg in output]
+                output = [arg if isinstance(arg, bytes) else arg.encode('utf-8')
+                          for arg in output] # Encode any non bytes args
                 if isinstance(output, (tuple, list)):
                     writer.write(writePacket(output))
                 else:

@@ -27,9 +27,9 @@ class HeadlessVX(Headless):
     defaultPatchVersion = 3
     minPatcherProcesses = 2
 
-    def translateScript(self, scriptName, script, translator, outputComs):
+    def translateScript(self, scriptName, script, translator, outputComs, errorComs):
         """Submit a script for translation"""
-        self.submit('patcher', rbOneOffTranslation, outputComs, scriptName,
+        self.submit('patcher', rbOneOffTranslation, outputComs, errorComs, scriptName,
                     script, translator)
 
     def processGame(self, indir, outdir, translator, mtimes, newmtimes,
