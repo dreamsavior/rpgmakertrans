@@ -24,7 +24,10 @@ class PatchMeta(MetaCustomManager, ErrorMeta):
         """Return the patch marker ID, which is the first line of
         the patchMarker text. This should be constant for a patch
         version"""
-        return cls.patchMarker.partition('\n')[0]
+        return cls.patchMarker.partition('\n')[0].strip()
+
+    def matchPatchMarker(cls, string):
+        return string.split('\n')[0].strip() == cls.patchMarkerID
 
 class BasePatch(metaclass=PatchMeta):
     """The basic class for Patch objects"""

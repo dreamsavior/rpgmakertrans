@@ -12,7 +12,7 @@ Provides a patcher for patches contained in a zip file.
 from .basepatcher import BasePatch, BasePatcherV2, BasePatcherV3
 import zipfile
 import os.path
-from .registry import patcherSniffer, ZipPatchv2
+from .registry import patcherSniffer, ZipPatchv2, ZipPatchv3
 
 class ZIPPatcher(BasePatch):
     """Provides a patch loader for ZIP based patches"""
@@ -164,10 +164,9 @@ class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
         self.root = roots[0]
         patchfiles = list(self.iterFiles(self.root))
         self.patchdirs = list(self.iterDirs(self.root))
+        raise Exception('Bleh')
 
-
-@patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
-def sniffzipv2(path):
+def sniffZip(path, matchfunc):
     """A sniffer for V2 Zipped Patches"""
     if os.path.isfile(path) and zipfile.is_zipfile(path):
         z = zipfile.ZipFile(path)
@@ -175,7 +174,15 @@ def sniffzipv2(path):
         transpatches = [x for x in contents if x.endswith('RPGMKTRANSPATCH')]
         if len(transpatches) == 1:
             f = z.open(transpatches[0])
-            x = f.read()
-            if not x.strip():
+            x = f.read().decode('utf-8')
+            if matchfunc(x):
                 return path
     return False
+
+@patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
+def sniffzipv2(path):
+    return sniffZip(path, lambda x: len(x) == 0)
+
+@patcherSniffer(ZipPatchv3, 'ZipPatcherv3')
+def sniffzipv3(path):
+    return sniffZip(path, ZIPPatcherv3.matchPatchMarker)

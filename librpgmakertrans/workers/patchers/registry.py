@@ -25,6 +25,10 @@ class ZipPatchv2(SniffedType):
     """Sniffed type for ZipPatchv2"""
     maintype, subtypes = 'PATCH', ['v2', 'use']
 
+class ZipPatchv3(SniffedType):
+    """Sniffed type for ZipPatchv3"""
+    maintype, subtypes = 'PATCH', ['v3', 'use']
+
 class NewDir(SniffedType):
     """Sniffed type for an empty directory"""
     maintype, subtypes = 'PATCH', ['create']
