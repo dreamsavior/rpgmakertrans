@@ -156,7 +156,7 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
                     self.assetFiles.append(fn)
 
 class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
-    def categorisePatchFile(self, header, name):
+    def categorisePatchFiles(self):
         roots = self.patchRoots()
         if len(roots) > 1:
             raise Exception('ZIP file contains more than one'
@@ -183,6 +183,6 @@ def sniffZip(path, matchfunc):
 def sniffzipv2(path):
     return sniffZip(path, lambda x: len(x) == 0)
 
-@patcherSniffer(ZipPatchv3, 'ZipPatcherv3')
+@patcherSniffer(ZipPatchv3, 'ZIPPatcherv3')
 def sniffzipv3(path):
     return sniffZip(path, ZIPPatcherv3.matchPatchMarker)
