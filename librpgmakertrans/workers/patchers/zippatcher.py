@@ -20,7 +20,18 @@ class ZIPPatcher(BasePatch):
         """Initialise the patch loader"""
         self.zip = zipfile.ZipFile(path)
         self.mtime = os.path.getmtime(path)
+        self.root = self.getPatchRoot()
         super(ZIPPatcher, self).__init__(path, *args, **kwargs)
+
+    @property
+    def assetRoot(self):
+        """Get the asset root"""
+        return self.root
+
+    @property
+    def patchRoot(self):
+        """Get the patch root"""
+        return self.root
 
     def patchIsWritable(self):
         """Return false as Zip patches are read only"""
@@ -83,6 +94,7 @@ class ZIPPatcher(BasePatch):
             newmtimes[outfn] = self.mtime
 
     def __citer(self, directory, condition = lambda x: True):
+        """Conditional iteration with a beginning for the path"""
         for name in self.zip.namelist():
             if (name.startswith(directory) and condition(name)):
                 yield name
@@ -109,8 +121,8 @@ class ZIPPatcher(BasePatch):
         else:
             return False
 
-    def patchRoot(self):
-        """Get all roots of the patch. If there's more than one,
+    def getPatchRoot(self):
+        """Get the root of the patch. If there's more than one,
         error."""
         markers = [x.rpartition('RPGMKTRANSPATCH')[0]
                    for x in self.__citer('', self.isPatchMarker)]
@@ -132,11 +144,6 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
 
     def categorisePatchFiles(self):
         """Categorise the patch files"""
-        self.root = self.patchRoot()
-        #if len(roots) > 1:
-        #    raise Exception('ZIP file contains more than one'
-        #                    'RPGMKTRANSPATCH file; cannot determine root')
-        #self.root = roots[0]
         patchfiles = list(self.iterFiles(self.root))
         self.patchdirs = list(self.iterDirs(self.root))
 
@@ -165,9 +172,19 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
 
 class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
     """ZIP Patcher for patch version v3"""
+
+    @property
+    def assetRoot(self):
+        """Get the asset root"""
+        return self.root + '/Assets'
+
+    @property
+    def patchRoot(self):
+        """Get the patch root"""
+        return self.root + '/Patch'
+
     def categorisePatchFiles(self):
         """Categorise the patch files"""
-        self.root = self.patchRoot()
         patchfiles = list(self.iterFiles(self.root))
         self.patchdirs = list(self.iterDirs(self.root))
         raise Exception('Bleh')
