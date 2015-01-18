@@ -88,27 +88,35 @@ class ZIPPatcher(BasePatch):
                 yield name
 
     def iterDirs(self, directory):
+        """Iterate over directories beginning with a directory"""
         condition = lambda x: x.endswith('/')
         return self.__citer(directory, condition)
 
     def iterFiles(self, directory):
+        """Iterate over files beginning with a directory"""
         condition = lambda x: not x.endswith('/')
         return self.__citer(directory, condition)
 
     def isPatchMarker(self, name):
+        """Determine if a file name is a patch marker"""
         if name.endswith('RPGMKTRANSPATCH'):
             try:
                 with self.zip.open(name) as z:
                     data = z.read(len(type(self).patchMarkerID)).decode('utf-8')
-                return data == type(self).patchMarkerID
+                return type(self).matchPatchMarker(data)
             except UnicodeDecodeError:
                 return False
         else:
             return False
 
-    def patchRoots(self):
-        return [x.rpartition('RPGMKTRANSPATCH')[0]
-                for x in self.__citer('', self.isPatchMarker)]
+    def patchRoot(self):
+        """Get all roots of the patch. If there's more than one,
+        error."""
+        markers = [x.rpartition('RPGMKTRANSPATCH')[0]
+                   for x in self.__citer('', self.isPatchMarker)]
+        if len(markers) != 1:
+            raise Exception('Wrong number of roots in zip file')
+        return markers[0]
 
     def categorisePatchFile(self, header, name):
         """Categorise a single file based on if it is a given directory
@@ -124,11 +132,11 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
 
     def categorisePatchFiles(self):
         """Categorise the patch files"""
-        roots = self.patchRoots()
-        if len(roots) > 1:
-            raise Exception('ZIP file contains more than one'
-                            'RPGMKTRANSPATCH file; cannot determine root')
-        self.root = roots[0]
+        self.root = self.patchRoot()
+        #if len(roots) > 1:
+        #    raise Exception('ZIP file contains more than one'
+        #                    'RPGMKTRANSPATCH file; cannot determine root')
+        #self.root = roots[0]
         patchfiles = list(self.iterFiles(self.root))
         self.patchdirs = list(self.iterDirs(self.root))
 
@@ -156,18 +164,16 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
                     self.assetFiles.append(fn)
 
 class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
+    """ZIP Patcher for patch version v3"""
     def categorisePatchFiles(self):
-        roots = self.patchRoots()
-        if len(roots) > 1:
-            raise Exception('ZIP file contains more than one'
-                            'RPGMKTRANSPATCH file; cannot determine root')
-        self.root = roots[0]
+        """Categorise the patch files"""
+        self.root = self.patchRoot()
         patchfiles = list(self.iterFiles(self.root))
         self.patchdirs = list(self.iterDirs(self.root))
         raise Exception('Bleh')
 
 def sniffZip(path, matchfunc):
-    """A sniffer for V2 Zipped Patches"""
+    """A sniffer for Zipped Patches"""
     if os.path.isfile(path) and zipfile.is_zipfile(path):
         z = zipfile.ZipFile(path)
         contents = z.namelist()
@@ -181,8 +187,10 @@ def sniffZip(path, matchfunc):
 
 @patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
 def sniffzipv2(path):
-    return sniffZip(path, lambda x: len(x) == 0)
+    """Sniffer for Zipv2 patches"""
+    return sniffZip(path, ZIPPatcherv2.matchPatchMarker)
 
 @patcherSniffer(ZipPatchv3, 'ZIPPatcherv3')
 def sniffzipv3(path):
+    """Sniffer for Zipv3 patches"""
     return sniffZip(path, ZIPPatcherv3.matchPatchMarker)

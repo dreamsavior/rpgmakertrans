@@ -25,10 +25,12 @@ class FilePatcher(BasePatch):
 
     @property
     def patchPath(self):
+        """Return the patch path"""
         return self.path
 
     @property
     def assetPath(self):
+        """Return the asset path"""
         return self.path
 
     def loadPatchData(self):
@@ -132,10 +134,12 @@ class FilePatcherv3(FilePatcher, BasePatcherV3):
 
     @property
     def patchPath(self):
+        """Return the patch path"""
         return os.path.join(self.path, 'Patch')
 
     @property
     def assetPath(self):
+        """Return the asset path"""
         return os.path.join(self.path, 'Assets')
 
     def isSubDir(self, base, subdir):
