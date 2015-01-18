@@ -92,7 +92,7 @@ def patchPage(page, context)
         eventCommand = page.instance_variable_get(:@list)[currIndx]
         currentStr = ''
         while eventCommand.instance_variable_get(:@code) == 401 and currIndx < pageListLen do
-          currentStr += eventCommand.instance_variable_get(:@parameters)[0].strip + "\n"
+          currentStr += eventCommand.instance_variable_get(:@parameters)[0].rstrip + "\n"
           currIndx += 1
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
@@ -115,7 +115,7 @@ def patchPage(page, context)
         choicePos = currIndx
         choiceNo = 0
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
-          choiceString = eventCommand.instance_variable_get(:@parameters)[0][y].strip
+          choiceString = eventCommand.instance_variable_get(:@parameters)[0][y].rstrip
           choiceContextData[choiceString] = [choicePos, choiceNo]
           translatedChoice = translate(choiceString, contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
           eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
@@ -124,7 +124,7 @@ def patchPage(page, context)
         newPageList.push(eventCommand)
         currIndx += 1
       when 402
-        choiceString = eventCommand.instance_variable_get(:@parameters)[1].strip
+        choiceString = eventCommand.instance_variable_get(:@parameters)[1].rstrip
         choiceData = choiceContextData[choiceString]
         translatedChoice = translate(choiceString,
                                      contextString + 'Choice/%s/%s' % [choiceData[0].to_s, choiceData[1].to_s])
@@ -132,11 +132,11 @@ def patchPage(page, context)
         newPageList.push(eventCommand)
         currIndx += 1
       when 355
-        script = eventCommand.instance_variable_get(:@parameters)[0].strip + '\n'
+        script = eventCommand.instance_variable_get(:@parameters)[0].rstrip + '\n'
         indent = eventCommand.instance_variable_get(:@indent)
         currIndx += 1
         while eventCommand.instance_variable_get(:@code) == 655 and currIndx < pageListLen do
-          script += eventCommand.instance_variable_get(:@parameters)[0].strip + '\n'
+          script += eventCommand.instance_variable_get(:@parameters)[0].rstrip + '\n'
         end
         translatedscript = translateInlineScript(script, contextString + 'InlineScript/').lines
         code = 355
