@@ -58,7 +58,7 @@ class TranslationLine:
         while indx > 1 and string[indx-1].isspace():
             indx -= 1
         comment = string[indx:]
-        data = string[:indx]
+        data = string[:indx].rstrip()
         command = ''
 
         if string.startswith('> BEGIN STRING'):
