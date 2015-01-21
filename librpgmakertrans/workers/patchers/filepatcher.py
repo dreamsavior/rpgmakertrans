@@ -42,8 +42,7 @@ class FilePatcher(BasePatch):
             mtime = max(mtime, os.path.getmtime(fn))
             with open(fn, 'rb') as f:
                 raw = f.read()
-                matched, decoded = self.tryDecodePatchFile(
-                    type(self).header, raw)
+                matched, decoded = self.tryDecodePatchFile(raw)
                 if not matched:
                     raise Exception('Could not decode file %s' % fn)
                 data[name] = decoded
@@ -109,7 +108,7 @@ class FilePatcher(BasePatch):
         if filename.lower().endswith('.txt') and os.path.isfile(filename):
             with open(filename, 'rb') as f:
                 data = f.read(len(header) + 3)
-            return self.tryDecodePatchFile(header, data, 'ignore')[0]
+            return self.tryDecodePatchFile(data, 'ignore')[0]
 
 class FilePatcherv2(FilePatcher, BasePatcherV2):
     """A file based patcher for v2 patches"""

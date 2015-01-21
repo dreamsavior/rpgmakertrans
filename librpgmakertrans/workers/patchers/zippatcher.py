@@ -43,7 +43,7 @@ class ZIPPatcher(BasePatch):
         for fn in self.patchDataFiles:
             zfile = self.zip.open(fn)
             raw = zfile.read(2 ** 22)
-            dec = self.tryDecodePatchFile(type(self).header, raw)[1]
+            dec = self.tryDecodePatchFile(raw)[1]
             name = (fn.partition(self.root)[2].strip('/').rpartition('.')[0])
             data[name] = dec
         return data, self.mtime
@@ -62,7 +62,7 @@ class ZIPPatcher(BasePatch):
 
     def toAssetName(self, string):
         """Convert a zip name to an name for use on file system"""
-        name = string.partition(self.root)[2].strip('/')
+        name = string.partition(self.assetRoot)[2].strip('/')
         return self.toOSFileStyle(name)
 
     def makeDir(self, dirname):
@@ -96,6 +96,7 @@ class ZIPPatcher(BasePatch):
     def __citer(self, directory, condition = lambda x: True):
         """Conditional iteration with a beginning for the path"""
         for name in self.zip.namelist():
+            print(name, directory)
             if (name.startswith(directory) and condition(name)):
                 yield name
 
@@ -107,6 +108,10 @@ class ZIPPatcher(BasePatch):
     def iterFiles(self, directory):
         """Iterate over files beginning with a directory"""
         condition = lambda x: not x.endswith('/')
+        return self.__citer(directory, condition)
+
+    def iterPatchFiles(self, directory):
+        condition = lambda x: (not x.endswith('/')) and self.categorisePatchFile(x)
         return self.__citer(directory, condition)
 
     def isPatchMarker(self, name):
@@ -130,13 +135,13 @@ class ZIPPatcher(BasePatch):
             raise Exception('Wrong number of roots in zip file')
         return markers[0]
 
-    def categorisePatchFile(self, header, name):
+    def categorisePatchFile(self, name):
         """Categorise a single file based on if it is a given directory
         and if it has a given header when decoded with utf-8"""
         if name.lower().endswith('.txt'):
-            with self.zip.open(name, 'rb') as f:
-                data = f.read(len(header) + 3)
-            return self.tryDecodePatchFile(header, data, 'ignore')[0]
+            with self.zip.open(name) as f:
+                data = f.read(len(type(self).header) + 3)
+            return self.tryDecodePatchFile(data, 'ignore')[0]
 
 
 class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
@@ -157,11 +162,9 @@ class ZIPPatcherv2(ZIPPatcher, BasePatcherV2):
         for fn in patchfiles:
             if fn.lower().endswith('.txt') and fn in rootfiles:
                 matched = False
-                header = type(self).header
                 z = self.zip.open(fn)
                 raw = z.read(2 ** 22)
-                matched = self.tryDecodePatchFile(header, raw,
-                                                  errors='ignore')[0]
+                matched = self.tryDecodePatchFile(raw, errors='ignore')[0]
                 if matched:
                     self.patchDataFiles.append(fn)
                 else:
@@ -176,18 +179,22 @@ class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
     @property
     def assetRoot(self):
         """Get the asset root"""
-        return self.root + '/Assets'
+        subdir = 'Assets' if self.root.endswith('/') else '/Assets'
+        return self.root + subdir
 
     @property
     def patchRoot(self):
         """Get the patch root"""
-        return self.root + '/Patch'
+        subdir = 'Patch' if self.root.endswith('/') else '/Patch'
+        return self.root + subdir
 
     def categorisePatchFiles(self):
         """Categorise the patch files"""
-        patchfiles = list(self.iterFiles(self.root))
         self.patchdirs = list(self.iterDirs(self.root))
-        raise Exception('Bleh')
+        self.assetFiles = list(self.iterFiles(self.assetRoot))
+        self.patchDataFiles = list(self.iterPatchFiles(self.patchRoot))
+        #print(self.assetFiles)
+        #print(self.patchDataFiles)
 
 def sniffZip(path, matchfunc):
     """A sniffer for Zipped Patches"""

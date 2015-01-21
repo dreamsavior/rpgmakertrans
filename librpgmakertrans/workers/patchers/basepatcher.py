@@ -43,13 +43,13 @@ class BasePatch(metaclass=PatchMeta):
         """Stop the associated translator manager"""
         self.translatorManager.shutdown()
 
-    def tryDecodePatchFile(self, header, data, errors='strict'):
+    def tryDecodePatchFile(self, data, errors='strict'):
         """Try to decode a file using utf-8 or utf-8-sig. If possible
         return the decoded string"""
         for encoding in 'utf-8', 'utf-8-sig':
             try:
                 decoded = data.decode(encoding, errors=errors)
-                if decoded.startswith(header):
+                if decoded.startswith(type(self).header):
                     return True, decoded
             except UnicodeError:
                 pass
