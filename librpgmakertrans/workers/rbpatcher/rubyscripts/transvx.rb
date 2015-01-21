@@ -137,6 +137,7 @@ def patchPage(page, context)
         currIndx += 1
         while eventCommand.instance_variable_get(:@code) == 655 and currIndx < pageListLen do
           script += eventCommand.instance_variable_get(:@parameters)[0].rstrip + '\n'
+          currIndx += 1
         end
         translatedscript = translateInlineScript(script, contextString + 'InlineScript/').lines
         code = 355
