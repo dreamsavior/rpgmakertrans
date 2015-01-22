@@ -421,38 +421,3 @@ class Translator3(Translator):
             return string
         else:
             return ret
-
-dummy = """ローレル  # Protag name
-> CONTEXT: Actors/1/Actor/name/
-Laurel \# Not a comment"""
-
-dummy2 = """# RPGMAKER TRANS PATCH FILE VERSION 3.0
-# BEGIN STRING
-ローレル
-# CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED \# Comment
-Laurel
-# END STRING"""
-
-dummy3 = """> RPGMAKER TRANS PATCH FILE VERSION 3.1
-> BEGIN STRING
-ローレル
-> CONTEXT: Actors/1/Actor/name/ < UNTRANSLATED # Comment
-
-> END STRING"""
-
-if __name__ == '__main__':
-    t = Translator3({'Actors': dummy3}, mtime=1)
-    #print(t.translate('ローレル', 'Actors/2/Actor/name/'))
-    #print(t.translate('Meh','Actors/3/Actor/name/'))
-    print(t.translate('ローレル','Actors/3/Actor/name/'))
-    print(t.translate('ローレル','Actors/2/Actor/name/'))
-    r = t.getPatchData()
-    for name in sorted(r.keys()):
-        print('FILENAME:%s' % name)
-        print(r[name])
-    #t = Translator3(r, mtime=1)
-    #r = t.getPatchData()
-    #for name in sorted(r.keys()):
-    #    print('FILENAME:%s' % name)
-    #    print(r[name])
-    #print(Translateable(dummy))
