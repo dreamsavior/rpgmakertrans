@@ -21,7 +21,12 @@ def socketCall(code, args)
   end
   sock.write([packet.length].pack('L') + packet)
   recvPacketLen = sock.recv(4).unpack('L')[0]
-  recvPacket = sock.recv(recvPacketLen)
+  recvPacket = ''
+  while recvPacketLen > 0
+    recvPacketPart = sock.recv(recvPacketLen)
+    recvPacket += recvPacketPart
+    recvPacketLen -= recvPacketPart.length
+  end
   #nargs = sock.recv(4).unpack('L')[0]
   ret = []
   pos = 4
