@@ -116,16 +116,15 @@ class RBComms(SocketComms):
                         if rbpoll != 0:
                             self.outputComs.send('nonfatalError',
                                                  'WARNING: Ruby with nonzero exit code %s' % rbpoll)
-                            errMsg = ruby.stderr.read()
+                            errMsg = ruby.stderr.read().decode('utf-8')
                             self.rubyErrors += 1
                             if errMsg in self.rubyErrorMessages:
                                 # TODO: Replace these errors with fatal error messages
-                                errMsg = errMsg.decode('utf-8')
                                 raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
                                 self.going = False
                             elif self.rubyErrors >= type(self).maxRubyErrors:
                                 errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
-                                errorMessageLS.extend(errMsg.decode('utf-8') for errMsg in self.rubyErrorMessages)
+                                errorMessageLS.extend(errMsg for errMsg in self.rubyErrorMessages)
                                 raise RBCommsError('\n'.join(errorMessageLS))
                                 self.going = False
                             self.rubyErrorMessages.add(errMsg)
