@@ -191,11 +191,11 @@ end
 
 def patchFile(infn, outfn, context)
   data = 0
-  File.open( infn, "r+" ) do |datafile|
+  File.open( infn, "rb" ) do |datafile|
     data = Marshal.load(datafile)
   end
   patch(data, [context])
-  File.open( outfn, "w+") do |datafile|
+  File.open( outfn, "wb+") do |datafile|
     Marshal.dump(data, datafile)
   end
   #puts data.ya2yaml(:syck_compatible => true)
