@@ -92,7 +92,7 @@ class CLIMode(CoreProtocol):
     def progressPrint(self, string):
         """Print something using a progress bar style print"""
         if not self.quiet:
-            columns = shutil.get_terminal_size().columns - 1
+            columns = shutil.get_terminal_size().columns - 2
             print('\r' + string.ljust(columns), end=' ')
             sys.stdout.flush()
 
@@ -104,7 +104,7 @@ class CLIMode(CoreProtocol):
     def printProgress(self):
         """Print current progress to screen"""
         if not self.quiet:
-            columns = shutil.get_terminal_size().columns - 1
+            columns = shutil.get_terminal_size().columns - 2
             blocksInBar = columns - 9 - len(self.message)
             hashes = ('#' * int(blocksInBar * self.progress)).ljust(blocksInBar)
             percent = str(int(self.progress * 100)).ljust(3)
