@@ -21,7 +21,11 @@ def readPacket(packet):
     while pos < len(packet):
         argSize = struct.unpack('I', packet[pos:pos+4])[0]
         args.append(packet[pos+4:pos+4+argSize])
+        if len(args[-1]) != argSize:
+            raise Exception('Some form of misreading')
         pos += 4 + argSize
+    if code == 2:
+        print(code, args)
     return code, args
 
 def writePacket(args):
