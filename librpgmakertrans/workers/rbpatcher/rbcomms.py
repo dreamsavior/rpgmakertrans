@@ -128,7 +128,7 @@ class RBComms(SocketComms):
                                 raise RBCommsError('\n'.join(errorMessageLS))
                                 self.going = False
                             self.rubyErrorMessages.add(errMsg)
-                            if not self.debugRb:
+                            if self.debugRb:
                                 print(errMsg)
                             self.rubies.append(self.openRuby())
                 if len(self.rubies) == 0:
