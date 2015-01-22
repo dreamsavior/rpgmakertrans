@@ -24,8 +24,6 @@ def readPacket(packet):
         if len(args[-1]) != argSize:
             raise Exception('Some form of misreading')
         pos += 4 + argSize
-    if code == 2:
-        print(code, args)
     return code, args
 
 def writePacket(args):
@@ -59,7 +57,11 @@ class SocketComms:
                 if len(packetSizeB) != 4:
                     raise SocketCommsMisread('Wrong size')
                 packetSize = struct.unpack('I', packetSizeB)[0]
-                packet = yield from reader.read(packetSize)
+                packet = b''
+                while packetSize:
+                    packetPart = yield from reader.read(packetSize)
+                    packet += packetPart
+                    packetSize -= len(packetPart)
                 code, args = readPacket(packet)
                 if code == 0:
                     yield from writer.drain()
