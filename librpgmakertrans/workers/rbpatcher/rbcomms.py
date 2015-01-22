@@ -22,6 +22,8 @@ from ...errorhook import errorWrap, handleError
 
 if os.name == 'posix':
     RUBYPATH = 'ruby'
+elif os.name == 'nt':
+    RUBYPATH = 'C:\\Ruby193\\bin\\ruby.exe'
 else:
     raise Exception('Unsupported Platform')
 
