@@ -103,8 +103,7 @@ class RBComms(SocketComms):
 
     def openRuby(self):
         """Open a ruby process"""
-        base = os.path.split(self.basedir)[0]
-        rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
+        rbScriptPath = os.path.join(self.basedir, 'rubyscripts', 'main.rb')
         piping = None if self.debugRb else subprocess.PIPE
         return subprocess.Popen([self.rubypath, rbScriptPath, str(self.socket)],
                                 stdin=piping, stdout=piping, stderr=subprocess.PIPE)
