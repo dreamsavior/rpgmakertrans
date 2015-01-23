@@ -13,19 +13,13 @@ sorts things out from there.
 import asyncio
 import os
 import subprocess
+import sys
 from collections import OrderedDict
 import multiprocessing
 
 from ...controllers.socketcomms import SocketComms
 from ..rubyparse import translateRuby
 from ...errorhook import errorWrap, handleError
-
-if os.name == 'posix':
-    RUBYPATH = 'ruby'
-elif os.name == 'nt':
-    RUBYPATH = 'C:\\Ruby193\\bin\\ruby.exe'
-else:
-    raise Exception('Unsupported Platform')
 
 class RBCommsError(Exception):
     """Error raised when something goes wrong in RBComms"""
@@ -76,7 +70,27 @@ class RBComms(SocketComms):
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
         self.rubyErrorMessages = set()
         self.rubyErrors = 0
-
+        self.setEnv()
+        
+    def setEnv(self):
+        """Set the variables for the ruby interpreter used"""
+        if getattr(sys, 'frozen', False):
+            self.basedir = os.path.dirname(sys.executable)
+        else:
+            self.basedir = os.path.dirname(__file__)
+        if os.name in ('posix', 'darwin'):
+            self.rubypath = 'ruby'
+        elif os.name == 'nt':
+            for attempt in (os.path.join(self.basedir, 'pruby', 'bin', 'ruby.exe'),
+                            'C:\\Ruby193\\bin\\ruby.exe'):
+                if os.path.isfile(attempt):
+                    self.rubypath = attempt
+                    break
+            if not hasattr(self, 'rubypath'):
+                raise Exception('No applicable Ruby found - do you have the pruby folder or Ruby 1.93 installed')
+        else:
+            raise Exception('Unsupported Platform')
+            
     @staticmethod
     def makeFilesToProcess(indir, outdir):
         """Make the list of files to process."""
@@ -89,10 +103,10 @@ class RBComms(SocketComms):
 
     def openRuby(self):
         """Open a ruby process"""
-        base = os.path.split(__file__)[0]
+        base = os.path.split(self.basedir)[0]
         rbScriptPath = os.path.join(base, 'rubyscripts', 'main.rb')
         piping = None if self.debugRb else subprocess.PIPE
-        return subprocess.Popen([RUBYPATH, rbScriptPath, str(self.socket)],
+        return subprocess.Popen([self.rubypath, rbScriptPath, str(self.socket)],
                                 stdin=piping, stdout=piping, stderr=subprocess.PIPE)
 
     @asyncio.coroutine
