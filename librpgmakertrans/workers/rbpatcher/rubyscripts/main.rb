@@ -14,13 +14,20 @@ if socketNo == 0
 end
 
 require 'socket'
-$SOCK = TCPSocket.new('127.0.0.1', socketNo)
+if ARGV[1] != 'compile'
+  $SOCK = TCPSocket.new('127.0.0.1', socketNo)
+end
 
 require_relative 'socketcall.rb'
 require_relative 'rgss.rb'
 require_relative 'transvx.rb'
 going = true
 
+if ARGV[1] == 'compile'
+  puts 'compile mode - press enter to finish'
+  $stdin.gets
+  exit
+end
 versionString = getVersion()
 
 def translateFile(infile, outfile, context)
