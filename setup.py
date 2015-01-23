@@ -26,12 +26,18 @@ build_exe_options = {
                    'rubyscripts'),]
 }
 
+build_exe_cli_options = build_exe_options.copy()
+icoext = '.ico' if os.name == 'win32' else '.svg'
+build_exe_cli_options['icon'] = os.path.join('icons', 'rpgtranslogocli.%s' % icoext)
+build_exe_gui_options = build_exe_options.copy()
+build_exe_gui_options['icon'] = os.path.join('icons', 'rpgtranslogo.%s' % icoext)
+
 setup(
     name="RPGMaker Trans CLI %s" % version,
     version="%s" % version,
     description="Translation tool for RPGMaker games, CLI mode",
     executables=[Executable("rpgmakertrans_cli.py", base=base)],
-    options={'build_exe': build_exe_options},
+    options={'build_exe': build_exe_cli_options},
 )
 
 if sys.platform == "win32":
@@ -42,5 +48,5 @@ setup(
     version="%s" % version,
     description="Translation tool for RPGMaker games",
     executables=[Executable("rpgmakertrans_gui.py", base=base)],
-    options={'build_exe': build_exe_options},
+    options={'build_exe': build_exe_gui_options},
 )
