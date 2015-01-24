@@ -11,6 +11,9 @@ the rest of the program should interact with.
 
 TODO: This is somewhat tied to qtui at the moment. Ideally, it should be
 configurable, or in the qtui module.
+TODO: Check if it would be better to wrap this into an asyncio thing
+rather than headless. asyncio would be better for responsiveness, which
+let's face it, is lacking.
 """
 import os
 
