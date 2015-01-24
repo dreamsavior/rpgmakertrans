@@ -196,14 +196,14 @@ class GUIController(CoreProtocol):
         defaultpatchpath = gamepath.canonicalpath + '_patch'
         sniffData = sniff(defaultpatchpath, positives=['PATCH'])
         if self.currentState['create'] is False:
-            sniffData = [x for x in sniffData if 'create' in x.subtypes]
+            sniffData = [x for x in sniffData if 'create' not in x.subtypes]
         if len(sniffData) > 0:
             for item in sniffData:
                 self.addPatch(item, select=True)
         else:
             defaultzippath = defaultpatchpath + '.zip'
             zipSniff = [x for x in sniff(defaultzippath, positives=['PATCH'])
-                        if 'create' in x.subtypes]
+                        if 'create' not in x.subtypes]
             for item in zipSniff:
                 self.addPatch(item, select=True)
 
