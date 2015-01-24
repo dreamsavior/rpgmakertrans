@@ -10,7 +10,6 @@ Provides functionality related to versioning, including the version check.
 """
 
 from urllib.request import urlopen
-from bs4 import BeautifulSoup
 import datetime
 
 version = 3.0
@@ -25,21 +24,16 @@ def versionCheck(coms):
         coms.send('expired')
         return
     try:
-        blogPage = urlopen('http://habisain.blogspot.com')
-        blogData = blogPage.read()
-        blogPage.close()
-        blogSoup = BeautifulSoup(blogData)
-        tags = blogSoup.findAll(
-            attrs={'class': 'rpgmaker-trans-latest-version-tag'})
-        if len(tags) > 1:
-            raise Exception
-        tag = tags[0]
-        webver = float(tag['versiondata'])
+        versionURL = 'http://rpgmakertrans.bitbucket.org/rpgmakertransversion'
+        with urlopen(versionURL) as versionFile:
+            versionData = versionFile.read()
+        webver = float(versionData.strip())
         if webver > version:
             coms.send('newVerAvailable', webver)
-    except:
+    except Exception as e:
+        print('error %s' % e)
         pass
 
 if __name__ == '__main__':
-    from .controllers.sender import Sender
-    versionCheck(Sender())
+    from .controllers.sender import ErrorSender
+    versionCheck(ErrorSender())
