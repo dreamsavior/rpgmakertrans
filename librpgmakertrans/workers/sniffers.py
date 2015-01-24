@@ -43,6 +43,11 @@ class SniffedType:
         """Hash for sniffedtype"""
         return hash((type(self), self.canonicalpath))
 
+    def __eq__(self, other):
+        """Equality for sniffedTypes"""
+        return (type(self) == type(other) and
+                self.canonicalpath == other.canonicalpath)
+
     def __getitem__(self, item):
         """Tuple type access"""
         if isinstance(item, str):
