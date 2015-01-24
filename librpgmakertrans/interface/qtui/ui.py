@@ -71,6 +71,10 @@ class SelectorBlock(QtGui.QGroupBox):
         """Select an item in the combo box"""
         self.combobox.setCurrentIndex(self.combobox.findData(idtoken))
 
+    def removeItem(self, idtoken):
+        """Remove an item from the combobox"""
+        self.combobox.removeItem(self.combobox.findData(idtoken))
+
     def getCurrentSelectedID(self):
         """Get the ID of the current selected item"""
         return self.combobox.itemData(self.combobox.currentIndex())
@@ -149,9 +153,6 @@ class MainWindow(QtGui.QWidget):
         self.setWindowTitle('RPGMaker Trans v%s' % versionString)
         self.gobutton.released.connect(
             lambda: self.outputComs.send('button', 'go'))
-        hint = self.sizeHint()
-        height = hint.height()
-        width = hint.width()
         iconimagefn = os.path.join(os.path.split(__file__)[0],
                                    'rpgtranslogo.svg')
         if os.path.exists(iconimagefn):
@@ -165,17 +166,24 @@ class MainWindow(QtGui.QWidget):
         renderer.render(painter)
         del painter
         self.setWindowIcon(QtGui.QIcon(img))
-        self.setMinimumHeight(height)
-        self.setMaximumHeight(height)
-        self.setMinimumWidth(width)
-        self.setMaximumWidth(width)
         self.enableElements = {
             'gameloc': self.game.enable,
             'transloc': self.trans.enable,
             'patchloc': self.patch.enable,
             'options': self.patchopts.enable,
             'go': self.gobutton.setEnabled}
+        self.fixSize()
         self.show()
+
+    def fixSize(self):
+        """Fix the size of the Window to be whatever it should be"""
+        hint = self.sizeHint()
+        height = hint.height()
+        width = hint.width()
+        self.setMinimumHeight(height)
+        self.setMaximumHeight(height)
+        self.setMinimumWidth(width)
+        self.setMaximumWidth(width)
 
     def enableElement(self, element, state):
         """Enable an element"""
@@ -185,11 +193,13 @@ class MainWindow(QtGui.QWidget):
         """Display a non-fatal error"""
         self.errorLog.show()
         self.errorLog.appendPlainText(msg)
+        self.fixSize()
 
     def resetNonfatalErrors(self):
         """Reset the non-fatal errors"""
         self.errorLog.setPlainText('')
         self.errorLog.hide()
+        self.fixSize()
 
     def closeEvent(self, event):
         """Override the close event to get confirmation from user if
@@ -237,6 +247,11 @@ class MainWindow(QtGui.QWidget):
         control.addItem(tokenName, tokenID)
         if select:
             control.selectItem(tokenID)
+
+    def comboBoxRemove(self, controlID, tokenID):
+        """Remove something from a selector blocks combobox"""
+        control = self.getComboControl(controlID)
+        control.removeItem(tokenID)
 
     def comboBoxSelect(self, controlID, tokenID):
         """Select an item in a combo box"""

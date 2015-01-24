@@ -119,6 +119,10 @@ class QTLogic(CoreProtocol):
         translation selector box"""
         self.window.comboBoxSelect('transloc', tokenID)
 
+    def removeGame(self, tokenID):
+        """Remove a game from the selector box"""
+        self.window.comboBoxRemove('gameloc', tokenID)
+
     def setProgress(self, amount):
         """Set progress to given amount (between 0 and 1)"""
         self.window.setProgress(int(amount * 100))

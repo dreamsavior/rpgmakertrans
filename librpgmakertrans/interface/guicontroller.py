@@ -209,21 +209,23 @@ class GUIController(CoreProtocol):
 
     def changeSelected(self, idtoken, newid):
         """Update state when something changes"""
-        self.currentState[idtoken] = newid
-        if idtoken == 'gameloc':
-            self.selectDefaultPatch()
-        elif idtoken == 'patchloc':
-            if self.currentState['gameloc'] is not None:
-                gamepath = self.gameDB.reverse[self.currentState['gameloc']]
-                defaulttranspath = gamepath.canonicalpath + '_translated'
-                self.addTransFromPath(defaulttranspath, select=True)
+        if self.currentState['enabled']:
+            self.currentState[idtoken] = newid
+            if idtoken == 'gameloc':
+                self.selectDefaultPatch()
+            elif idtoken == 'patchloc':
+                if self.currentState['gameloc'] is not None:
+                    gamepath = self.gameDB.reverse[self.currentState['gameloc']]
+                    defaulttranspath = gamepath.canonicalpath + '_translated'
+                    self.addTransFromPath(defaulttranspath, select=True)
 
     def optionChanged(self, option, value):
         """Update state when an option changes"""
-        self.currentState[option] = value
-        if option == 'create':
-            self.selectDefaultPatch()
-            self.outputcoms.send('setBrowsePatchDirs', value)
+        if self.currentState['enabled']:
+            self.currentState[option] = value
+            if option == 'create':
+                self.selectDefaultPatch()
+                self.outputcoms.send('setBrowsePatchDirs', value)
 
     def enableUI(self):
         """Enable/disable the UI based on current state. Automatically
@@ -254,9 +256,21 @@ class GUIController(CoreProtocol):
         self.currentState['enabled'] = False
         self.outputcoms.send('setMessage', 'Patching game...')
 
+    def resniffInput(self):
+        """Resniff the input"""
+        gameID = self.currentState['gameloc']
+        gamedata = self.gameDB.reverse[gameID]
+        self.outputcoms.send('removeGame', gameID)
+        self.addGameFromPath(gamedata.canonicalpath, select=True)
+
+
     def nonfatalError(self, msg):
         """Display a non fatal error message"""
         self.outputcoms.send('nonfatalError', msg)
+
+    def displayMessage(self, message):
+        """For now, alias to setMessage"""
+        self.nonfatalError(message)
 
     def setMessage(self, message):
         """Set the message beneath the progress bar"""
