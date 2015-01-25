@@ -53,7 +53,7 @@ class QTLogic(CoreProtocol):
         """Display a browse window for a game"""
         newgameloc = self.window.fileDialog(
             'Choose game',
-            'RPGMaker Game Files (RPG_RT.EXE)')
+            'RPGMaker Game Files (RPG_RT.EXE Game.exe)')
         self.outputcoms.send('addGameFromPath', newgameloc, select=True)
 
     def browsePatch(self):
