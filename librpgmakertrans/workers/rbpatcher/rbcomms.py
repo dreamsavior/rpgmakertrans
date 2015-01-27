@@ -71,7 +71,7 @@ class RBComms(SocketComms):
         self.rubyErrorMessages = set()
         self.rubyErrors = 0
         self.setEnv()
-        
+
     def setEnv(self):
         """Set the variables for the ruby interpreter used"""
         if getattr(sys, 'frozen', False):
@@ -81,7 +81,7 @@ class RBComms(SocketComms):
         if os.name in ('posix', 'darwin'):
             self.rubypath = 'ruby'
         elif os.name == 'nt':
-            for attempt in (os.path.join(self.basedir, 'pruby', 'bin', 'ruby.exe'),
+            for attempt in (os.path.join(self.basedir, 'pruby', 'bin', 'rubyw.exe'),
                             'C:\\Ruby193\\bin\\ruby.exe'):
                 if os.path.isfile(attempt):
                     self.rubypath = attempt
@@ -90,7 +90,7 @@ class RBComms(SocketComms):
                 raise Exception('No applicable Ruby found - do you have the pruby folder or Ruby 1.93 installed')
         else:
             raise Exception('Unsupported Platform')
-            
+
     @staticmethod
     def makeFilesToProcess(indir, outdir):
         """Make the list of files to process."""
