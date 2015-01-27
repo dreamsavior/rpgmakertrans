@@ -68,10 +68,10 @@ class FileCopier(object, metaclass=ErrorMeta):
 
     def doCopyFile(self, fid, infn, outfn):
         infnmtime = os.path.getmtime(infn)
-        outfnmtime = self.mtimes.get(outfn, None)
+        outfnmtime = self.mtimes.get(outfn, (None, None))[0]
         if infnmtime != outfnmtime:
             try:
-                shutil.copy(infn, outfn)
+                shutil.copy2(infn, outfn)
                 self.newmtimes[outfn] = infnmtime
             except IOError:
                 self.comsout.send('nonfatalError',
