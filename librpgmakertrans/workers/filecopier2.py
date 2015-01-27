@@ -24,10 +24,10 @@ class FileCopier(object, metaclass=ErrorMeta):
                  comsout, translator, mtimes, newmtimes, progresssig,
                  dirssig, *args, **kwargs):
         super(FileCopier, self).__init__(*args, **kwargs)
-        self.indir = os.path.normcase(indir)
-        self.outdir = os.path.normcase(outdir)
-        self.ignoredirs = [os.path.normcase(
-            x) for x in ignoredirs] + ['.svn', 'cvs', '.git', '.hg', '.bzr']
+        self.indir = indir
+        self.outdir = outdir
+        self.ignoredirs = [os.path.normcase(x) for x in ignoredirs]
+        self.versioningDirs = ['.svn', 'cvs', '.git', '.hg', '.bzr']
         self.ignoreexts = [os.path.normcase(x) for x in ignoreexts]
         self.ignorefiles = [os.path.normcase(x) for x in ignorefiles]
         self.dirs = []
@@ -59,8 +59,8 @@ class FileCopier(object, metaclass=ErrorMeta):
         if self.dirssig:
             self.comsout.send('trigger', self.dirssig)
         if self.progresssig:
-            self.comsout.send(
-                'setProgressDiv', self.progresssig, len(self.files))
+            self.comsout.send('setProgressDiv', self.progresssig,
+                              len(self.files))
         for fid, infn, outfn in self.files:
             self.doCopyFile(fid, infn, outfn)
             if self.progresssig:
@@ -68,7 +68,6 @@ class FileCopier(object, metaclass=ErrorMeta):
 
     def doCopyFile(self, fid, infn, outfn):
         infnmtime = os.path.getmtime(infn)
-        # self.testFile(infn)
         outfnmtime = self.mtimes.get(outfn, None)
         if infnmtime != outfnmtime:
             try:
@@ -97,16 +96,16 @@ class FileCopier(object, metaclass=ErrorMeta):
                     subdirs.remove(rm)
 
             for subdir in subdirs:
-                dirname = os.path.normcase(os.path.join(path, subdir))
+                dirname = os.path.join(path, subdir)
                 transdirname = self.changeDir(dirname, indir, outdir)
-                if not os.path.exists(transdirname):
+                if not os.path.exists(transdirname) and not any(os.path.normcase(dirname).endswith(x) for x in self.versioningDirs):
                     self.dirs.append(transdirname)
             for fname in files:
-                origfile = os.path.normcase(os.path.join(path, fname))
+                origfile = os.path.join(path, fname)
                 fid = origfile.replace(indir + os.path.sep, '', 1)
                 transfile = self.changeDir(origfile, indir, outdir)
                 ext = os.path.splitext(fname)[1]
-                if not (fid in self.ignorefiles or ext in self.ignoreexts):
+                if not (os.path.normcase(fid) in self.ignorefiles or os.path.normcase(ext) in self.ignoreexts):
                     self.files.append((fid, origfile, transfile))
 
 
