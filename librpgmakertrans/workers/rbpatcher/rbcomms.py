@@ -81,13 +81,16 @@ class RBComms(SocketComms):
         if os.name in ('posix', 'darwin'):
             self.rubypath = 'ruby'
         elif os.name == 'nt':
-            for attempt in (os.path.join(self.basedir, 'pruby', 'bin', 'rubyw.exe'),
-                            'C:\\Ruby193\\bin\\ruby.exe'):
+            self.rubypath = None
+            rubyPaths = (os.path.join(self.basedir, 'pruby', 'bin', 'rubyw.exe'),
+                         'C:\\Ruby193\\bin\\ruby.exe')
+            for attempt in rubyPaths:
                 if os.path.isfile(attempt):
                     self.rubypath = attempt
                     break
-            if not hasattr(self, 'rubypath'):
-                raise Exception('No applicable Ruby found - do you have the pruby folder or Ruby 1.93 installed')
+            if not self.rubypath is None:
+                raise Exception('No applicable Ruby found\nDo you have the pruby folder or Ruby 1.93 installed?\n(Tried:\n%s)' %
+                                '\n'.join(rubyPaths))
         else:
             raise Exception('Unsupported Platform')
 
