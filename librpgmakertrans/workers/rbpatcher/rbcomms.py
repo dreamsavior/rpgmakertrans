@@ -123,6 +123,9 @@ class RBComms(SocketComms):
                             self.outputComs.send('nonfatalError',
                                                  'WARNING: Ruby with nonzero exit code %s' % rbpoll)
                             errMsg = ruby.stderr.read().decode('utf-8')
+                            if errMsg:
+                                self.outputComs.send('nonfatalError',
+                                                     'Ruby Traceback:\n%s' % errMsg)
                             self.rubyErrors += 1
                             if errMsg in self.rubyErrorMessages:
                                 # TODO: Replace these errors with fatal error messages
