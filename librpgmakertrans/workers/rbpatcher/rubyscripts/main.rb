@@ -23,12 +23,15 @@ require_relative 'rgss.rb'
 require_relative 'transvx.rb'
 going = true
 
-if ARGV[1] == 'compile'
-  puts 'compile mode - press enter to finish'
-  $stdin.gets
-  exit
-end
 versionString = getVersion()
+
+if versionString == 'xp'
+  versionSymbol = :xp
+elsif versionString == 'vx'
+  versionSymbol = :vx
+elsif versionString == 'vxace'
+  versionSymbol = :ace
+end
 
 def translateFile(infile, outfile, context)
   #puts('working on %s' % context)
