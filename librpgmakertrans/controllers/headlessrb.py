@@ -69,42 +69,81 @@ class HeadlessXP(HeadlessRB):
     copyIgnoreExts = ['.rxdata']
     dataExtension = '.rxdata'
     rpgversion = 'xp'
+    arcName = 'Game.rgssad'
     
 class HeadlessVX(HeadlessRB):
     """Headless specialised for VX games."""
     copyIgnoreExts = ['.rvdata']
     dataExtension = '.rvdata'
     rpgversion = 'vx'
+    arcName = 'Game.rgss2a'
     
 class HeadlessVXAce(HeadlessRB):
     """Headless specialised for VX games."""
     copyIgnoreExts = ['.rvdata2']
     dataExtension = '.rvdata2'
     rpgversion = 'vxace'
+    arcName = 'Game.rgss3a'
 
-class RPGVXUnencrypted(SniffedType):
+class RPGXPUnpacked(SniffedType):
+    """Sniffed type for an untranslated unpacked VX game"""
+    maintype, subtypes = 'GAME', ['XP']
+    headlessClass = HeadlessXP
+
+class RPGXPUnpackedTranslated(SniffedType):
+    """Sniffed type for an untranslated unpacked VX game"""
+    maintype, subtypes = 'TRANS', ['XP', 'update']
+
+class RPGVXUnpacked(SniffedType):
     """Sniffed type for an untranslated unpacked VX game"""
     maintype, subtypes = 'GAME', ['VX']
     headlessClass = HeadlessVX
 
-class RPGVXUnencryptedTranslated(SniffedType):
+class RPGVXUnpackedTranslated(SniffedType):
     """Sniffed type for an untranslated unpacked VX game"""
     maintype, subtypes = 'TRANS', ['VX', 'update']
 
-@sniffer(RPGVXUnencrypted)
-def sniffVXUnencryptedGame(path):
-    """Sniffer for unpacked VX games"""
+class RPGVXAceUnpacked(SniffedType):
+    """Sniffed type for an untranslated unpacked VX game"""
+    maintype, subtypes = 'GAME', ['VXAce']
+    headlessClass = HeadlessVXAce
+
+class RPGVXAceUnpackedTranslated(SniffedType):
+    """Sniffed type for an untranslated unpacked VX game"""
+    maintype, subtypes = 'TRANS', ['VXAce', 'update']
+
+def sniffUnpackedRBGame(path, headlessClass):
+    """Sniff an unpacked RB Game"""
     if os.path.isfile(path) and path.upper().endswith('GAME.EXE'):
-        return sniffVXUnencryptedGame(os.path.split(path)[0])
+        return sniffUnpackedRBGame(os.path.split(path)[0])
     elif os.path.isdir(path):
         contents = os.listdir(path)
-        if any(x.upper() == 'GAME.RGSS2A' for x in contents):
+        arcName = headlessClass.arcName.upper()
+        if any(x.upper() == arcName for x in contents):
             return False
         dataDir = os.path.join(path, 'Data')
+        dataExt = headlessClass.dataExtension.upper()
         if os.path.isdir(dataDir):
             dataDirContents = os.listdir(dataDir)
-            if any(x.upper().endswith('.RVDATA') for x in dataDirContents):
+            if any(x.upper().endswith(dataExt) for x in dataDirContents):
                 return path
     return False
 
-translatedSniffer(RPGVXUnencryptedTranslated, sniffVXUnencryptedGame)
+@sniffer(RPGXPUnpacked)
+def sniffXPUnpackedGame(path):
+    """Sniffer for unpacked VX games"""
+    return sniffUnpackedRBGame(path, HeadlessXP)
+
+@sniffer(RPGVXUnpacked)
+def sniffVXUnpackedGame(path):
+    """Sniffer for unpacked VX games"""
+    return sniffUnpackedRBGame(path, HeadlessVX)
+
+@sniffer(RPGVXAceUnpacked)
+def sniffVXAceUnpackedGame(path):
+    """Sniffer for unpacked VX games"""
+    return sniffUnpackedRBGame(path, HeadlessVXAce)
+
+translatedSniffer(RPGXPUnpackedTranslated, sniffXPUnpackedGame)
+translatedSniffer(RPGVXUnpackedTranslated, sniffVXUnpackedGame)
+translatedSniffer(RPGVXAceUnpackedTranslated, sniffVXAceUnpackedGame)
