@@ -11,7 +11,7 @@ A Headless implementation to unpack packed archives
 import os
 
 from .headless import HeadlessUtils
-from .headlessvx import HeadlessXP, HeadlessVX, HeadlessVXAce
+from .headlessrb import HeadlessXP, HeadlessVX, HeadlessVXAce
 from ..workers.unpackers import unpackFile, unpackData
 from ..workers.sniffers import sniffer, SniffedType
 

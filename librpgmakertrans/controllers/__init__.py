@@ -11,5 +11,5 @@ RPGMaker Trans
 """
 
 from . import headless2k as __headless2k
-from . import headlessvx as __headlessvx
+from . import headlessrb as __headlessrb
 from . import headlessrbarc as __headlessrbarc

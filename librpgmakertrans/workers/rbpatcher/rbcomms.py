@@ -94,16 +94,6 @@ class RBComms(SocketComms):
         else:
             raise Exception('Unsupported Platform')
 
-    @staticmethod
-    def makeFilesToProcess(indir, outdir):
-        """Make the list of files to process."""
-        files = {}
-        for fn in os.listdir(indir):
-            if fn.endswith('.rvdata'): # TODO: Support for VX Ace + XP
-                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn),
-                                                  fn.rpartition('.rvdata')[0])
-        return files
-
     def openRuby(self):
         """Open a ruby process"""
         rbScriptPath = os.path.join(self.basedir, 'rubyscripts', 'main.rb')
@@ -254,12 +244,11 @@ class RBComms(SocketComms):
         return self.rpgversion
 
 @errorWrap
-def startRBComms(indir, outdir, translator, mtimes, newmtimes,
+def startRBComms(filesToProcess, translator, mtimes, newmtimes,
                  outputComs, inputComs, socket=None):
     """Entry point for multiprocessing to start RBComms.
     VX only at present. The input/output directories should be
     the data directories (todo: recursive approach)"""
-    filesToProcess = RBComms.makeFilesToProcess(indir, outdir)
     rpgversion = 'vx'
     subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
