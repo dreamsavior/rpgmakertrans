@@ -62,22 +62,25 @@ class HeadlessRB(Headless):
         self.submit('patcher', startRBComms, filesToProcess,
                     translator, mtimes=mtimes, newmtimes=newmtimes,
                     outputComs=self.inputcoms, inputComs=rbCommsIn,
-                    socket=config.socket)
+                    socket=config.socket, rpgversion=type(self).rpgversion)
               
 class HeadlessXP(HeadlessRB):
     """Headless specialised for XP games."""
     copyIgnoreExts = ['.rxdata']
     dataExtension = '.rxdata'
+    rpgversion = 'xp'
     
 class HeadlessVX(HeadlessRB):
     """Headless specialised for VX games."""
     copyIgnoreExts = ['.rvdata']
     dataExtension = '.rvdata'
+    rpgversion = 'vx'
     
 class HeadlessVXAce(HeadlessRB):
     """Headless specialised for VX games."""
     copyIgnoreExts = ['.rvdata2']
     dataExtension = '.rvdata2'
+    rpgversion = 'vxace'
 
 class RPGVXUnencrypted(SniffedType):
     """Sniffed type for an untranslated unpacked VX game"""

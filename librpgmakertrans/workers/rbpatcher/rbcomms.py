@@ -245,11 +245,8 @@ class RBComms(SocketComms):
 
 @errorWrap
 def startRBComms(filesToProcess, translator, mtimes, newmtimes,
-                 outputComs, inputComs, socket=None):
-    """Entry point for multiprocessing to start RBComms.
-    VX only at present. The input/output directories should be
-    the data directories (todo: recursive approach)"""
-    rpgversion = 'vx'
+                 outputComs, inputComs, rpgversion, socket=None):
+    """Entry point for multiprocessing to start RBComms."""
     subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses, socket=socket)
