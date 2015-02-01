@@ -19,6 +19,7 @@ class FilePatcher(BasePatch):
     """A Patch which is just a directory on the file system"""
     def __init__(self, path, *args, **kwargs):
         """Initialise the file patcher; corrects paths if necessary"""
+        path = os.path.normcase(path)
         super(FilePatcher, self).__init__(path, *args, **kwargs)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
@@ -117,7 +118,7 @@ class FilePatcherv2(FilePatcher, BasePatcherV2):
         """Work out if a file is an asset or patch data"""
         self.assetFiles = []
         self.patchDataFiles = []
-        rootls = set(os.listdir(self.path))
+        rootls = set(os.path.normcase(x) for x in os.listdir(self.path))
         for fn in self.allPaths():
             if os.path.normcase(os.path.split(fn)[1]) in rootls:
                 if self.categorisePatchFile(type(self).header, fn):
@@ -134,12 +135,12 @@ class FilePatcherv3(FilePatcher, BasePatcherV3):
     @property
     def patchPath(self):
         """Return the patch path"""
-        return os.path.join(self.path, 'Patch')
+        return os.path.normcase(os.path.join(self.path, 'Patch'))
 
     @property
     def assetPath(self):
         """Return the asset path"""
-        return os.path.join(self.path, 'Assets')
+        return os.path.normcase(os.path.join(self.path, 'Assets'))
 
     def isSubDir(self, base, subdir):
         """A very primitive check to see if a file/directory is in a
