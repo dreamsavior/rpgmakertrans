@@ -33,6 +33,8 @@ elsif versionString == 'vxace'
   versionSymbol = :ace
 end
 
+RGSS.setup_classes(versionSymbol, {})
+
 def translateFile(infile, outfile, context)
   #puts('working on %s' % context)
   patchFile(infile, outfile, context)
