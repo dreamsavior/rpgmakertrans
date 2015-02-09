@@ -79,7 +79,7 @@ class TranslationLine:
                 data = data.partition('<')[0].strip()
             else:
                 data = data.strip()
-        elif comment and not string.strip():
+        elif len(comment) > 0 and not data.strip():
             cType = 'comment'
         else:
             cType = 'data'
@@ -419,3 +419,4 @@ class Translator3(Translator):
             return string
         else:
             return ret
+        
