@@ -79,7 +79,7 @@ class TranslationLine:
                 data = data.partition('<')[0].strip()
             else:
                 data = data.strip()
-        elif comment and not string.strip():
+        elif len(comment) > 0 and not data.strip():
             cType = 'comment'
         else:
             cType = 'data'
@@ -228,10 +228,9 @@ class TranslationFile:
         self.enablePruning = enablePruning
 
     @classmethod
-    def fromString(cls, filename, string):
+    def fromString(cls, filename, string, *args, **kwargs):
         """Initialiser from a filename and string"""
         lines = string.split('\n')
-        converted = False
         versionLine = lines.pop(0)
         versionString = versionLine.partition(cls.header)[2].strip()
         if not versionString:
@@ -241,12 +240,11 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         if fileVersion[1] == 0:
             lines = cls.convertFrom30(lines)
-            converted = True
             fileVersion[1] = 1
         if fileVersion[1] != 1:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
-        return cls(filename, translateables)
+        return cls(filename, translateables, *args, **kwargs)
 
     def __iter__(self):
         """Iterate over translateables"""
@@ -367,7 +365,7 @@ class TranslationDict(dict):
 
 class Translator3(Translator):
     """A Version 3 Translator"""
-    def __init__(self, namedStrings, debug = False, *args, **kwargs):
+    def __init__(self, namedStrings, enablePruning = True, debug = False, *args, **kwargs):
         """Initialise the translator from a dictionary of filenames to
         file contents"""
         super().__init__(*args, **kwargs)
@@ -375,7 +373,7 @@ class Translator3(Translator):
             namedStrings = namedStrings.items()
         self.translationFiles = {}
         for name, string in namedStrings:
-            self.translationFiles[name] = TranslationFile.fromString(name, string)
+            self.translationFiles[name] = TranslationFile.fromString(name, string, enablePruning=enablePruning)
         self.translationDB = TranslationDict()
         for translationFileName in self.translationFiles:
             translationFile = self.translationFiles[translationFileName]
@@ -421,3 +419,4 @@ class Translator3(Translator):
             return string
         else:
             return ret
+        
