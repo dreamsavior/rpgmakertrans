@@ -26,8 +26,9 @@ class FileCopier(object, metaclass=ErrorMeta):
         super(FileCopier, self).__init__(*args, **kwargs)
         self.indir = indir
         self.outdir = outdir
+        versioningDirs = ['.svn', 'cvs', '.git', '.hg', '.bzr']
         self.ignoredirs = [os.path.normcase(x) for x in ignoredirs]
-        self.versioningDirs = ['.svn', 'cvs', '.git', '.hg', '.bzr']
+        self.ignoredirs += versioningDirs
         self.ignoreexts = [os.path.normcase(x) for x in ignoreexts]
         self.ignorefiles = [os.path.normcase(x) for x in ignorefiles]
         self.dirs = []
@@ -73,7 +74,7 @@ class FileCopier(object, metaclass=ErrorMeta):
             try:
                 shutil.copy2(infn, outfn)
                 self.newmtimes[outfn] = infnmtime
-            except IOError:
+            except FileNotFoundError:
                 self.comsout.send('nonfatalError',
                                   'Could not copy %s to %s' % (infn, outfn))
         else:
@@ -92,13 +93,13 @@ class FileCopier(object, metaclass=ErrorMeta):
 
         for path, subdirs, files in os.walk(indir):
             for rm in self.ignoredirs:
-                if rm in subdirs:
+                if os.path.normcase(rm) in subdirs:
                     subdirs.remove(rm)
 
             for subdir in subdirs:
                 dirname = os.path.join(path, subdir)
                 transdirname = self.changeDir(dirname, indir, outdir)
-                if not os.path.exists(transdirname) and not any(os.path.normcase(dirname).endswith(x) for x in self.versioningDirs):
+                if not os.path.exists(transdirname):
                     self.dirs.append(transdirname)
             for fname in files:
                 origfile = os.path.join(path, fname)
