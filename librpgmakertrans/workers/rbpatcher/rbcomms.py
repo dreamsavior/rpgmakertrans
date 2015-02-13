@@ -32,7 +32,7 @@ class RBComms(SocketComms):
     maxRubyErrors = 10
 
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
@@ -68,8 +68,6 @@ class RBComms(SocketComms):
         self.debugRb = debugRb
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
-        self.rubyErrorMessages = set()
-        self.rubyErrors = 0
         self.setEnv()
 
     def setEnv(self):
@@ -126,17 +124,7 @@ class RBComms(SocketComms):
                             if errMsg:
                                 self.outputComs.send('nonfatalError',
                                                      'Ruby Traceback:\n%s' % errMsg)
-                            self.rubyErrors += 1
-                            if errMsg in self.rubyErrorMessages:
-                                # TODO: Replace these errors with fatal error messages
-                                raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
-                                self.going = False
-                            elif self.rubyErrors >= type(self).maxRubyErrors:
-                                errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
-                                errorMessageLS.extend(errMsg for errMsg in self.rubyErrorMessages)
-                                raise RBCommsError('\n'.join(errorMessageLS))
-                                self.going = False
-                            self.rubyErrorMessages.add(errMsg)
+                                raise RBCommsError('Ruby quit with Error Message %s' % errMsg)
                             if self.debugRb:
                                 print(errMsg)
                             self.rubies.append(self.openRuby())
