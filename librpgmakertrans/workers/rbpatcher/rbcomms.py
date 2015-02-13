@@ -47,7 +47,8 @@ class RBComms(SocketComms):
         self.outputComs.send('setProgressDiv', 'patching',
                              len(filesToProcess))
         for item in [x for x in filesToProcess]:
-            if item.endswith('Scripts.rvdata'):
+            fn = os.path.split(item)[1]
+            if fn.lower().startswith('scripts'):
                 self.scriptWaiting = True
                 self.scriptInput = item
                 self.scriptOutput = filesToProcess.pop(item)[0]
@@ -238,7 +239,7 @@ class RBComms(SocketComms):
 def startRBComms(filesToProcess, translator, mtimes, newmtimes,
                  outputComs, inputComs, rpgversion, socket=None):
     """Entry point for multiprocessing to start RBComms."""
-    subprocesses = multiprocessing.cpu_count()
+    subprocesses = 1 # multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses, socket=socket)
     rbcomms.start()
