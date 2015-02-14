@@ -125,9 +125,7 @@ class RBComms(SocketComms):
                             if errMsg:
                                 self.outputComs.send('nonfatalError',
                                                      'Ruby Traceback:\n%s' % errMsg)
-                                raise RBCommsError('Ruby quit with Error Message %s' % errMsg)
-                            if self.debugRb:
-                                print(errMsg)
+                                raise RBCommsError('Ruby quit with Error Message\n%s' % errMsg)
                             self.rubies.append(self.openRuby())
                 if len(self.rubies) == 0:
                     self.going = False

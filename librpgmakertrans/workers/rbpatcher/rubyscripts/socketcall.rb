@@ -16,6 +16,7 @@ def socketCall(code, args)
   packet = ''
   packet += [code].pack('L')
   args.each do |arg|
+    arg.force_encoding 'ascii-8bit'
     packet += [arg.bytesize].pack('L')
     packet += arg
   end
@@ -34,6 +35,7 @@ def socketCall(code, args)
     argSize = recvPacket[pos, 4].unpack('L')[0]
     pos += 4
     arg = recvPacket[pos, argSize]
+    arg.force_encoding 'utf-8'
     ret.push(arg)
     pos += argSize
   end
