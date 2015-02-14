@@ -20,12 +20,24 @@ module WCL
     class Sprite
     end
   end
+  class PD_Info
+    class Cel
+    end
+  end
   class RPG
     class Item
     end
     class Enemy
     end
     class Armor
+    end
+    class Weapon
+    end
+    class MapInfo
+      class Traffic
+      end
+      class Syncrax
+      end
     end
   end
 end
@@ -182,7 +194,9 @@ end
 def patch(data, context)
   schemaMatchResult = schemaMatch($schema, context)
   if schemaMatchResult == 1
-    return translate(data, contextStr(context))
+    if data.class == 'String' # TODO: Be able to translate a list here.
+      return translate(data, contextStr(context))
+    end
   elsif schemaMatchResult == 2
     return patchPage(data, context)
   elsif schemaMatchResult == 0
