@@ -21,6 +21,12 @@ module WCL
     end
   end
   class RPG
+    class Item
+    end
+    class Enemy
+    end
+    class Armor
+    end
   end
 end
 
