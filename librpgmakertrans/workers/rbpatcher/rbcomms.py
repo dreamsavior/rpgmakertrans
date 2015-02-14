@@ -123,9 +123,9 @@ class RBComms(SocketComms):
                                                  'WARNING: Ruby with nonzero exit code %s' % rbpoll)
                             errMsg = ruby.stderr.read().decode('utf-8')
                             if errMsg:
-                                self.outputComs.send('nonfatalError',
-                                                     'Ruby Traceback:\n%s' % errMsg)
-                                raise RBCommsError('Ruby quit with Error Message\n%s' % errMsg)
+                                self.outputComs.send('fatalError',
+                                                     'ERROR: Ruby unexpectedly quit.\nRuby Traceback:\n%s' % errMsg)
+                                self.going = False
                             self.rubies.append(self.openRuby())
                 if len(self.rubies) == 0:
                     self.going = False

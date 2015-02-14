@@ -49,7 +49,7 @@ class HeadlessUtils(CoreProtocol):
         """Sends a nonfatal error message and kills the patcher"""
         self.outputcoms.send('nonfatalError', msg)
         self.going = False
-        self.outputcoms.send('abortPatching')
+        self.outputcoms.send('patchingAborted')
         self.terminate(['patcher', 'copier'])
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()

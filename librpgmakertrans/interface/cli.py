@@ -100,6 +100,11 @@ class CLIMode(CoreProtocol):
         """Set the current progress"""
         self.progress = progress
         self.printProgress()
+        
+    def patchingAborted(self):
+        """Quit"""
+        self.errorPrint('Patching aborted')
+        sys.exit(1)
 
     def printProgress(self):
         """Print current progress to screen"""
