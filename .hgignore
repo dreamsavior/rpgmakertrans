@@ -1,6 +1,7 @@
 syntax: glob
 __pycache__
 *.pyc
+*~
 .project
 .pydevproject
 pylint.html
