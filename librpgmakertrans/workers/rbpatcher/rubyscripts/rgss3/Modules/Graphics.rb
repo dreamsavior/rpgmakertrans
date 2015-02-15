@@ -20,8 +20,7 @@ module Graphics
   @brightness = 255
   @frame_count = 0
   @frozen = false
-  @draw_color = nil
-  @draw_color.saturation = 0
+  @draw_color = Color.new
   @draw_color.alpha = 0
 
   module_function

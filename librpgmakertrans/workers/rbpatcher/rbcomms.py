@@ -72,6 +72,18 @@ class RBComms(SocketComms):
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
         self.setEnv()
+        self.loadBaseScripts()
+        
+    def loadBaseScripts(self):
+        if self.rpgversion == 'vxace':
+            version = 3
+        else:
+            raise NotImplementedError('Not implemented this RGSS version yet')
+        basePath = os.path.join(self.basedir, 'rubyscripts', 'rgss%s' % version)
+        for subdir in ('Base', 'Modules'):
+            for fn in sorted(x for x in os.listdir(os.path.join(basePath, subdir)) if x.endswith('.rb')):
+                with open(os.path.join(basePath, subdir, fn)) as f:
+                    self.rawScripts.append('# %s\n%s' % (fn, f.read()))
 
     def setEnv(self):
         """Set the variables for the ruby interpreter used"""
@@ -161,8 +173,7 @@ class RBComms(SocketComms):
                                      self.translator, self.inputComs,
                                      self.outputComs)
                 self.scripts.append(name)
-                self.rawScripts.append(script)
-                with open('%s-%s.rb' % (len(self.scripts), name), 'w') as f: f.write(script)
+                self.rawScripts.append('# %s\n%s' % (name, script))
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:

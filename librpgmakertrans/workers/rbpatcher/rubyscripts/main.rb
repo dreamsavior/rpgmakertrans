@@ -34,18 +34,7 @@ elsif versionString == 'vxace'
 end
 
 #RGSS.setup_classes(versionSymbol, {})
-class Sprite
-end
-class Window
-end
-module RPG
-end
-class Graphics
-  def self.resize_screen(x, y)
-  end
-end
-class Plane
-end
+
 def loadScripts()
   getScripts.each{|script|
     eval script
@@ -90,6 +79,7 @@ while going
     translateScripts(values[1])
   elsif code == 'translateFile'
     if loadedScripts == false
+      loadedScripts = true
       loadScripts()
     end
     translateFile(values[1], values[2], values[3])
