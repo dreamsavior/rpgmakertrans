@@ -10,42 +10,9 @@
 
 require 'zlib'
 require_relative 'socketcall.rb'
-require_relative 'rgss.rb'
+#require_relative 'rgss.rb'
 require_relative 'vxschema.rb'
 
-module WCL
-  class Slideshow
-  end
-  class Conductor
-    class Sprite
-    end
-  end
-  class PD_Info
-    class Cel
-    end
-  end
-  class RPG
-    class Item
-    end
-    class Enemy
-    end
-    class Armor
-    end
-    class Weapon
-    end
-    class MapInfo
-      class Traffic
-      end
-      class Syncrax
-      end
-    end
-  end
-end
-
-module RPG
-  class Regents
-  end
-end
 # Notes:
 # Don't think animations is necessary
 # Areas unknown

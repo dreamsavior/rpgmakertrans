@@ -19,7 +19,7 @@ if ARGV[1] != 'compile'
 end
 
 require_relative 'socketcall.rb'
-require_relative 'rgss.rb'
+#require_relative 'rgss.rb'
 require_relative 'transvx.rb'
 going = true
 loadedScripts = false
@@ -34,7 +34,18 @@ elsif versionString == 'vxace'
 end
 
 #RGSS.setup_classes(versionSymbol, {})
-
+class Sprite
+end
+class Window
+end
+module RPG
+end
+class Graphics
+  def self.resize_screen(x, y)
+  end
+end
+class Plane
+end
 def loadScripts()
   getScripts.each{|script|
     eval script
@@ -78,11 +89,11 @@ while going
   elsif code == 'translateScripts'
     translateScripts(values[1])
   elsif code == 'translateFile'
-    translateFile(values[1], values[2], values[3])
-  elsif code == 'rebuildScripts'
     if loadedScripts == false
       loadScripts()
     end
+    translateFile(values[1], values[2], values[3])
+  elsif code == 'rebuildScripts'
     rebuildScripts(values[1])
   elsif code == 'wait'
     sleep(1.0)

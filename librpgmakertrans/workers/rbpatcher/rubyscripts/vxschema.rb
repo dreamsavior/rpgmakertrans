@@ -97,7 +97,7 @@ $schema = {
     'RPG::System' => {
       'game_title' => true,
       'elements' => {true => true},
-      'terms' => {RPG::System::Terms => {true => true}},
+      'terms' => {'RPG::System::Terms' => {true => true}},
     }
   },
   'Troops' => {

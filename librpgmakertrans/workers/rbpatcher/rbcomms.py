@@ -162,6 +162,7 @@ class RBComms(SocketComms):
                                      self.outputComs)
                 self.scripts.append(name)
                 self.rawScripts.append(script)
+                with open('%s-%s.rb' % (len(self.scripts), name), 'w') as f: f.write(script)
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:
