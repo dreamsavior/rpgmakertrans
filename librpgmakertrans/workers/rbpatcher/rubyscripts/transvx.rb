@@ -70,6 +70,8 @@ def schemaMatch(schema, context)
     end
     if schemaLevel.member?(x)
       schemaLevel = schemaLevel[x]
+    elsif x.class == Class and schemaLevel.member?(x.name)
+      schemaLevel = schemaLevel[x.name]
     elsif schemaLevel.member?(true)
       schemaLevel = schemaLevel[true]
     else

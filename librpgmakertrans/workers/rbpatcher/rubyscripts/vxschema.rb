@@ -11,14 +11,14 @@
 $schema = {
   'Actors' => {
     true => {
-      RPG::Actor => {
+      'RPG::Actor' => {
         'name' => true
       }
     }
   },
   'Armors' => {
     true => {
-      RPG::Armor => {
+      'RPG::Armor' => {
         'name' => true,
         'description' => true
       }
@@ -26,7 +26,7 @@ $schema = {
   },
   'Classes' => {
     true => {
-      RPG::Class => {
+      'RPG::Class' => {
         'name' => true,
         'skill_name' => true
       }
@@ -39,7 +39,7 @@ $schema = {
   },
   'Enemies' => {
     true => {
-      RPG::Enemy => {
+      'RPG::Enemy' => {
         'name' => true,
         'note' => true,
       }
@@ -47,17 +47,17 @@ $schema = {
   },
   'Items' => {
     true => {
-      RPG::Item => {
+      'RPG::Item' => {
         'name' => true,
         'description' => true,
       }
     }
   },
   'Map' => {
-    RPG::Map => {
+   'RPG::Map' => {
       'events' => {
         true => {
-          RPG::Event => {
+          'RPG::Event' => {
             'pages' => {
               true => 'eventList'
             }
@@ -68,13 +68,13 @@ $schema = {
   },
   'MapInfos' => {
     true => {
-      RPG::MapInfo => {'name' => true}
+      'RPG::MapInfo' => {'name' => true}
     }
   },
   'Scripts' => 'ScriptFile',
   'Skills' => {
     true => {
-      RPG::Skill => {
+      'RPG::Skill' => {
         'name' => true,
         'description' => true,
         'message1' => true,
@@ -84,7 +84,7 @@ $schema = {
   },
   'States' => {
     true => {
-      RPG::State => {
+      'RPG::State' => {
         'name' => true,
         'message1' => true,
         'message2' => true,
@@ -94,7 +94,7 @@ $schema = {
     }
   },
   'System' => {
-    RPG::System => {
+    'RPG::System' => {
       'game_title' => true,
       'elements' => {true => true},
       'terms' => {RPG::System::Terms => {true => true}},
@@ -102,7 +102,7 @@ $schema = {
   },
   'Troops' => {
     true => {
-      RPG::Troop => {
+      'RPG::Troop' => {
         'name' => true,
       'pages' => {true => 'eventList'},
       }
@@ -110,7 +110,7 @@ $schema = {
   },
   'Weapons' => {
     true => {
-      RPG::Weapon => {
+      'RPG::Weapon' => {
         'name' => true,
         'description' => true,
       }
