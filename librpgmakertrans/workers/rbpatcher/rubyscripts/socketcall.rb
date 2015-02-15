@@ -78,3 +78,7 @@ end
 def doneTranslation(context)
   return socketCall(7, [context])
 end
+
+def getScripts()
+  return socketCall(8, [])
+end

@@ -22,7 +22,7 @@ require_relative 'socketcall.rb'
 require_relative 'rgss.rb'
 require_relative 'transvx.rb'
 going = true
-
+loadedScripts = false
 versionString = getVersion()
 
 if versionString == 'xp'
@@ -33,7 +33,13 @@ elsif versionString == 'vxace'
   versionSymbol = :ace
 end
 
-RGSS.setup_classes(versionSymbol, {})
+#RGSS.setup_classes(versionSymbol, {})
+
+def loadScripts()
+  getScripts.each{|script|
+    eval script
+  }
+end
 
 def translateFile(infile, outfile, context)
   #puts('working on %s' % context)
@@ -74,6 +80,9 @@ while going
   elsif code == 'translateFile'
     translateFile(values[1], values[2], values[3])
   elsif code == 'rebuildScripts'
+    if loadedScripts == false
+      loadScripts()
+    end
     rebuildScripts(values[1])
   elsif code == 'wait'
     sleep(1.0)

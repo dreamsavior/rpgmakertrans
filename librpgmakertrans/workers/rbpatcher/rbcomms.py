@@ -41,6 +41,7 @@ class RBComms(SocketComms):
         self.scripts = []
         self.magicNumbers = {}
         self.translatedScripts = {}
+        self.rawScripts = []
         self.scriptInput = None
         self.scriptOutput = None
         self.scriptWaiting = False
@@ -63,7 +64,8 @@ class RBComms(SocketComms):
                                   4: self.loadVersion,
                                   5: self.translateInlineScript,
                                   6: self.getTranslatedScript,
-                                  7: self.doneTranslation,})
+                                  7: self.doneTranslation,
+                                  8: self.getScripts})
         self.rawArgs.update({2: True, 5: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
@@ -159,6 +161,7 @@ class RBComms(SocketComms):
                                      self.translator, self.inputComs,
                                      self.outputComs)
                 self.scripts.append(name)
+                self.rawScripts.append(script)
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:
@@ -189,6 +192,10 @@ class RBComms(SocketComms):
     def setTranslatedScript(self, name, script):
         """Handler to receive the translation of a script"""
         self.translatedScripts[name] = script
+        
+    def getScripts(self):
+        """Returns the raw scripts, for loading into Ruby"""
+        return self.rawScripts
 
     def getTranslatedScript(self):
         """Handler to output a translated script to Ruby"""
