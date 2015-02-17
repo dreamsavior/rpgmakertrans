@@ -134,16 +134,19 @@ def patchPage(page, context)
         newPageList.push(eventCommand)
         currIndx += 1
       when 355
-        script = eventCommand.instance_variable_get(:@parameters)[0].rstrip + '\n'
+        line = eventCommand.instance_variable_get(:@parameters)[0].rstrip
+        script = line + "\n"
         indent = eventCommand.instance_variable_get(:@indent)
         currIndx += 1
         while eventCommand.instance_variable_get(:@code) == 655 and currIndx < pageListLen do
-          script += eventCommand.instance_variable_get(:@parameters)[0].rstrip + '\n'
+          line = eventCommand.instance_variable_get(:@parameters)[0].rstrip
+          script += line + "\n"
           currIndx += 1
         end
         translatedscript = translateInlineScript(script, contextString + 'InlineScript/').lines
         code = 355
         translatedscript.each { |line|
+          line.chomp!
           newPageList.push(RPG::EventCommand.new(code, indent, [line]))
           code = 655
         }

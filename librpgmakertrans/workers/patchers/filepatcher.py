@@ -135,12 +135,12 @@ class FilePatcherv3(FilePatcher, BasePatcherV3):
     @property
     def patchPath(self):
         """Return the patch path"""
-        return os.path.normcase(os.path.join(self.path, 'Patch'))
+        return os.path.normcase(os.path.join(self.path, 'Patch')) + os.path.sep
 
     @property
     def assetPath(self):
         """Return the asset path"""
-        return os.path.normcase(os.path.join(self.path, 'Assets'))
+        return os.path.normcase(os.path.join(self.path, 'Assets')) + os.path.sep
 
     def isSubDir(self, base, subdir):
         """A very primitive check to see if a file/directory is in a
