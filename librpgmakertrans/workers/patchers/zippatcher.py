@@ -179,13 +179,13 @@ class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
     @property
     def assetRoot(self):
         """Get the asset root"""
-        subdir = 'Assets' if self.root.endswith('/') else '/Assets'
+        subdir = 'Assets/' if self.root.endswith('/') else '/Assets/'
         return self.root + subdir
 
     @property
     def patchRoot(self):
         """Get the patch root"""
-        subdir = 'Patch' if self.root.endswith('/') else '/Patch'
+        subdir = 'Patch/' if self.root.endswith('/') else '/Patch/'
         return self.root + subdir
 
     def categorisePatchFiles(self):
