@@ -118,3 +118,26 @@ $schema = {
   },
 
 }
+
+module Matcher
+  extend self
+  
+  def matchWeapon(context)
+    if context[0].class == String and context[0].include? 'Weapons'
+      if context[2] != nil and context[2].name.include? 'Weapon'
+        if context[3].class == String and (context[3].include? 'name' or context[3].include? 'description')
+          return :translate
+        end
+      end 
+    end
+  end
+end
+
+def matchAll(context)
+  Matcher.instance_methods.each{|funcname|
+    ret = Matcher.send(funcname, context)
+    if ret != nil
+      return ret
+    end
+  }
+end

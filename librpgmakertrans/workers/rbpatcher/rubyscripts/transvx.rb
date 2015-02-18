@@ -164,7 +164,13 @@ def patchPage(page, context)
 end
 
 def patch(data, context)
+  
   schemaMatchResult = schemaMatch($schema, context)
+  if matchAll(context) == :translate 
+      puts data
+      puts schemaMatchResult
+      schemaMatchResult = 1
+  end
   if schemaMatchResult == 1
     if data.class == 'String' # TODO: Be able to translate a list here.
       return translate(data, contextStr(context))

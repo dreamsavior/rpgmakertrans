@@ -65,7 +65,7 @@ class RBComms(SocketComms):
                                   5: self.translateInlineScript,
                                   6: self.getTranslatedScript,
                                   7: self.doneTranslation,
-                                  8: self.getScripts})
+                                  8: self.getScripts,})
         self.rawArgs.update({2: True, 5: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
