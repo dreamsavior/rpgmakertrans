@@ -12,7 +12,7 @@ Provides functionality related to versioning, including the version check.
 from urllib.request import urlopen
 import datetime
 
-version = 3.04
+version = 3.05
 expiry = datetime.date(2016, 4, 1)
 debug = True
 
