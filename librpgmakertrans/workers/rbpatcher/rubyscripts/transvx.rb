@@ -26,31 +26,6 @@ def contextStr(context)
   return result
 end
 
-def schemaMatch(schema, context)
-  schemaLevel = schema
-  level = 0
-  context.each{|x|
-    level += 1
-    # Match all Maps to the Map class
-    if x.class == String and x[0, 3] == 'Map'
-      x = 'Map'
-    end
-    if schemaLevel.member?(x)
-      schemaLevel = schemaLevel[x]
-    elsif x.class == Class and schemaLevel.member?(x.name)
-      schemaLevel = schemaLevel[x.name]
-    elsif schemaLevel.member?(true)
-      schemaLevel = schemaLevel[true]
-    else
-      return :abort # Failure, do not iterate down here.
-    end
-  }
-  if not [:translate, :eventList].include? schemaLevel
-    schemaLevel = :continue
-  end
-  return schemaLevel
-end
-
 def patchPage(page, context)
   # Some notes for VX:
   # code 101 sets up / clears a dialogue box.
@@ -161,15 +136,15 @@ end
 
 def patch(data, context)
   
-  schemaMatchResult = schemaMatch($schema, context)
+  matchResult = matchAll(context)
   
-  if schemaMatchResult == :translate
+  if matchResult == :translate
     if data.class == String # TODO: Be able to translate a list here.
       return translate(data, contextStr(context))
     end
-  elsif schemaMatchResult == :eventList
+  elsif matchResult == :eventList
     return patchPage(data, context)
-  elsif schemaMatchResult == :continue
+  elsif matchResult == :continue
     if data.class == Array
       data.each_index{|x|
          data[x] = patch(data[x], context + [x])
@@ -189,10 +164,10 @@ def patch(data, context)
         }
      return data
     end
-  elsif schemaMatchResult == :abort 
+  elsif matchResult == :abort 
     return data
   else
-    puts schemaMatchResult.class
+    puts matchResult.class
   end
 end
 

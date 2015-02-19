@@ -118,19 +118,36 @@ $schema = {
   },
 }
 
+def schemaMatch(schema, context)
+  schemaLevel = schema
+  level = 0
+  context.each{|x|
+    level += 1
+    # Match all Maps to the Map class
+    if x.class == String and x[0, 3] == 'Map'
+      x = 'Map'
+    end
+    if schemaLevel.member?(x)
+      schemaLevel = schemaLevel[x]
+    elsif x.class == Class and schemaLevel.member?(x.name)
+      schemaLevel = schemaLevel[x.name]
+    elsif schemaLevel.member?(true)
+      schemaLevel = schemaLevel[true]
+    else
+      return :abort # Failure, do not iterate down here.
+    end
+  }
+  if not [:translate, :eventList].include? schemaLevel
+    schemaLevel = :continue
+  end
+  return schemaLevel
+end
+
 module Matcher
   extend self
   
-  def matchEvents(context)
-
-  end
-  
-  def matchWeapon(context)
-    if context[0].class == String and context[0].include? 'Weapons' \
-       and context[2] != nil and context[2].name.include? 'Weapon' \
-       and context[3].class == String and (context[3].include? 'name' or context[3].include? 'description')
-        return :translate
-    end
+  def standardMatch(context)
+    return schemaMatch($schema, context)
   end
 end
 
