@@ -45,7 +45,7 @@ class ZIPPatcher(BasePatch):
             raw = zfile.read(2 ** 22)
             dec = self.tryDecodePatchFile(raw)[1]
             name = (fn.partition(self.root)[2].strip('/').rpartition('.')[0])
-            data[name] = dec
+            data[name] = dec.replace('\r', '')
         return data, self.mtime
 
     def writePatchData(self, data, encoding='utf-8'):
