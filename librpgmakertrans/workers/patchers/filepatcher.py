@@ -46,7 +46,7 @@ class FilePatcher(BasePatch):
                 matched, decoded = self.tryDecodePatchFile(raw)
                 if not matched:
                     raise Exception('Could not decode file %s' % fn)
-                data[name] = decoded
+                data[name] = decoded.replace('\r', '')
         self.originalData = data.copy()
         return data, mtime
 

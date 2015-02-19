@@ -40,8 +40,8 @@ class QTLogic(CoreProtocol):
 
     def quit(self):
         """Immediately quit application"""
-        self.app.exit()
-        self.outputcoms.send('shutdown')
+        #self.app.exit()
+        self.outputcoms.send('terminate')
 
     def setUI(self, states):
         """Set the elements of the UI to be enabled or not. Valid
