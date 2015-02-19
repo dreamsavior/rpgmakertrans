@@ -42,17 +42,13 @@ def schemaMatch(schema, context)
     elsif schemaLevel.member?(true)
       schemaLevel = schemaLevel[true]
     else
-      return -1 # Failure, do not iterate down here.
+      return :abort # Failure, do not iterate down here.
     end
   }
-  if schemaLevel == true
-    return 1 # Success, dump this for translating
-  elsif schemaLevel == 'eventList'
-    return 2 # Dump an event list
-  else
-    return 0 # Failure, but keep iterating
+  if not [:translate, :eventList].include? schemaLevel
+    schemaLevel = :continue
   end
-
+  return schemaLevel
 end
 
 def patchPage(page, context)
@@ -166,18 +162,14 @@ end
 def patch(data, context)
   
   schemaMatchResult = schemaMatch($schema, context)
-  if matchAll(context) == :translate 
-      puts data
-      puts schemaMatchResult
-      schemaMatchResult = 1
-  end
-  if schemaMatchResult == 1
-    if data.class == 'String' # TODO: Be able to translate a list here.
+  
+  if schemaMatchResult == :translate
+    if data.class == String # TODO: Be able to translate a list here.
       return translate(data, contextStr(context))
     end
-  elsif schemaMatchResult == 2
+  elsif schemaMatchResult == :eventList
     return patchPage(data, context)
-  elsif schemaMatchResult == 0
+  elsif schemaMatchResult == :continue
     if data.class == Array
       data.each_index{|x|
          data[x] = patch(data[x], context + [x])
@@ -197,8 +189,10 @@ def patch(data, context)
         }
      return data
     end
-  else
+  elsif schemaMatchResult == :abort 
     return data
+  else
+    puts schemaMatchResult.class
   end
 end
 

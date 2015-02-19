@@ -12,23 +12,23 @@ $schema = {
   'Actors' => {
     true => {
       'RPG::Actor' => {
-        'name' => true
+        'name' => :translate
       }
     }
   },
   'Armors' => {
     true => {
       'RPG::Armor' => {
-        'name' => true,
-        'description' => true
+        'name' => :translate,
+        'description' => :translate
       }
     }
   },
   'Classes' => {
     true => {
       'RPG::Class' => {
-        'name' => true,
-        'skill_name' => true
+        'name' => :translate,
+        'skill_name' => :translate
       }
     }
   },
@@ -40,16 +40,16 @@ $schema = {
   'Enemies' => {
     true => {
       'RPG::Enemy' => {
-        'name' => true,
-        'note' => true,
+        'name' => :translate,
+        'note' => :translate,
       }
     }
   },
   'Items' => {
     true => {
       'RPG::Item' => {
-        'name' => true,
-        'description' => true,
+        'name' => :translate,
+        'description' => :translate,
       }
     }
   },
@@ -59,7 +59,7 @@ $schema = {
         true => {
           'RPG::Event' => {
             'pages' => {
-              true => 'eventList'
+              true => :eventList
             }
           }
         }
@@ -68,76 +68,78 @@ $schema = {
   },
   'MapInfos' => {
     true => {
-      'RPG::MapInfo' => {'name' => true}
+      'RPG::MapInfo' => {'name' => :translate}
     }
   },
   'Scripts' => 'ScriptFile',
   'Skills' => {
     true => {
       'RPG::Skill' => {
-        'name' => true,
-        'description' => true,
-        'message1' => true,
-        'message2' => true,
+        'name' => :translate,
+        'description' => :translate,
+        'message1' => :translate,
+        'message2' => :translate,
       }
     }
   },
   'States' => {
     true => {
       'RPG::State' => {
-        'name' => true,
-        'message1' => true,
-        'message2' => true,
-        'message3' => true,
-        'message4' => true,
+        'name' => :translate,
+        'message1' => :translate,
+        'message2' => :translate,
+        'message3' => :translate,
+        'message4' => :translate,
       }
     }
   },
   'System' => {
     'RPG::System' => {
-      'game_title' => true,
-      'elements' => {true => true},
-      'terms' => {'RPG::System::Terms' => {true => true}},
+      'game_title' => :translate,
+      'elements' => {true => :translate},
+      'terms' => {'RPG::System::Terms' => {true => :translate}},
     }
   },
   'Troops' => {
     true => {
       'RPG::Troop' => {
-        'name' => true,
-      'pages' => {true => 'eventList'},
+        'name' => :translate,
+        'pages' => {true => :eventList},
       }
     }
   },
   'Weapons' => {
     true => {
       'RPG::Weapon' => {
-        'name' => true,
-        'description' => true,
+        'name' => :translate,
+        'description' => :translate,
       }
     }
   },
-
 }
 
 module Matcher
   extend self
   
+  def matchEvents(context)
+
+  end
+  
   def matchWeapon(context)
-    if context[0].class == String and context[0].include? 'Weapons'
-      if context[2] != nil and context[2].name.include? 'Weapon'
-        if context[3].class == String and (context[3].include? 'name' or context[3].include? 'description')
-          return :translate
-        end
-      end 
+    if context[0].class == String and context[0].include? 'Weapons' \
+       and context[2] != nil and context[2].name.include? 'Weapon' \
+       and context[3].class == String and (context[3].include? 'name' or context[3].include? 'description')
+        return :translate
     end
   end
 end
 
 def matchAll(context)
+  Matcher.module_eval{
   Matcher.instance_methods.each{|funcname|
     ret = Matcher.send(funcname, context)
     if ret != nil
       return ret
     end
-  }
+  }}
 end
