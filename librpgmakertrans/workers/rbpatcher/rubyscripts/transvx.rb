@@ -141,6 +141,15 @@ def patch(data, context)
   if matchResult == :translate
     if data.class == String # TODO: Be able to translate a list here.
       return translate(data, contextStr(context))
+    elsif data.class == Array
+      result = []
+      data.each_index{|x|
+        val = data[x]
+        if val.class == String
+           val = translate(val, contextStr(context) + '/' + x.to_s)
+        end
+        result.push(val)}
+      return result
     else
       return data
     end
