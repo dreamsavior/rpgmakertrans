@@ -141,6 +141,8 @@ def patch(data, context)
   if matchResult == :translate
     if data.class == String # TODO: Be able to translate a list here.
       return translate(data, contextStr(context))
+    else
+      return data
     end
   elsif matchResult == :eventList
     return patchPage(data, context)
