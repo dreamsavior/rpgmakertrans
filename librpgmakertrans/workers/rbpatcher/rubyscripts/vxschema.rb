@@ -33,9 +33,7 @@ $schema = {
     }
   },
   'CommonEvents' => {
-    true => 'eventList'#{
-      #RPG::CommonEvent => 'script'
-    #}
+    true => 'eventList'
   },
   'Enemies' => {
     true => {
@@ -134,7 +132,7 @@ def schemaMatch(schema, context)
     elsif schemaLevel.member?(true)
       schemaLevel = schemaLevel[true]
     else
-      return :abort # Failure, do not iterate down here.
+      return :continue # Failure, do not iterate down here.
     end
   }
   if not [:translate, :eventList].include? schemaLevel
@@ -145,6 +143,12 @@ end
 
 module Matcher
   extend self
+  def VXAceCommonEventMatch(context)
+    if context[-1].class == Class and context[-1].name == 'RPG::CommonEvent'
+      puts context.to_s
+      :continue
+    end
+  end
   
   def standardMatch(context)
     return schemaMatch($schema, context)

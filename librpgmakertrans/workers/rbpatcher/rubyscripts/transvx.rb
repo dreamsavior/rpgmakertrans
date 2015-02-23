@@ -166,14 +166,16 @@ def patch(data, context)
         data[key] = patch(value, context+[key])
       }
       return data
-    else
+    elsif data.class != context[-1]
       context += [data.class]
+      return patch(data, context)
+    else
       data.instance_variables.each{|var|
         data.instance_variable_set(var,
           patch(data.instance_variable_get(var),
                 context + [var.to_s.sub(/^@/,'')]))
         }
-     return data
+      return data
     end
   elsif matchResult == :abort 
     return data
