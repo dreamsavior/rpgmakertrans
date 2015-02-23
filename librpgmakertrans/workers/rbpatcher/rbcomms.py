@@ -193,7 +193,7 @@ class RBComms(SocketComms):
                 try:
                     return translateRuby(script, context, self.translator)[1]
                 except Exception as excpt:
-                    errmsg = 'Error parsing inline script: %s; script not translated' % str(excpt)
+                    errmsg = 'Error parsing inline script: %s; script not translated. Script %s' % (str(excpt), script)
                     self.outputComs.send('nonfatalError', errmsg)
                     return script
             except UnicodeDecodeError:

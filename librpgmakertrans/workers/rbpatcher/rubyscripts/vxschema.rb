@@ -145,8 +145,7 @@ module Matcher
   extend self
   def VXAceCommonEventMatch(context)
     if context[-1].class == Class and context[-1].name == 'RPG::CommonEvent'
-      puts context.to_s
-      :continue
+      return :eventList
     end
   end
   
