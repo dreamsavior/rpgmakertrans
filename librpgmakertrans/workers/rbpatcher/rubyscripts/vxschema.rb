@@ -32,9 +32,9 @@ $schema = {
       }
     }
   },
-  'CommonEvents' => {
-    true => 'eventList'
-  },
+  #'CommonEvents' => {
+  #  true => 'eventList'
+  #},
   'Enemies' => {
     true => {
       'RPG::Enemy' => {
@@ -51,19 +51,19 @@ $schema = {
       }
     }
   },
-  'Map' => {
-   'RPG::Map' => {
-      'events' => {
-        true => {
-          'RPG::Event' => {
-            'pages' => {
-              true => :eventList
-            }
-          }
-        }
-      }
-    }
-  },
+  #'Map' => {
+  # 'RPG::Map' => {
+  #    'events' => {
+  #      true => {
+  #        'RPG::Event' => {
+  #          'pages' => {
+  #            true => :eventList
+  #          }
+  #        }
+  #      }
+  #    }
+  #  }
+  #},
   'MapInfos' => {
     true => {
       'RPG::MapInfo' => {'name' => :translate}
@@ -143,7 +143,19 @@ end
 
 module Matcher
   extend self
-  def VXAceCommonEventMatch(context)
+  
+  #def matchStandardNames(context)
+  #  if context[-1].class = String and ['name', 'description', 'message1', 'message2', 'message3', 'message3'].include? context[-1]
+  #  end
+  #end
+  
+  def mapMatch(context)
+    if context[-1].class == Class and context[-1].name == 'RPG::Event::Page'
+      return :eventList
+    end
+  end
+  
+  def commonEventMatch(context)
     if context[-1].class == Class and context[-1].name == 'RPG::CommonEvent'
       return :eventList
     end
