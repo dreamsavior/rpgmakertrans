@@ -10,12 +10,7 @@
 
 require 'zlib'
 require_relative 'socketcall.rb'
-#require_relative 'rgss.rb'
-require_relative 'vxschema.rb'
-
-# Notes:
-# Don't think animations is necessary
-# Areas unknown
+require_relative 'matcher.rb'
 
 def contextStr(context)
   result = ''
@@ -125,9 +120,6 @@ def patchPage(page, context)
         currIndx += 1
       end
     end
-    #if newPageList != page.list
-    #  puts contextString
-    #end
     page.instance_variable_set(:@list, newPageList)
   end
   return page
@@ -179,7 +171,6 @@ def patchFile(infn, outfn, context)
   File.open( outfn, "wb+") do |datafile|
     Marshal.dump(data, datafile)
   end
-  #puts data.ya2yaml(:syck_compatible => true)
 end
 
 

@@ -19,21 +19,10 @@ if ARGV[1] != 'compile'
 end
 
 require_relative 'socketcall.rb'
-#require_relative 'rgss.rb'
-require_relative 'transvx.rb'
+require_relative 'patcher.rb'
 going = true
 loadedScripts = false
 versionString = getVersion()
-
-if versionString == 'xp'
-  versionSymbol = :xp
-elsif versionString == 'vx'
-  versionSymbol = :vx
-elsif versionString == 'vxace'
-  versionSymbol = :ace
-end
-
-#RGSS.setup_classes(versionSymbol, {})
 
 def loadScripts()
   getScripts.each{|script|
