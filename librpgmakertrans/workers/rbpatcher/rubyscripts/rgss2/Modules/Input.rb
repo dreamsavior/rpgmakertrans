@@ -2,6 +2,27 @@ module Input
 
   @keys = []
   
+  DOWN = []
+  UP = []
+  LEFT = []
+  RIGHT = []
+  A = []
+  B = []
+  C = []
+  X = []
+  Y = []
+  Z = []
+  L = []
+  R = []
+  SHIFT = []
+  CTRL = []
+  ALT = []
+  F5 = []
+  F6 = []
+  F7 = []
+  F8 = []
+  F9 = []
+
   module_function
   
   def update
