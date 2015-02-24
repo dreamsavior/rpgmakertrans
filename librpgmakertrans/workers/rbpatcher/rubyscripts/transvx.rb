@@ -19,10 +19,7 @@ require_relative 'vxschema.rb'
 
 def contextStr(context)
   result = ''
-  context.each{|x| result += x.to_s + '/'}
-  while result.include?('RPG::') do
-    result = result.sub('RPG::', '')
-  end
+  context.each{|x| result += x.to_s.rpartition('::')[2] + '/'}
   return result
 end
 
