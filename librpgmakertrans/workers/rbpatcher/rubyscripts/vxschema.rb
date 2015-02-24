@@ -8,42 +8,26 @@
 # Holds the schema used to translate Ruby
 #
 
-$schema = {
-  'System' => {
-    'RPG::System' => {
-      'elements' => {true => :translate},
-      'terms' => {'RPG::System::Terms' => {true => :translate}},
-    }
-  },
-}
-
-def schemaMatch(schema, context)
-  schemaLevel = schema
-  level = 0
-  context.each{|x|
-    level += 1
-    # Match all Maps to the Map class
-    if x.class == String and x[0, 3] == 'Map'
-      x = 'Map'
-    end
-    if schemaLevel.member?(x)
-      schemaLevel = schemaLevel[x]
-    elsif x.class == Class and schemaLevel.member?(x.name)
-      schemaLevel = schemaLevel[x.name]
-    elsif schemaLevel.member?(true)
-      schemaLevel = schemaLevel[true]
-    else
-      return :continue # Failure, do not iterate down here.
-    end
-  }
-  if not [:translate, :eventList].include? schemaLevel
-    schemaLevel = :continue
-  end
-  return schemaLevel
-end
-
 module Matcher
   extend self
+  
+  def matchVXTerms(data, context)
+    if data.class == String and context[-2].class == Class and context[-2].name == 'RPG::System::Terms'
+      return :translate
+    end
+  end
+  
+  def matchVXAceTerms(data, context)
+    if data.class == String and context[-3].class == Class and context[-3].name == 'RPG::System::Terms'
+      return :translate
+    end
+  end
+  
+  def matchElements(data, context)
+    if data.class == String and context[-2] == 'elements'
+      return :translate
+    end
+  end
   
   def matchStandardNames(data, context)
     if data.class == String and context[-1].class == String and ['name', 'description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
@@ -74,10 +58,6 @@ module Matcher
       return :eventList
     end
   end
-  
-  def standardMatch(data, context)
-    return schemaMatch($schema, context)
-  end
 end
 
 def matchAll(data, context)
@@ -88,4 +68,5 @@ def matchAll(data, context)
       return ret
     end
   }}
+  return :continue
 end

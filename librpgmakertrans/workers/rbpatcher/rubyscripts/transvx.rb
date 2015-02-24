@@ -138,20 +138,7 @@ def patch(data, context)
   matchResult = matchAll(data, context)
   
   if matchResult == :translate
-    if data.class == String # TODO: Be able to translate a list here.
-      return translate(data, contextStr(context))
-    elsif data.class == Array
-      result = []
-      data.each_index{|x|
-        val = data[x]
-        if val.class == String
-           val = translate(val, contextStr(context) + '/' + x.to_s)
-        end
-        result.push(val)}
-      return result
-    else
-      return data
-    end
+    return translate(data, contextStr(context))
   elsif matchResult == :eventList
     return patchPage(data, context)
   elsif matchResult == :continue
@@ -179,7 +166,7 @@ def patch(data, context)
   elsif matchResult == :abort 
     return data
   else
-    puts matchResult.class
+    puts matchResult.to_s
   end
 end
 
