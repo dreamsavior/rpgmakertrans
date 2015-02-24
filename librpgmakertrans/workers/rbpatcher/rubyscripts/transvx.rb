@@ -135,7 +135,7 @@ end
 
 def patch(data, context)
   
-  matchResult = matchAll(context)
+  matchResult = matchAll(data, context)
   
   if matchResult == :translate
     if data.class == String # TODO: Be able to translate a list here.

@@ -9,109 +9,10 @@
 #
 
 $schema = {
-  'Actors' => {
-    true => {
-      'RPG::Actor' => {
-        'name' => :translate
-      }
-    }
-  },
-  'Armors' => {
-    true => {
-      'RPG::Armor' => {
-        'name' => :translate,
-        'description' => :translate
-      }
-    }
-  },
-  'Classes' => {
-    true => {
-      'RPG::Class' => {
-        'name' => :translate,
-        'skill_name' => :translate
-      }
-    }
-  },
-  #'CommonEvents' => {
-  #  true => 'eventList'
-  #},
-  'Enemies' => {
-    true => {
-      'RPG::Enemy' => {
-        'name' => :translate,
-        'note' => :translate,
-      }
-    }
-  },
-  'Items' => {
-    true => {
-      'RPG::Item' => {
-        'name' => :translate,
-        'description' => :translate,
-      }
-    }
-  },
-  #'Map' => {
-  # 'RPG::Map' => {
-  #    'events' => {
-  #      true => {
-  #        'RPG::Event' => {
-  #          'pages' => {
-  #            true => :eventList
-  #          }
-  #        }
-  #      }
-  #    }
-  #  }
-  #},
-  'MapInfos' => {
-    true => {
-      'RPG::MapInfo' => {'name' => :translate}
-    }
-  },
-  'Scripts' => 'ScriptFile',
-  'Skills' => {
-    true => {
-      'RPG::Skill' => {
-        'name' => :translate,
-        'description' => :translate,
-        'message1' => :translate,
-        'message2' => :translate,
-      }
-    }
-  },
-  'States' => {
-    true => {
-      'RPG::State' => {
-        'name' => :translate,
-        'message1' => :translate,
-        'message2' => :translate,
-        'message3' => :translate,
-        'message4' => :translate,
-      }
-    }
-  },
   'System' => {
     'RPG::System' => {
-      'game_title' => :translate,
       'elements' => {true => :translate},
       'terms' => {'RPG::System::Terms' => {true => :translate}},
-    }
-  },
-  'Troops' => {
-    true => {
-      'RPG::Troop' => {
-        'name' => :translate,
-        'pages' => {true => :eventList},
-      }
-    }
-  },
-  'Weapons' => {
-    true => {
-      'RPG::Weapon' => {
-        'name' => :translate,
-        'description' => :translate,
-      }
     }
   },
 }
@@ -144,32 +45,45 @@ end
 module Matcher
   extend self
   
-  #def matchStandardNames(context)
-  #  if context[-1].class = String and ['name', 'description', 'message1', 'message2', 'message3', 'message3'].include? context[-1]
-  #  end
-  #end
+  def matchStandardNames(data, context)
+    if data.class == String and context[-1].class == String and ['name', 'description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
+      return :translate
+    end
+  end
   
-  def mapMatch(context)
+  def killClasses(data, context)
+    if context[-1].class == Class and ['Table', 'Color', 'RPG::BGS', 'RPG::BGM', 'RPG::SE', 'RPG::ME', 'RPG::Animation'].include? context[-1].name
+      return :abort
+    end
+  end
+  
+  def mapTroopEvent(data, context)
+    if context[-1].class == Class and context[-1].name == 'RPG::Troop::Page'
+      return :eventList
+    end
+  end
+  
+  def mapMatch(data, context)
     if context[-1].class == Class and context[-1].name == 'RPG::Event::Page'
       return :eventList
     end
   end
   
-  def commonEventMatch(context)
+  def commonEventMatch(data, context)
     if context[-1].class == Class and context[-1].name == 'RPG::CommonEvent'
       return :eventList
     end
   end
   
-  def standardMatch(context)
+  def standardMatch(data, context)
     return schemaMatch($schema, context)
   end
 end
 
-def matchAll(context)
+def matchAll(data, context)
   Matcher.module_eval{
   Matcher.instance_methods.each{|funcname|
-    ret = Matcher.send(funcname, context)
+    ret = Matcher.send(funcname, data, context)
     if ret != nil
       return ret
     end
