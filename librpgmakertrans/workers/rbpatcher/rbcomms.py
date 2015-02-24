@@ -77,6 +77,8 @@ class RBComms(SocketComms):
     def loadBaseScripts(self):
         if self.rpgversion == 'vxace':
             version = 3
+        elif self.rpgversion == 'vx':
+            version = 2
         else:
             raise NotImplementedError('Not implemented this RGSS version yet')
         basePath = os.path.join(self.basedir, 'rubyscripts', 'rgss%s' % version)

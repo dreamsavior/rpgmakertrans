@@ -7,7 +7,7 @@ module Audio
   
   def bgm_play(filename, volume = 100, pitch = 100)
     bgm_stop
-    @bgm = Gosu::Sample.new(Graphics.gosu_window, filename).play(volume / 100.0, pitch / 100.0, true)
+    @bgm = nil
     @bgm_volume = volume / 100.0
   end
   
@@ -30,7 +30,7 @@ module Audio
   
   def bgs_play(filename, volume = 100, pitch = 100)
     bgs_stop
-    @bgs = Gosu::Sample.new(Graphics.gosu_window, filename).play(volume / 100.0, pitch / 100.0, true)
+    @bgs = nil
     @bgs_volume = volume / 100.0
   end
   
@@ -54,7 +54,7 @@ module Audio
   def me_play(filename, volume = 100, pitch = 100)
     me_stop
     @bgm.pause if @bgm
-    @me = Gosu::Sample.new(Graphics.gosu_window, filename).play(volume / 100.0, pitch / 100.0, false)
+    @me = nil
     @me_volume = volume / 100.0
   end
   
@@ -78,7 +78,6 @@ module Audio
   
   def se_play(filename, volume = 100, pitch = 100)
     @se = [] if @se == nil
-    @se << Gosu::Sample.new(Graphics.gosu_window, filename).play(volume / 100.0, pitch / 100.0, false)
   end
   
   def se_stop
