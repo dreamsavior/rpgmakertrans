@@ -12,48 +12,64 @@ module Matcher
   extend self
   
   def matchVXTerms(data, context)
+    # Matches system terms in VX
     if data.class == String and context[-2].class == Class and context[-2].name == 'RPG::System::Terms'
       return :translate
     end
   end
   
   def matchVXAceTerms(data, context)
+    # Matches system terms in VX Ace
     if data.class == String and context[-3].class == Class and context[-3].name == 'RPG::System::Terms'
       return :translate
     end
   end
   
   def matchElements(data, context)
+    # Match elements
     if data.class == String and context[-2] == 'elements'
       return :translate
     end
   end
   
-  def matchStandardNames(data, context)
-    if data.class == String and context[-1].class == String and ['name', 'description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
+  def matchName(data, context)
+    # This matches names, but *not* event names as these don't have to be translated.
+    if data.class == String and context[-1] == 'name' and not (context[-2].class == Class and context[-2].name == 'RPG::Event')
+      return :translate
+    end
+    
+  end
+  
+  def matchStandardStrings(data, context)
+    # Matches the 'standard' strings in all RPGMaker objects
+    if data.class == String and context[-1].class == String and ['description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
       return :translate
     end
   end
   
   def killClasses(data, context)
-    if context[-1].class == Class and ['Table', 'Color', 'RPG::BGS', 'RPG::BGM', 'RPG::SE', 'RPG::ME', 'RPG::Animation'].include? context[-1].name
+    # Blocks descent into classes that are of no value to translation and give false positives or computationally expensive
+    if context[-1].class == Class and ['Table', 'Color', 'RPG::Tileset', 'RPG::BGS', 'RPG::BGM', 'RPG::SE', 'RPG::ME', 'RPG::Animation'].include? context[-1].name
       return :abort
     end
   end
   
   def mapTroopEvent(data, context)
+    # Matches troop events
     if context[-1].class == Class and context[-1].name == 'RPG::Troop::Page'
       return :eventList
     end
   end
   
   def mapMatch(data, context)
+    # Matches map events
     if context[-1].class == Class and context[-1].name == 'RPG::Event::Page'
       return :eventList
     end
   end
   
   def commonEventMatch(data, context)
+    # Matches common events
     if context[-1].class == Class and context[-1].name == 'RPG::CommonEvent'
       return :eventList
     end
