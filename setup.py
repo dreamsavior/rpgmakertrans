@@ -23,7 +23,7 @@ build_exe_options = {
 "include_files": [(os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'pruby'),
                    'pruby'),
                   (os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'rubyscripts'),
-                   'rubyscripts'),]
+                   'rubyscripts'), 'README.txt', 'LICENSE.txt']
 }
 
 build_exe_cli_options = build_exe_options.copy()
