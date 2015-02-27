@@ -262,7 +262,7 @@ class RBComms(SocketComms):
 def startRBComms(filesToProcess, translator, mtimes, newmtimes,
                  outputComs, inputComs, rpgversion, socket=None):
     """Entry point for multiprocessing to start RBComms."""
-    subprocesses = 1 # multiprocessing.cpu_count()
+    subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses, socket=socket)
     rbcomms.start()
