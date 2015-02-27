@@ -217,9 +217,9 @@ class Translation:
 
 
 class TranslationFile:
-    """Represents a v3.1 Translation File. Also has the capacity to convert
-    v3.0 patch files"""
-    version = (3, 1)
+    """Represents a v3.2 Translation File. Also has the capacity to convert
+    v3.0/v3.1 patch files"""
+    version = (3, 2)
     header = 'RPGMAKER TRANS PATCH FILE VERSION'
     def __init__(self, filename, translateables, enablePruning=True):
         """Initialise from a filename and list of translateables"""
@@ -241,7 +241,10 @@ class TranslationFile:
         if fileVersion[1] == 0:
             lines = cls.convertFrom30(lines)
             fileVersion[1] = 1
-        if fileVersion[1] != 1:
+        if fileVersion[1] == 1:
+            lines = cls.convertFrom31(lines)
+            fileVersion[1] = 2
+        if fileVersion[1] != 2:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
         return cls(filename, translateables, *args, **kwargs)
@@ -280,7 +283,7 @@ class TranslationFile:
             current.append(translationLine)
         if current:
             yield current
-
+    
     @staticmethod
     def convertFrom30(lines):
         """Convert a file from 3.0 format"""
@@ -299,6 +302,23 @@ class TranslationFile:
                 ls[indx] = '\>'
         return ''.join(ls)
 
+    @staticmethod
+    def convertFrom31(lines):
+        """Convert contexts from v3.1 to v3.2"""
+        removeParts = {'Class', 'Map', 'Enemy', 'Armor', 'Weapon', 'Title', 
+                       'System', 'Actor', 'Item', 'State', 'Troop', 'Skill',
+                       'Event', 'System::Terms'}
+        newLines = []
+        for line in lines:
+            if line.startswith('> CONTEXT:'):
+                tmp, _, markers = line.partition('<')[2]
+                context = tmp.partition(':')[2]
+                parts = context.split('/')
+                newContext = '/'.join(parts[0] + (part for part in parts[1:] if part not in removeParts))
+                line = '> CONTEXT: %s%s' % (newContext, ('<%s' % markers) if markers else '')
+            newLines.append(line) 
+        return newLines
+    
 class CanonicalTranslation:
     """Seperate from the structure of the files, the canonical translation
     keeps tabs on which Translation object holds translations for what context

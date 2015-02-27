@@ -14,7 +14,10 @@ require_relative 'matcher.rb'
 
 def contextStr(context)
   result = ''
-  context.each{|x| result += x.to_s.rpartition('::')[2] + '/'}
+  context.each{|x| 
+               if x.class != Class 
+                 result += x.to_s + '/'
+               end}
   return result
 end
 
