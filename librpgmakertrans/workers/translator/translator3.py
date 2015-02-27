@@ -311,11 +311,11 @@ class TranslationFile:
         newLines = []
         for line in lines:
             if line.startswith('> CONTEXT:'):
-                tmp, _, markers = line.partition('<')[2]
-                context = tmp.partition(':')[2]
+                tmp, _, comment = line.partition('#')[2]
+                context = tmp.partition(':')[2].partition('<')[0]
                 parts = context.split('/')
                 newContext = '/'.join(parts[0] + (part for part in parts[1:] if part not in removeParts))
-                line = '> CONTEXT: %s%s' % (newContext, ('<%s' % markers) if markers else '')
+                line = '> CONTEXT: %s%s' % (newContext, ('#%s' % comment) if comment else '')
             newLines.append(line) 
         return newLines
     
