@@ -74,7 +74,7 @@ class SocketComms:
                     args = [arg.decode('utf-8') for arg in args]
                 func = self.codeHandlers[code]
                 if asyncio.iscoroutinefunction(func):
-                    raise NotImplementedError('Need to do magic stuff here to use *args with coro')
+                    output = yield from func(*args)
                 else:
                     output = func(*args)
                 if output is None:
