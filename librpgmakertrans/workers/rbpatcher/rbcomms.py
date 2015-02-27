@@ -207,9 +207,12 @@ class RBComms(SocketComms):
     def setTranslatedScript(self, name, script):
         """Handler to receive the translation of a script"""
         self.translatedScripts[name] = script
-        
+    
+    @asyncio.coroutine
     def getScripts(self):
         """Returns the raw scripts, for loading into Ruby"""
+        while not self.scriptsDumped:
+            yield from asyncio.sleep(0.1)
         return self.rawScripts
 
     def getTranslatedScript(self):
