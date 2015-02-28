@@ -207,6 +207,7 @@ class RBComms(SocketComms):
     def setTranslatedScript(self, name, script):
         """Handler to receive the translation of a script"""
         self.translatedScripts[name] = script
+        self.outputComs.send('incProgress', 'scripts')
     
     @asyncio.coroutine
     def getScripts(self):
@@ -252,6 +253,7 @@ class RBComms(SocketComms):
         """Handler to register completion of a task"""
         if context == 'ScriptsDumped':
             self.scriptsDumped = True
+            self.outputComs.send('setProgressDiv', 'scripts', len(self.scripts))
         else:
             self.outputComs.send('incProgress', 'patching')
 

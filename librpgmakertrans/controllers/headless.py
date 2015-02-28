@@ -81,7 +81,7 @@ class HeadlessUtils(CoreProtocol):
         """Update the progress value; communicate if necessary"""
         newProgressVal = min((x[0] / x[1]
                               for x in list(self.progress.values())))
-        if newProgressVal != self.progressVal:
+        if newProgressVal > self.progressVal: # Only increment progress bar
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
         for key in self.progress:
