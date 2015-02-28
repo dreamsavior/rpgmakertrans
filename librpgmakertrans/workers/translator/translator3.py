@@ -241,9 +241,6 @@ class Translation:
         """Prune unused contexts from translation file. If a translation
         has no context available to it, then it is given the special
         context 'None'"""
-        for item in self.items:
-            if not item.isUsed(self.usedContexts):
-                print(item)
         self.items = [item if item.isUsed(self.usedContexts) else None
                       for item in self.items]
         while None in self.items:
