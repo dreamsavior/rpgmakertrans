@@ -73,16 +73,18 @@ class RBComms(SocketComms):
         self.loadBaseScripts()
     
     def doFatalError(self, msg):
+        """Send a fatal error message, then stop"""
         self.outputComs.send('fatalError', msg)
         self.going = False
         
     def loadBaseScripts(self):
-        if self.rpgversion == 'vxace':
-            version = 3
-        elif self.rpgversion == 'vx':
-            version = 2
-        else:
+        """Adds the base scripts to rawscripts, so that Ruby will be able
+        to load the game."""
+        versionMap = {'vxace': 3, 'vx': 2, 'xp': 1}
+        if self.rpgversion not in versionMap:
             raise NotImplementedError('Not implemented this RGSS version yet')
+        else:
+            version = versionMap[self.rpgversion]
         basePath = os.path.join(self.basedir, 'rubyscripts', 'rgss%s' % version)
         for subdir in ('Base', 'Modules'):
             for fn in sorted(x for x in os.listdir(os.path.join(basePath, subdir)) if x.endswith('.rb')):
