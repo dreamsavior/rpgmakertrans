@@ -15,6 +15,49 @@ from fuzzywuzzy import process
 
 from .translatorbase import Translator, TranslatorError
 
+class ContextDict(dict):
+    """Special dictionary that handles context->translation
+    mapping. Takes into account that the first element of a multipart
+    context is a filename and therefore case insensitive due to,
+    well, Windows."""
+    
+    @staticmethod
+    def __convertContext(context):
+        """Convert any filename component to upper case
+        internally"""
+        if '/' in context:
+            fn, _, remainder = context.partition('/')
+            return '%s/%s' % (fn.upper(), remainder)
+        else:
+            return context
+    
+    def __contains__(self, item):
+        """Implement contains, converting key as appropriate"""
+        return super().__contains__(self.__convertContext(item))
+    
+    def __getitem__(self, key):
+        """Implement getitem, converting key as appropriate"""
+        return super().__getitem__(self.__convertContext(key))
+    
+    def __setitem__(self, key, value):
+        """Implement setitem, converting key as appropriate"""
+        return super().__setitem__(self.__convertContext(key), value)
+    
+    def __delitem__(self, key):
+        """Implement delitem, converting key as appropriate"""
+        return super().__delitem__(self.__convertContext(key))
+    
+class ContextSet(ContextDict):
+    """Thin implementation of a set over ContextDict; Implemented
+    over ContextDict rather than Set for ease of programming."""
+    def add(self, key):
+        """Add element to set"""
+        self[key] = True
+        
+    def remove(self, key):
+        """Delete element from set"""
+        del self[key]
+             
 class TranslationLine:
     """A token representing a single line of a translation file"""
     escapes = [('\\', '\\\\'), ('>', '\\>'), ('#', '\\#')]
@@ -131,7 +174,7 @@ class Translation:
         self.items = items
         currentContexts = ['RAW']
         currentString = []
-        strings = {}
+        strings = ContextDict()
         for item in self.items:
             if item.cType != 'data':
                 if currentString:
@@ -145,7 +188,7 @@ class Translation:
         self.__addTranslations(strings, currentString, currentContexts)
         self.raw = strings.pop('RAW')
         self.translations = strings
-        self.usedContexts = set()
+        self.usedContexts = ContextSet()
 
     @classmethod
     def fromDesc(cls, raw, contexts):
@@ -329,7 +372,7 @@ class CanonicalTranslation:
     def __init__(self, raw):
         """Initialise a canonical translation for the given string"""
         self.raw = raw
-        self.contexts = {}
+        self.contexts = ContextDict()
         self.__default = None
 
     @property
