@@ -42,7 +42,7 @@ module Matcher
   
   def matchStandardStrings(data, context)
     # Matches the 'standard' strings in all RPGMaker objects
-    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
+    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title'].include? context[-1]
       return :translate
     end
   end

@@ -198,6 +198,9 @@ class Translation:
         """Prune unused contexts from translation file. If a translation
         has no context available to it, then it is given the special
         context 'None'"""
+        for item in self.items:
+            if not item.isUsed(self.usedContexts):
+                print(item)
         self.items = [item if item.isUsed(self.usedContexts) else None
                       for item in self.items]
         while None in self.items:
@@ -305,7 +308,7 @@ class TranslationFile:
     @staticmethod
     def convertFrom31(lines):
         """Convert contexts from v3.1 to v3.2"""
-        removeParts = {'Class', 'Map', 'Enemy', 'Armor', 'Weapon', 'Title', 
+        removeParts = {'Class', 'Map', 'Enemy', 'Armor', 'Weapon', 
                        'System', 'Actor', 'Item', 'State', 'Troop', 'Skill',
                        'Event', 'System::Terms'}
         newLines = []
