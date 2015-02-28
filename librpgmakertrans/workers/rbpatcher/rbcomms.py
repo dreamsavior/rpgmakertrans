@@ -29,8 +29,6 @@ class RBComms(SocketComms):
     to Ruby processes. In general, I think I'd like to migrate away from
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
 
-    maxRubyErrors = 10
-
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
                  outputComs, subprocesses, debugRb = True, *args, **kwargs):
         """Initialise RBComms"""
@@ -73,6 +71,10 @@ class RBComms(SocketComms):
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
         self.setEnv()
         self.loadBaseScripts()
+    
+    def doFatalError(self, msg):
+        self.outputComs.send('fatalError', msg)
+        self.going = False
         
     def loadBaseScripts(self):
         if self.rpgversion == 'vxace':
@@ -104,10 +106,10 @@ class RBComms(SocketComms):
                     self.rubypath = attempt
                     return
             if self.rubypath is None:
-                raise Exception('No applicable Ruby found\nDo you have the pruby folder or Ruby 1.93 installed?\n(Tried:\n%s)' %
-                                '\n'.join(rubyPaths))
+                self.doFatalError('No applicable Ruby found\nDo you have the pruby folder or Ruby 1.93 installed?\n(Tried:\n%s)' %
+                                     '\n'.join(rubyPaths))
         else:
-            raise Exception('Unsupported Platform')
+            self.doFatalError('Unsupported platform')
 
     def openRuby(self):
         """Open a ruby process"""
@@ -139,9 +141,7 @@ class RBComms(SocketComms):
                                                  'WARNING: Ruby with nonzero exit code %s' % rbpoll)
                             errMsg = ruby.stderr.read().decode('utf-8')
                             if errMsg:
-                                self.outputComs.send('fatalError',
-                                                     'ERROR: Ruby unexpectedly quit.\nRuby Traceback:\n%s' % errMsg)
-                                self.going = False
+                                self.doFatalError('ERROR: Ruby unexpectedly quit.\nRuby Traceback:\n%s' % errMsg)
                             self.rubies.append(self.openRuby())
                 if len(self.rubies) == 0:
                     self.going = False
@@ -210,7 +210,8 @@ class RBComms(SocketComms):
     
     @asyncio.coroutine
     def getScripts(self):
-        """Returns the raw scripts, for loading into Ruby"""
+        """Returns the raw scripts, for loading into Ruby. Coroutine so that
+        it can wait for the scripts to be loaded first."""
         while not self.scriptsDumped:
             yield from asyncio.sleep(0.1)
         return self.rawScripts
