@@ -42,14 +42,14 @@ module Matcher
   
   def matchStandardStrings(data, context)
     # Matches the 'standard' strings in all RPGMaker objects
-    if data.class == String and context[-1].class == String and ['description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
+    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message3', 'skill_name', 'game_title'].include? context[-1]
       return :translate
     end
   end
   
   def killClasses(data, context)
     # Blocks descent into classes that are of no value to translation and give false positives or computationally expensive
-    if context[-1].class == Class and ['Table', 'Color', 'RPG::Tileset', 'RPG::BGS', 'RPG::BGM', 'RPG::SE', 'RPG::ME', 'RPG::Animation'].include? context[-1].name
+    if context[-1].class == Class and ['Table', 'Color', 'RPG::MapInfo', 'RPG::Tileset', 'RPG::BGS', 'RPG::BGM', 'RPG::SE', 'RPG::ME', 'RPG::Animation'].include? context[-1].name
       return :abort
     end
   end
