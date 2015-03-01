@@ -122,6 +122,8 @@ class TranslationLine:
                 data = data.partition('<')[0].strip()
             else:
                 data = data.strip()
+        elif string.startswith('>'):
+            raise Exception('Invalid command %s' % string)
         elif len(comment) > 0 and not data.strip():
             cType = 'comment'
         else:
@@ -217,6 +219,8 @@ class Translation:
 
     def insert(self, context, afterContext, translation):
         """Insert a new context (and translation) after a given context"""
+        print()
+        print(self, context, afterContext, translation)
         indx = 0
         line = self.items[indx]
         while indx < len(self.items) and not (line.cType == 'context' and line.data == afterContext):
