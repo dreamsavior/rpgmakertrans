@@ -15,37 +15,36 @@ from fuzzywuzzy import process
 
 from .translatorbase import Translator, TranslatorError
 
+def _convertContext(context):
+    """Convert any filename component to upper case
+    internally"""
+    if '/' in context:
+        fn, _, remainder = context.partition('/')
+        return '%s/%s' % (fn.upper(), remainder)
+    else:
+        return context
+        
 class ContextDict(dict):
     """Special dictionary that handles context->translation
     mapping. Takes into account that the first element of a multipart
     context is a filename and therefore case insensitive due to,
     well, Windows."""
     
-    @staticmethod
-    def __convertContext(context):
-        """Convert any filename component to upper case
-        internally"""
-        if '/' in context:
-            fn, _, remainder = context.partition('/')
-            return '%s/%s' % (fn.upper(), remainder)
-        else:
-            return context
-    
     def __contains__(self, item):
         """Implement contains, converting key as appropriate"""
-        return super().__contains__(self.__convertContext(item))
+        return super().__contains__(_convertContext(item))
     
     def __getitem__(self, key):
         """Implement getitem, converting key as appropriate"""
-        return super().__getitem__(self.__convertContext(key))
+        return super().__getitem__(_convertContext(key))
     
     def __setitem__(self, key, value):
         """Implement setitem, converting key as appropriate"""
-        return super().__setitem__(self.__convertContext(key), value)
+        return super().__setitem__(_convertContext(key), value)
     
     def __delitem__(self, key):
         """Implement delitem, converting key as appropriate"""
-        return super().__delitem__(self.__convertContext(key))
+        return super().__delitem__(_convertContext(key))
     
 class ContextSet(ContextDict):
     """Thin implementation of a set over ContextDict; Implemented
@@ -221,7 +220,7 @@ class Translation:
         """Insert a new context (and translation) after a given context"""
         indx = 0
         line = self.items[indx]
-        while indx < len(self.items) and not (line.cType == 'context' and line.data == afterContext):
+        while indx < len(self.items) and not (line.cType == 'context' and _convertContext(line.data) == afterContext):
             indx += 1
             line = self.items[indx]
         while indx < len(self.items) and line.cType == 'context':
