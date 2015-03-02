@@ -164,9 +164,9 @@ class RubyParserState:
 class RubyParserException(Exception):
     """Exception raised for RubyParser errors"""
 
-def translateRuby(string, filename, translationHandler, verbose = False):
+def translateRuby(string, filename, translationHandler, inline = False, verbose = False):
     """Translate a ruby string"""
-    scriptTranslator = ScriptTranslator(string, translationHandler)
+    scriptTranslator = ScriptTranslator(string, translationHandler, inline=inline)
     state = RubyParserState(string, filename, scriptTranslator, 0, [],
                             verbose)
     state.addRule(Base(state))

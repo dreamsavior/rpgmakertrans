@@ -219,8 +219,6 @@ class Translation:
 
     def insert(self, context, afterContext, translation):
         """Insert a new context (and translation) after a given context"""
-        print()
-        print(self, context, afterContext, translation)
         indx = 0
         line = self.items[indx]
         while indx < len(self.items) and not (line.cType == 'context' and line.data == afterContext):
