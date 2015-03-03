@@ -11,8 +11,9 @@ Implementation of the Ruby Parser.
 
 from .rules import Base
 from .base import Translateable
-from .scripttranslator import ScriptTranslator
 
+class RubyParserException(Exception):
+    """Exception raised for RubyParser errors"""
 
 class RubyParserState:
     """Encapsulates the state of the Ruby parser"""
@@ -160,26 +161,17 @@ class RubyParserState:
                 ruleFlux = False
         if not ruleTerminated:
             self.index += self.currentRule.advance(self)
+            
+    def parse(self):
+        self.addRule(Base(self))
+        while self.ruleStack:
+            if self.index > len(self.string):
+                if not self.resumeRollback():
+                    raise RubyParserException('String out of bounds: %s' % self)
+            if self.failed:
+                if not self.resumeRollback():
+                    raise RubyParserException('Entered failed state: %s' % self)
+            self.checkNextRule()
+            self.popRules()
 
-class RubyParserException(Exception):
-    """Exception raised for RubyParser errors"""
-
-def translateRuby(string, filename, translationHandler, inline = False, verbose = False):
-    """Translate a ruby string"""
-    scriptTranslator = ScriptTranslator(string, translationHandler, inline=inline)
-    state = RubyParserState(string, filename, scriptTranslator, 0, [],
-                            verbose)
-    state.addRule(Base(state))
-
-    while state.ruleStack:
-        if state.index > len(state.string):
-            if not state.resumeRollback():
-                raise RubyParserException('String out of bounds: %s' % state)
-        if state.failed:
-            if not state.resumeRollback():
-                raise RubyParserException('Entered failed state: %s' % state)
-        state.checkNextRule()
-        state.popRules()
-
-    return filename, scriptTranslator.translate()
 

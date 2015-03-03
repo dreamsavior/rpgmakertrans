@@ -196,7 +196,7 @@ class RBComms(SocketComms):
             try:
                 script = bScript.decode(encoding)
                 try:
-                    return translateRuby(script, context, self.translator, inline=True)[1]
+                    return translateRuby(script, context, self.translator, self.outputComs, inline=True)[1]
                 except Exception as excpt:
                     errmsg = 'Error parsing inline script: %s; script not translated. Script %s' % (str(excpt), script)
                     self.outputComs.send('nonfatalError', errmsg)
