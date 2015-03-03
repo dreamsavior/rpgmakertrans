@@ -74,6 +74,13 @@ module Matcher
       return :eventList
     end
   end
+  
+  def systemMapVersion(data, context)
+    # Match the system map version so it can be replaced with a new random integer
+      if context[-2].class == Class and context[-2].name == 'RPG::System' and context[-1] == 'version_id'
+        return :randint
+      end
+  end
 end
 
 def matchAll(data, context)

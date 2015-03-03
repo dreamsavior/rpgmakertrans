@@ -132,11 +132,14 @@ def patch(data, context)
   
   matchResult = matchAll(data, context)
   
-  if matchResult == :translate
+  case matchResult
+  when :translate
     return translate(data, contextStr(context))
-  elsif matchResult == :eventList
+  when :randint
+    return rand(2**32)
+  when :eventList
     return patchPage(data, context)
-  elsif matchResult == :continue
+  when :continue
     if data.class == Array
       data.each_index{|x|
          data[x] = patch(data[x], context + [x])
@@ -158,10 +161,12 @@ def patch(data, context)
         }
       return data
     end
-  elsif matchResult == :abort 
+  when :abort 
     return data
   else
+    puts 'Error encountered'
     puts matchResult.to_s
+    return data
   end
 end
 
