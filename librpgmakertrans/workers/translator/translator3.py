@@ -348,16 +348,31 @@ class TranslationFile:
 
     @staticmethod
     def convertFrom31(lines):
-        """Convert contexts from v3.1 to v3.2"""
-        removeParts = {'Class', 'Map', 'Enemy', 'Armor', 'Weapon', 
+        """Convert contexts from v3.1 to v3.2. This does 3 things:
+        1) Remove class names from contexts
+        2) Flip the order of descriptor and position in page for 
+        Dialogue and Choice
+        3) Remove Scripts prefix from InlineScripts, so that they can
+        be better fuzzy matched. The InlineScript contexts are horribly
+        broken, so they can't be rewritten, but hopefully the fuzzy
+        matcher is enough.
+        """
+        removeParts = ('Class', 'Map', 'Enemy', 'Armor', 'Weapon', 
                        'System', 'Actor', 'Item', 'State', 'Troop', 'Skill',
-                       'Event', 'System::Terms'}
+                       'Event', 'System::Terms')
+        flippers = ('Dialogue', 'Choice')
         newLines = []
         for line in lines:
             if line.startswith('> CONTEXT:'):
                 tmp, _, comment = line.partition('#')
                 context = tmp.partition(':')[2].partition('<')[0]
                 parts = context.split('/')
+                for flipper in flippers:
+                    if flipper in parts:
+                        indx = parts.index(flipper)
+                        parts[indx], parts[indx+1] = parts[indx+1], parts[indx]
+                if 'InlineScript' in parts and parts[0].lower() == 'scripts':#
+                    parts.pop(0)
                 newContext = '/'.join([parts[0]] + [part for part in parts[1:] if part not in removeParts])
                 line = '> CONTEXT: %s%s' % (newContext, ('#%s' % comment) if comment else '')
             newLines.append(line) 
