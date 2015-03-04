@@ -65,7 +65,7 @@ def patchPage(page, context)
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
         currentStr.rstrip!
-        translatedString = translate(currentStr, contextString + 'Dialogue/%s/' % dialogueLoc.to_s)
+        translatedString = translate(currentStr, contextString + '%s/Dialogue' % dialogueLoc.to_s)
         if translatedString == ''
           translatedString = ' '
         end
@@ -85,7 +85,7 @@ def patchPage(page, context)
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
           choiceString = eventCommand.instance_variable_get(:@parameters)[0][y].rstrip
           choiceContextData[choiceString] = [choicePos, choiceNo]
-          translatedChoice = translate(choiceString, contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
+          translatedChoice = translate(choiceString, contextString + '%s/Choice/%s' % [choicePos.to_s, choiceNo.to_s])
           eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
           choiceNo += 1
         }
@@ -95,7 +95,7 @@ def patchPage(page, context)
         choiceString = eventCommand.instance_variable_get(:@parameters)[1].rstrip
         choiceData = choiceContextData[choiceString]
         translatedChoice = translate(choiceString,
-                                     contextString + 'Choice/%s/%s' % [choiceData[0].to_s, choiceData[1].to_s])
+                                     contextString + '%s/Choice/%s' % [choiceData[0].to_s, choiceData[1].to_s])
         eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1
@@ -112,7 +112,7 @@ def patchPage(page, context)
           currIndx += 1
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
-        translatedscript = translateInlineScript(script, contextString + 'InlineScript/%s' % scriptPos.to_s).lines
+        translatedscript = translateInlineScript(script, contextString + '%s/InlineScript' % scriptPos.to_s).lines
         code = 355
         translatedscript.each { |line|
           line.chomp!
