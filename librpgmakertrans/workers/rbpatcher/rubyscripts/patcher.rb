@@ -65,7 +65,7 @@ def patchPage(page, context)
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
         currentStr.rstrip!
-        translatedString = translate(currentStr, contextString + 'Dialogue/' + dialogueLoc.to_s + '/')
+        translatedString = translate(currentStr, contextString + 'Dialogue/%s/' % dialogueLoc.to_s)
         if translatedString == ''
           translatedString = ' '
         end
@@ -101,6 +101,7 @@ def patchPage(page, context)
         currIndx += 1
       when 355
         line = eventCommand.instance_variable_get(:@parameters)[0].rstrip
+        scriptPos = currIndx
         script = line + "\n"
         indent = eventCommand.instance_variable_get(:@indent)
         currIndx += 1
@@ -111,7 +112,7 @@ def patchPage(page, context)
           currIndx += 1
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
-        translatedscript = translateInlineScript(script, contextString + 'InlineScript/').lines
+        translatedscript = translateInlineScript(script, contextString + 'InlineScript/%s' % scriptPos.to_s).lines
         code = 355
         translatedscript.each { |line|
           line.chomp!
