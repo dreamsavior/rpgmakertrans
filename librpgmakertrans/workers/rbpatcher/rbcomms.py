@@ -54,7 +54,7 @@ class RBComms(SocketComms):
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
         self.scriptsDumped = False
-        self.filesToProcess = OrderedDict(filesToProcess)
+        self.filesToProcess = OrderedDict(sorted(filesToProcess.items(), reverse=True))
         self.rpgversion = rpgversion
         self.codeHandlers.update({1: self.translate,
                                   2: self.translateScript,
