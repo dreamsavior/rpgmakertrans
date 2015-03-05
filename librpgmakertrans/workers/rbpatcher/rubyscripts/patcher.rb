@@ -129,6 +129,8 @@ def patchPage(page, context)
   return page
 end
 
+$priority = [:@name, :@display_name, :@description, :@message1, :@message2, :@message3, :@message4]
+  
 def patch(data, context)
   
   matchResult = matchAll(data, context)
@@ -155,11 +157,20 @@ def patch(data, context)
       context += [data.class]
       return patch(data, context)
     else
+      $priority.each{|var|
+        if data.instance_variables.include? var
+          data.instance_variable_set(var,
+                    patch(data.instance_variable_get(var),
+                          context + [var.to_s.sub(/^@/,'')]))
+        end
+      }
       data.instance_variables.each{|var|
-        data.instance_variable_set(var,
-          patch(data.instance_variable_get(var),
-                context + [var.to_s.sub(/^@/,'')]))
-        }
+        if not $priority.include? var
+          data.instance_variable_set(var,
+            patch(data.instance_variable_get(var),
+                  context + [var.to_s.sub(/^@/,'')]))
+        end
+      }
       return data
     end
   when :abort 
