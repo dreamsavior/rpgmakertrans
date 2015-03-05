@@ -27,22 +27,21 @@ module Matcher
   
   def matchElements(data, context)
     # Match elements
-    if data.class == String and context[-2] == 'elements'
+    if data.class == String and ['elements', 'skill_types', 'weapon_types', 'armor_types', ].include? context[-2]
       return :translate
     end
   end
   
-  def matchName(data, context)
-    # This matches names, but *not* event names as these don't have to be translated.
-    if data.class == String and context[-1] == 'name' and not (context[-2].class == Class and context[-2].name == 'RPG::Event')
-      return :translate
-    end
-    
-  end
+#  def matchName(data, context)
+#    # This matches names, but *not* event names as these don't have to be translated.
+#    if data.class == String and context[-1] == 'name' and not (context[-2].class == Class and context[-2].name == 'RPG::Event')
+#      return :translate
+#    end
+#  end
   
   def matchStandardStrings(data, context)
     # Matches the 'standard' strings in all RPGMaker objects
-    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title'].include? context[-1]
+    if data.class == String and context[-1].class == String and ['name', 'display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title', 'currency_unit'].include? context[-1]
       return :translate
     end
   end
