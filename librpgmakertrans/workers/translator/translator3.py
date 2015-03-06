@@ -30,6 +30,10 @@ class ContextDict(dict):
     context is a filename and therefore case insensitive due to,
     well, Windows."""
     
+    def get(self, key, *args, **kwargs):
+        """Implement get method, converting key as appropriate"""
+        return super().get(_convertContext(key), *args, **kwargs)
+    
     def __contains__(self, item):
         """Implement contains, converting key as appropriate"""
         return super().__contains__(_convertContext(item))
