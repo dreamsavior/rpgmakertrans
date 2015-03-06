@@ -21,6 +21,11 @@ from ...controllers.socketcomms import SocketComms
 from ..rubyparse import translateRuby
 from ...errorhook import errorWrap, handleError
 
+def _sortKey(item):
+    if 'Map' in item[0]: return (1, item[0])
+    elif 'CommonEvents' in item[0]: return (2, item[0])
+    else: return (0, item[0])
+    
 class RBCommsError(Exception):
     """Error raised when something goes wrong in RBComms"""
 
@@ -54,7 +59,7 @@ class RBComms(SocketComms):
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
         self.scriptsDumped = False
-        self.filesToProcess = OrderedDict(sorted(filesToProcess.items(), reverse=True))
+        self.filesToProcess = OrderedDict(sorted(filesToProcess.items(), key=_sortKey))
         self.rpgversion = rpgversion
         self.codeHandlers.update({1: self.translate,
                                   2: self.translateScript,
