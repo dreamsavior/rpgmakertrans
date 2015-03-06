@@ -536,8 +536,9 @@ class Translator3Rebuild(Translator3):
         if string in self.translationDB:
             transObj = self.translationDB[string].getTranslationObj(context)
             newFile = context.partition('/')[0]
-            self.newPatch[newFile].addTranslation(transObj)
-            self.reassigned.add(transObj)
+            if transObj not in self.reassigned:
+                self.newPatch[newFile].addTranslation(transObj)
+                self.reassigned.add(transObj)
         return ret
     
     def getPatchData(self):
