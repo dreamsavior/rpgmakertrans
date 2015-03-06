@@ -23,6 +23,7 @@ class FilePatcher(BasePatch):
         super(FilePatcher, self).__init__(path, *args, **kwargs)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
+        self.rebuild = True
 
     @property
     def patchPath(self):
@@ -52,6 +53,9 @@ class FilePatcher(BasePatch):
 
     def writePatchData(self, data, encoding='utf-8'):
         """Write patch data to files"""
+        if self.rebuild:
+            for fn in (x for x in os.listdir(self.patchPath) if x.endswith('.txt')):
+                os.remove(os.path.join(self.patchPath, fn))
         for directory in (self.path, self.patchPath, self.assetPath):
             if not os.path.exists(directory):
                 os.mkdir(directory)
