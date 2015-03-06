@@ -26,10 +26,10 @@ labelString = ''.join([
 class SelectorBlock(QtGui.QGroupBox):
     """A Selector Block in the UI, comprising a combobox, browse button,
     and box"""
-    def __init__(self, name, idtoken, qtparent, eventComms):
+    def __init__(self, name, idtoken, qtparent, logic):
         """Setup the selector block"""
         super(SelectorBlock, self).__init__(name, qtparent)
-        self.outputComs = eventComms
+        self.logic = logic
         self.name = name
         self.idtoken = idtoken
         self.idmap = {}
@@ -59,8 +59,8 @@ class SelectorBlock(QtGui.QGroupBox):
 
     def changedIndex(self, index):
         """Trigger for when the combo box is changed"""
-        self.outputComs.send('changeSelected', self.idtoken,
-                             self.getCurrentSelectedID())
+        self.logic.changeSelected(self.idtoken,
+                                  self.getCurrentSelectedID())
 
     def enable(self, state):
         """Set if the block is enabled or not"""
@@ -81,14 +81,14 @@ class SelectorBlock(QtGui.QGroupBox):
 
     def browsePressed(self):
         """Trigger for when the browse button is pressed"""
-        self.outputComs.send('button', self.idtoken)
+        self.logic.button(self.idtoken)
 
 
 class PatchOptions(QtGui.QGroupBox):
     """The block containing patch options"""
-    def __init__(self, qtparent, outputComs):
+    def __init__(self, qtparent, logic):
         name = 'Patch Options'
-        self.outputComs = outputComs
+        self.logic = logic
         super(PatchOptions, self).__init__(name, qtparent)
         self.create = QtGui.QCheckBox('Create patch', self)
         self.create.setToolTip('When first starting a translation project,\n'
@@ -129,7 +129,7 @@ class PatchOptions(QtGui.QGroupBox):
     def toggle(self, signal, val):
         """Trigger for when an item is toggled (use lambda
         to specify signal)"""
-        self.outputComs.send('optionChanged', signal, val)
+        self.logic.optionChanged(signal, val)
 
     def enable(self, state):
         """Enable or disable the block"""
@@ -139,18 +139,18 @@ class PatchOptions(QtGui.QGroupBox):
 
 class MainWindow(QtGui.QWidget):
     """The main window for the QT UI"""
-    def __init__(self, eventComms):
+    def __init__(self, logic):
         """Setup the main window - this is a big function"""
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
-        self.outputComs = eventComms
+        self.logic = logic
         self.game = SelectorBlock('Game location', 'gameloc',
-                                  self, self.outputComs)
+                                  self, self.logic)
         self.patch = SelectorBlock('Patch location', 'patchloc',
-                                   self, self.outputComs)
+                                   self, self.logic)
         self.trans = SelectorBlock('Translation Location', 'transloc',
-                                   self, self.outputComs)
-        self.patchopts = PatchOptions(self, self.outputComs)
+                                   self, self.logic)
+        self.patchopts = PatchOptions(self, self.logic)
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
         self.comms = QtGui.QLabel('Waiting for backend..')
@@ -167,7 +167,7 @@ class MainWindow(QtGui.QWidget):
         self.setLayout(vbox)
         self.setWindowTitle('RPGMaker Trans v%s' % versionString)
         self.gobutton.released.connect(
-            lambda: self.outputComs.send('button', 'go'))
+            lambda: self.logic.button('go'))
         iconimagefn = os.path.join(os.path.split(__file__)[0],
                                    'rpgtranslogo.svg')
         if os.path.exists(iconimagefn):
@@ -219,7 +219,7 @@ class MainWindow(QtGui.QWidget):
     def closeEvent(self, event):
         """Override the close event to get confirmation from user if
         patching"""
-        self.outputComs.send('stop')
+        self.logic.stop()
         event.ignore()
 
     def displayMessage(self, style, title, maintext):
