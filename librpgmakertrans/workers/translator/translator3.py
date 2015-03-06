@@ -530,6 +530,7 @@ class Translator3(Translator3a):
         """Wraps translate so that the translation object is
         reassigned in the new patch"""
         ret = super().translate(string, context)
+        string = '\n'.join(line.rstrip() for line in string.split('\n'))
         if string in self.translationDB:
             transObj = self.translationDB[string].getTranslationObj(context)
             newFile = context.partition('/')[0]
