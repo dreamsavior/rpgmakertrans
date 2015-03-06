@@ -312,6 +312,7 @@ class TranslationFile:
 
     def addTranslation(self, translation):
         """Add a translation to the file"""
+        assert isinstance(translation, Translation)
         self.translateables.append(translation)
 
     @staticmethod
@@ -455,6 +456,7 @@ class TranslationFileDict(dict):
         
     def __missing__(self, key):
         self[key] = TranslationFile(key, [], self.enablePruning)
+        return self[key]
 
 class Translator3(Translator):
     """A Version 3 Translator"""
@@ -533,12 +535,12 @@ class Translator3Rebuild(Translator3):
     
     def getPatchData(self):
         """Wraps getPatchData to substitute the new patch"""
-        for transFile in self.translationFiles:
-            for transObj in transFile:
+        for transFile in self.translationFiles.values():
+            for transObj in transFile.translateables:
                 if transObj not in self.reassigned:
                     self.newPatch['Unused'].addTranslation(transObj)
         self.oldPatch, self.translationFiles = self.translationFiles, self.newPatch
-        ret = super().getPatchData
+        ret = super().getPatchData()
         self.translationFiles = self.oldPatch
         return ret
     
