@@ -9,7 +9,7 @@ qtui
 The implementation of the QT user interface.
 """
 
-import os
+import os, itertools
 from PySide import QtGui, QtCore, QtSvg
 from ...version import versionString
 
@@ -90,7 +90,6 @@ class PatchOptions(QtGui.QGroupBox):
         name = 'Patch Options'
         self.outputComs = outputComs
         super(PatchOptions, self).__init__(name, qtparent)
-        hbox = QtGui.QHBoxLayout()
         self.create = QtGui.QCheckBox('Create patch', self)
         self.create.setToolTip('When first starting a translation project,\n'
                                'select this to create the initial patch')
@@ -100,15 +99,31 @@ class PatchOptions(QtGui.QGroupBox):
             'with a BOM, although this will break other editors.\n'
             'Enabling this option will cause RPGMaker Trans files\n'
             'to have a UTF-8 BOM.')
-        self.widgets = [self.create, self.useBOM]
-        for x in self.widgets:
-            hbox.addWidget(x)
+        self.rebuild = QtGui.QCheckBox('Rebuild Patch', self)
+        self.rebuild.setToolTip(
+            'For v3 patches, positions of items in the patch\n'
+            'are persistant. Check this box to rebuild the patch,\n'
+            'which will rebuild the patch, restoring items to\n'
+            'where RPGMaker Trans things they should be.\n'
+            'Unused and untranslated items are removed and\n'
+            'unused translations are placed in a special file. This\n'
+            'is particularly useful if a patch becomes damaged,\n' 
+            'a game undergoes major changes, or a patch is\n'
+            'upgraded or has new types of translation added.')
+        self.widgets = [[self.create, self.useBOM], [self.rebuild]]
         vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(hbox)
+        for row in self.widgets:
+            hbox = QtGui.QHBoxLayout()
+            for widget in row:
+                hbox.addWidget(widget)
+            vbox.addLayout(hbox)
+            
         self.setLayout(vbox)
         self.create.toggled.connect(lambda: self.toggle('create',
                                     self.create.isChecked()))
         self.useBOM.toggled.connect(lambda: self.toggle('bom',
+                                    self.useBOM.isChecked()))
+        self.rebuild.toggled.connect(lambda: self.toggle('rebuild',
                                     self.useBOM.isChecked()))
 
     def toggle(self, signal, val):
@@ -118,7 +133,7 @@ class PatchOptions(QtGui.QGroupBox):
 
     def enable(self, state):
         """Enable or disable the block"""
-        for widget in self.widgets:
+        for widget in itertools.chain.from_iterable(self.widgets):
             widget.setEnabled(state)
 
 
