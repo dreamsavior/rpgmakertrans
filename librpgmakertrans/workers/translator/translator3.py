@@ -416,15 +416,11 @@ class CanonicalTranslation:
             if context == 'Default':
                 self.__default = context, translation
         self.contexts.update(newContexts)
-
-    def translate(self, context):
-        """Return a translation for given context. If context is untranslated,
-        try using FuzzyWuzzy to find a good match. If no match found, use
-        default. Either way, update relevant translation with the new
-        context"""
+        
+    def __translate(self, context):
         if context in self.contexts:
             self.contexts[context][0].useContext(context)
-            return self.contexts[context][1] # Simple case
+            return self.contexts[context] # Simple case
         else:
             bestMatch, confidence = process.extractOne(context, self.contexts.keys())
             if confidence > 90:
@@ -433,7 +429,18 @@ class CanonicalTranslation:
                 matchContext, matchTranslation = self.default
             matchTranslation[0].insert(context, matchContext, matchTranslation[1])
             matchTranslation[0].useContext(context)
-            return matchTranslation[1]
+            return matchTranslation
+        
+    def translate(self, context):
+        """Return a translation for given context. If context is untranslated,
+        try using FuzzyWuzzy to find a good match. If no match found, use
+        default. Either way, update relevant translation with the new
+        context"""
+        return self.__translate(context)[1]
+    
+    def getTranslationObj(self, context):
+        return self.__translate(context)[0]
+
 
 class TranslationDict(dict):
     """An object to lazily create CanonicalTranslations"""
@@ -441,6 +448,13 @@ class TranslationDict(dict):
         """Lazily create a CanonicalTranslation"""
         self[key] = CanonicalTranslation(key)
         return self[key]
+    
+class TranslationFileDict(dict):
+    def __init__(self, enablePruning):
+        self.enablePruning = enablePruning
+        
+    def __missing__(self, key):
+        self[key] = TranslationFile(key, [], self.enablePruning)
 
 class Translator3(Translator):
     """A Version 3 Translator"""
@@ -450,7 +464,7 @@ class Translator3(Translator):
         super().__init__(*args, **kwargs)
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
-        self.translationFiles = {}
+        self.translationFiles = TranslationFileDict(enablePruning)
         for name, string in namedStrings:
             self.translationFiles[name] = TranslationFile.fromString(name, string, enablePruning=enablePruning)
         self.translationDB = TranslationDict()
@@ -469,10 +483,7 @@ class Translator3(Translator):
             baseContext = contexts[0]
             name = baseContext.partition('/')[0]
             transObj = Translation.fromDesc(raw, contexts)
-            if name not in self.translationFiles:
-                self.translationFiles[name] = TranslationFile(name, [transObj])
-            else:
-                self.translationFiles[name].addTranslation(transObj)
+            self.translationFiles[name].addTranslation(transObj)
         ret = {}
         for name in self.translationFiles:
             ret[name] = self.translationFiles[name].asString()
@@ -499,3 +510,35 @@ class Translator3(Translator):
         else:
             return ret
         
+class Translator3Rebuild(Translator3):
+    """Specialised version of Translator3 which rebuilds the patch,
+    i.e. it puts every translation where RPGMaker Trans thinks it
+    would go in a new patch"""
+    def __init__(self, *args, **kwargs):
+        """Initialise Translator3Rebuilds extra things"""
+        super().__init__(*args, **kwargs)
+        self.newPatch = TranslationFileDict(True)
+        self.reassigned = set()
+        
+    def translate(self, string, context):
+        """Wraps translate so that the translation object is
+        reassigned in the new patch"""
+        ret = super().translate(string, context)
+        if string in self.translationDB:
+            transObj = self.translationDB[string].getTranslationObj(context)
+            newFile = context.partition('/')[0]
+            self.newPatch[newFile].addTranslation(transObj)
+            self.reassigned.add(transObj)
+        return ret
+    
+    def getPatchData(self):
+        """Wraps getPatchData to substitute the new patch"""
+        for transFile in self.translationFiles:
+            for transObj in transFile:
+                if transObj not in self.reassigned:
+                    self.newPatch['Unused'].addTranslation(transObj)
+        self.oldPatch, self.translationFiles = self.translationFiles, self.newPatch
+        ret = super().getPatchData
+        self.translationFiles = self.oldPatch
+        return ret
+    
