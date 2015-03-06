@@ -462,7 +462,7 @@ class TranslationFileDict(dict):
         self[key] = TranslationFile(key, [], self.enablePruning)
         return self[key]
 
-class Translator3a(Translator):
+class Translator3(Translator):
     """A Version 3 Translator"""
     def __init__(self, namedStrings, enablePruning = True, debug = False, *args, **kwargs):
         """Initialise the translator from a dictionary of filenames to
@@ -516,7 +516,7 @@ class Translator3a(Translator):
         else:
             return ret
         
-class Translator3(Translator3a):
+class Translator3Rebuild(Translator3):
     """Specialised version of Translator3 which rebuilds the patch,
     i.e. it puts every translation where RPGMaker Trans thinks it
     would go in a new patch"""
@@ -528,7 +528,9 @@ class Translator3(Translator3a):
         
     def translate(self, string, context):
         """Wraps translate so that the translation object is
-        reassigned in the new patch"""
+        reassigned in the new patch, strips out any untranslated
+        and unused items, and places any unused but translated items
+        in a special file."""
         ret = super().translate(string, context)
         string = '\n'.join(line.rstrip() for line in string.split('\n'))
         if string in self.translationDB:

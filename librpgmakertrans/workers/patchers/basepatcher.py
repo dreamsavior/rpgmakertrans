@@ -31,10 +31,11 @@ class PatchMeta(MetaCustomManager, ErrorMeta):
 
 class BasePatch(metaclass=PatchMeta):
     """The basic class for Patch objects"""
-    def __init__(self, path, coms, errout):
+    def __init__(self, path, coms, rebuild, errout):
         """Initialise the patch"""
         self.path = path
         self.coms = coms
+        self.rebuild = rebuild
         self.categorisePatchFiles()
         self.translatorManager = TranslatorManager()
         self.translatorManager.start(errout)
@@ -84,8 +85,10 @@ class BasePatch(metaclass=PatchMeta):
     def makeTranslator(self, coms):
         """Make a translator object from this patch"""
         data, mtime = self.loadPatchData()
+        tClassName = (type(self).translatorClass if not self.rebuild 
+                      else type(self).rebuildClass)
         translatorClass = getattr(self.translatorManager,
-                                  type(self).translatorClass)
+                                  tClassName)
         return translatorClass(data, mtime=mtime, coms=coms)
 
     def getAssetFiles(self):
@@ -107,12 +110,14 @@ class BasePatch(metaclass=PatchMeta):
 class BasePatcherV2(BasePatch):
     """Contains information for v2 patches"""
     translatorClass = 'Translator2kv2'
+    rebuildClass = 'Translator2kv2'
     header = '# RPGMAKER TRANS PATCH'
     patchMarker = ''
 
 class BasePatcherV3(BasePatch):
     """Contains information for v3 patches"""
     translatorClass = 'Translator3'
+    rebuildClass = 'Translator3Rebuild'
     header = '> RPGMAKER TRANS PATCH'
     patchMarker = '> RPGMAKER TRANS PATCH V3'
 

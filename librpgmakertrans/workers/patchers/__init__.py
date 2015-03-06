@@ -17,7 +17,7 @@ from .basepatcher import PatchManager, makeTranslator, writeTranslator
 from .registry import getClassName
 
 
-def getPatcher(manager, path, coms, errout, defaultVersion=2):
+def getPatcher(manager, path, rebuild, coms, errout, defaultVersion=2):
     """Get a patcher"""
     className = getClassName(path)
     if className is None:
@@ -31,7 +31,7 @@ def getPatcher(manager, path, coms, errout, defaultVersion=2):
             className = 'FilePatcherv3'
         else:
             raise Exception('Bad Patch Version')
-    return getattr(manager, className)(path, coms, errout)
+    return getattr(manager, className)(path, coms, rebuild, errout)
 
 
 def doFullPatches(patcher, outdir, translator, mtimes, newmtimes, coms):
