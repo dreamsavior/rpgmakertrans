@@ -35,7 +35,7 @@ class RBComms(SocketComms):
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
 
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
