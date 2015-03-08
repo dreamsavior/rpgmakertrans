@@ -115,7 +115,7 @@ class RPGVXAceUnpackedTranslated(SniffedType):
 def sniffUnpackedRBGame(path, headlessClass):
     """Sniff an unpacked RB Game"""
     if os.path.isfile(path) and path.upper().endswith('GAME.EXE'):
-        return sniffUnpackedRBGame(os.path.split(path)[0])
+        return sniffUnpackedRBGame(os.path.split(path)[0], headlessClass)
     elif os.path.isdir(path):
         contents = os.listdir(path)
         arcName = headlessClass.arcName.upper()
