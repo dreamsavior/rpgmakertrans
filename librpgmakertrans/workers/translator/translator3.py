@@ -6,8 +6,7 @@ translator3
 :copyright: 2012-2014
 :license: GNU Public License version 3
 
-Version 3 of the patch file format. Currently WIP. Different from experimental
-newtranslator, although backwards compatible with it.
+Version 3 of the patch file format. 
 """
 
 from collections import OrderedDict
