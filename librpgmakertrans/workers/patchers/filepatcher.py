@@ -63,11 +63,17 @@ class FilePatcher(BasePatch):
             with open(patchmarkerfn, 'w') as f:
                 f.write(self.patchMarker)
         for name in data:
-            if data[name] != self.originalData.get(name.lower(), None):
+            if data[name] != self.originalData.get(name, None):
                 fn = name + '.txt'
                 fullfn = os.path.join(self.patchPath, fn)
                 with open(fullfn, 'w', encoding=encoding) as f:
                     f.write(data[name])
+        if self.rebuild:
+            namesLower = [name.lower() for name in data]
+            for fn in self.patchDataFiles:
+                lowerCaseName = os.path.split(fn)[1].lower().rpartition('.txt')[0]
+                if lowerCaseName not in namesLower:
+                    os.remove(fn)
 
     def allPaths(self):
         """Get all paths of files in patch"""

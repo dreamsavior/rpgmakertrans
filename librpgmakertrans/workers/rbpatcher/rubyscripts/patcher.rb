@@ -10,47 +10,15 @@
 
 require 'zlib'
 require_relative 'socketcall.rb'
-require_relative 'rgss.rb'
-require_relative 'vxschema.rb'
-
-# Notes:
-# Don't think animations is necessary
-# Areas unknown
+require_relative 'matcher.rb'
 
 def contextStr(context)
   result = ''
-  context.each{|x| result += x.to_s + '/'}
-  while result.include?('RPG::') do
-    result = result.sub('RPG::', '')
-  end
+  context.each{|x| 
+               if x.class != Class 
+                 result += x.to_s + '/'
+               end}
   return result
-end
-
-def schemaMatch(schema, context)
-  schemaLevel = schema
-  level = 0
-  context.each{|x|
-    level += 1
-    # Match all Maps to the Map class
-    if x.class == String and x[0, 3] == 'Map'
-      x = 'Map'
-    end
-    if schemaLevel.member?(x)
-      schemaLevel = schemaLevel[x]
-    elsif schemaLevel.member?(true)
-      schemaLevel = schemaLevel[true]
-    else
-      return -1 # Failure, do not iterate down here.
-    end
-  }
-  if schemaLevel == true
-    return 1 # Success, dump this for translating
-  elsif schemaLevel == 'eventList'
-    return 2 # Dump an event list
-  else
-    return 0 # Failure, but keep iterating
-  end
-
 end
 
 def patchPage(page, context)
@@ -97,7 +65,7 @@ def patchPage(page, context)
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
         currentStr.rstrip!
-        translatedString = translate(currentStr, contextString + 'Dialogue/' + dialogueLoc.to_s + '/')
+        translatedString = translate(currentStr, contextString + '%s/Dialogue' % dialogueLoc.to_s)
         if translatedString == ''
           translatedString = ' '
         end
@@ -117,7 +85,7 @@ def patchPage(page, context)
         eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
           choiceString = eventCommand.instance_variable_get(:@parameters)[0][y].rstrip
           choiceContextData[choiceString] = [choicePos, choiceNo]
-          translatedChoice = translate(choiceString, contextString + 'Choice/%s/%s' % [choicePos.to_s, choiceNo.to_s])
+          translatedChoice = translate(choiceString, contextString + '%s/Choice/%s' % [choicePos.to_s, choiceNo.to_s])
           eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
           choiceNo += 1
         }
@@ -127,12 +95,13 @@ def patchPage(page, context)
         choiceString = eventCommand.instance_variable_get(:@parameters)[1].rstrip
         choiceData = choiceContextData[choiceString]
         translatedChoice = translate(choiceString,
-                                     contextString + 'Choice/%s/%s' % [choiceData[0].to_s, choiceData[1].to_s])
+                                     contextString + '%s/Choice/%s' % [choiceData[0].to_s, choiceData[1].to_s])
         eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
         newPageList.push(eventCommand)
         currIndx += 1
       when 355
         line = eventCommand.instance_variable_get(:@parameters)[0].rstrip
+        scriptPos = currIndx
         script = line + "\n"
         indent = eventCommand.instance_variable_get(:@indent)
         currIndx += 1
@@ -143,7 +112,7 @@ def patchPage(page, context)
           currIndx += 1
           eventCommand = page.instance_variable_get(:@list)[currIndx]
         end
-        translatedscript = translateInlineScript(script, contextString + 'InlineScript/').lines
+        translatedscript = translateInlineScript(script, contextString + '%s/InlineScript' % scriptPos.to_s).lines
         code = 355
         translatedscript.each { |line|
           line.chomp!
@@ -155,21 +124,25 @@ def patchPage(page, context)
         currIndx += 1
       end
     end
-    #if newPageList != page.list
-    #  puts contextString
-    #end
     page.instance_variable_set(:@list, newPageList)
   end
   return page
 end
 
+$priority = [:@name, :@display_name, :@description, :@message1, :@message2, :@message3, :@message4]
+  
 def patch(data, context)
-  schemaMatchResult = schemaMatch($schema, context)
-  if schemaMatchResult == 1
+  
+  matchResult = matchAll(data, context)
+  
+  case matchResult
+  when :translate
     return translate(data, contextStr(context))
-  elsif schemaMatchResult == 2
+  when :randint
+    return rand(2**32)
+  when :eventList
     return patchPage(data, context)
-  elsif schemaMatchResult == 0
+  when :continue
     if data.class == Array
       data.each_index{|x|
          data[x] = patch(data[x], context + [x])
@@ -180,16 +153,31 @@ def patch(data, context)
         data[key] = patch(value, context+[key])
       }
       return data
-    else
+    elsif data.class != context[-1]
       context += [data.class]
+      return patch(data, context)
+    else
+      $priority.each{|var|
+        if data.instance_variables.include? var
+          data.instance_variable_set(var,
+                    patch(data.instance_variable_get(var),
+                          context + [var.to_s.sub(/^@/,'')]))
+        end
+      }
       data.instance_variables.each{|var|
-        data.instance_variable_set(var,
-          patch(data.instance_variable_get(var),
-                context + [var.to_s.sub(/^@/,'')]))
-        }
-     return data
+        if not $priority.include? var
+          data.instance_variable_set(var,
+            patch(data.instance_variable_get(var),
+                  context + [var.to_s.sub(/^@/,'')]))
+        end
+      }
+      return data
     end
+  when :abort 
+    return data
   else
+    puts 'Error encountered'
+    puts matchResult.to_s
     return data
   end
 end
@@ -203,7 +191,6 @@ def patchFile(infn, outfn, context)
   File.open( outfn, "wb+") do |datafile|
     Marshal.dump(data, datafile)
   end
-  #puts data.ya2yaml(:syck_compatible => true)
 end
 
 

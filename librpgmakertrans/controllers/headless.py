@@ -22,13 +22,15 @@ from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class HeadlessConfig:
     """Simple container to contain all config variables"""
-    def __init__(self, useBOM=False, socket=27899):
+    def __init__(self, useBOM=False, socket=27899, rebuild=False):
         """Current variables in config:
           - useBOM: If the patch should be written with byte order marks
           - socket: Name of socket to use in SocketComms
+          - rebuild: If the patch should be rebuilt
         """
         self.useBOM = useBOM
         self.socket = socket
+        self.rebuild = rebuild
 
 class HeadlessUtils(CoreProtocol):
     """Defines the utility functions that Headless uses to communicate with
@@ -49,7 +51,7 @@ class HeadlessUtils(CoreProtocol):
         """Sends a nonfatal error message and kills the patcher"""
         self.outputcoms.send('nonfatalError', msg)
         self.going = False
-        self.outputcoms.send('abortPatching')
+        self.outputcoms.send('patchingAborted')
         self.terminate(['patcher', 'copier'])
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()
@@ -81,7 +83,7 @@ class HeadlessUtils(CoreProtocol):
         """Update the progress value; communicate if necessary"""
         newProgressVal = min((x[0] / x[1]
                               for x in list(self.progress.values())))
-        if newProgressVal != self.progressVal:
+        if newProgressVal > self.progressVal: # Only increment progress bar
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
         for key in self.progress:
@@ -125,6 +127,7 @@ class Headless(HeadlessUtils):
         self.setupPool('copier', processes=1)
         mtimesManager = self.mtimesManager.MTimesHandler(outdir)
         patcher = getPatcher(self.patchManager, patchpath,
+                             config.rebuild,
                              self.inputcoms, self.errout,
                              type(self).defaultPatchVersion)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)

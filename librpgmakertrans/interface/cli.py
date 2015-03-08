@@ -36,7 +36,8 @@ class CLIMode(CoreProtocol):
         self.progressPrint('Starting patcher...')
         self.message = ''
         self.progress = 0
-        config = HeadlessConfig(useBOM=cargs.use_bom, socket=cargs.socket)
+        config = HeadlessConfig(useBOM=cargs.use_bom, socket=cargs.socket,
+                                rebuild=cargs.rebuild)
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
                            config)
 
@@ -100,6 +101,11 @@ class CLIMode(CoreProtocol):
         """Set the current progress"""
         self.progress = progress
         self.printProgress()
+        
+    def patchingAborted(self):
+        """Quit"""
+        self.errorPrint('Patching aborted')
+        sys.exit(1)
 
     def printProgress(self):
         """Print current progress to screen"""
@@ -129,6 +135,8 @@ def CLIBackend(runner):
                         action='store_true')
     parser.add_argument('-b', '--use-bom', help='Use UTF-8 BOM in Patch'
                         'files', action='store_true')
+    parser.add_argument('-r', '--rebuild', help="Rebuild patch against game",
+                        action="store_true")
     parser.add_argument('-s', '--socket', type=int, default=27899,
                         help='Socket to use for XP/VX/VX Ace patching'
                         '(default: 27899)')

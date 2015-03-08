@@ -26,7 +26,7 @@ class QTLogic(CoreProtocol):
         """Initialise the QT Application and setup the Window"""
         super(QTLogic, self).__init__(*args, **kwargs)
         self.app = QtGui.QApplication([])
-        self.window = MainWindow(self.inputcoms)
+        self.window = MainWindow(self)
         self.timer = Timer(100, self.update)
         self.browsePatchDirs = False
 

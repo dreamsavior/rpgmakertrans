@@ -216,6 +216,8 @@ class CoreProtocol:
 
     def submit(self, pool, fn, *args, **kwargs):
         """Submit a job to a pool"""
+        if not self.going:
+            return
         if pool == 'dbg':
             return fn(*args, **kwargs)
         args = [self.processArg(arg) for arg in args]

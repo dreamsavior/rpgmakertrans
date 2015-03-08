@@ -88,7 +88,8 @@ class GUIController(CoreProtocol):
                                   'transloc': None,
                                   'create': False,
                                   'enabled': True,
-                                  'bom': False})
+                                  'bom': False,
+                                  'rebuild': False})
 
         self.headless = None
 
@@ -99,6 +100,7 @@ class GUIController(CoreProtocol):
         self.submit('worker', versionCheck, coms=self.inputcoms)
         self.localWaitUntil('sniffingDone', self.setUpSniffedDataMP,
                             sniffDataRet)
+        self.enableUI()
 
     def newVerAvailable(self, version):
         """Display a message+quit if new version available"""
@@ -236,9 +238,9 @@ class GUIController(CoreProtocol):
         state = self.currentState['enabled']
         states = {}
         states['gameloc'] = state
+        states['options'] = state
         state &= self.currentState['gameloc'] is not None
         states['patchloc'] = state
-        states['options'] = state
         state &= self.currentState['patchloc'] is not None
         states['transloc'] = state
         state &= self.currentState['transloc'] is not None
@@ -253,7 +255,8 @@ class GUIController(CoreProtocol):
         patchdata = self.patchDB.reverse[self.currentState['patchloc']]
         transdata = self.transDB.reverse[self.currentState['transloc']]
         useBOM = self.currentState['bom']
-        config = HeadlessConfig(useBOM=useBOM)
+        rebuild = self.currentState['rebuild']
+        config = HeadlessConfig(useBOM=useBOM, rebuild=rebuild)
         initialiseHeadless(self.runner, self.inputcoms, gamedata,
                            patchdata, transdata, config)
         self.currentState['enabled'] = False
@@ -265,7 +268,6 @@ class GUIController(CoreProtocol):
         gamedata = self.gameDB.reverse[gameID]
         self.outputcoms.send('removeGame', gameID)
         self.addGameFromPath(gamedata.canonicalpath, select=True)
-
 
     def nonfatalError(self, msg):
         """Display a non fatal error message"""

@@ -9,7 +9,7 @@ qtui
 The implementation of the QT user interface.
 """
 
-import os
+import os, itertools
 from PySide import QtGui, QtCore, QtSvg
 from ...version import versionString
 
@@ -26,10 +26,10 @@ labelString = ''.join([
 class SelectorBlock(QtGui.QGroupBox):
     """A Selector Block in the UI, comprising a combobox, browse button,
     and box"""
-    def __init__(self, name, idtoken, qtparent, eventComms):
+    def __init__(self, name, idtoken, qtparent, logic):
         """Setup the selector block"""
         super(SelectorBlock, self).__init__(name, qtparent)
-        self.outputComs = eventComms
+        self.logic = logic
         self.name = name
         self.idtoken = idtoken
         self.idmap = {}
@@ -59,8 +59,8 @@ class SelectorBlock(QtGui.QGroupBox):
 
     def changedIndex(self, index):
         """Trigger for when the combo box is changed"""
-        self.outputComs.send('changeSelected', self.idtoken,
-                             self.getCurrentSelectedID())
+        self.logic.changeSelected(self.idtoken,
+                                  self.getCurrentSelectedID())
 
     def enable(self, state):
         """Set if the block is enabled or not"""
@@ -81,16 +81,15 @@ class SelectorBlock(QtGui.QGroupBox):
 
     def browsePressed(self):
         """Trigger for when the browse button is pressed"""
-        self.outputComs.send('button', self.idtoken)
+        self.logic.button(self.idtoken)
 
 
 class PatchOptions(QtGui.QGroupBox):
     """The block containing patch options"""
-    def __init__(self, qtparent, outputComs):
+    def __init__(self, qtparent, logic):
         name = 'Patch Options'
-        self.outputComs = outputComs
+        self.logic = logic
         super(PatchOptions, self).__init__(name, qtparent)
-        hbox = QtGui.QHBoxLayout()
         self.create = QtGui.QCheckBox('Create patch', self)
         self.create.setToolTip('When first starting a translation project,\n'
                                'select this to create the initial patch')
@@ -100,42 +99,58 @@ class PatchOptions(QtGui.QGroupBox):
             'with a BOM, although this will break other editors.\n'
             'Enabling this option will cause RPGMaker Trans files\n'
             'to have a UTF-8 BOM.')
-        self.widgets = [self.create, self.useBOM]
-        for x in self.widgets:
-            hbox.addWidget(x)
+        self.rebuild = QtGui.QCheckBox('Rebuild Patch', self)
+        self.rebuild.setToolTip(
+            'For v3 patches, positions of items in the patch\n'
+            'are persistant. Check this box to rebuild the patch,\n'
+            'which will rebuild the patch, restoring items to\n'
+            'where RPGMaker Trans things they should be.\n'
+            'Unused and untranslated items are removed and\n'
+            'unused translations are placed in a special file. This\n'
+            'is particularly useful if a patch becomes damaged,\n' 
+            'a game undergoes major changes, or a patch is\n'
+            'upgraded or has new types of translation added.')
+        self.widgets = [[self.create, self.useBOM], [self.rebuild]]
         vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(hbox)
+        for row in self.widgets:
+            hbox = QtGui.QHBoxLayout()
+            for widget in row:
+                hbox.addWidget(widget)
+            vbox.addLayout(hbox)
+            
         self.setLayout(vbox)
         self.create.toggled.connect(lambda: self.toggle('create',
                                     self.create.isChecked()))
         self.useBOM.toggled.connect(lambda: self.toggle('bom',
                                     self.useBOM.isChecked()))
+        self.rebuild.toggled.connect(lambda: self.toggle('rebuild',
+                                    self.useBOM.isChecked()))
 
     def toggle(self, signal, val):
         """Trigger for when an item is toggled (use lambda
         to specify signal)"""
-        self.outputComs.send('optionChanged', signal, val)
+        self.logic.optionChanged(signal, val)
 
     def enable(self, state):
         """Enable or disable the block"""
-        for widget in self.widgets:
+        for widget in itertools.chain.from_iterable(self.widgets):
             widget.setEnabled(state)
 
 
 class MainWindow(QtGui.QWidget):
     """The main window for the QT UI"""
-    def __init__(self, eventComms):
+    def __init__(self, logic):
         """Setup the main window - this is a big function"""
         super(MainWindow, self).__init__()
         vbox = QtGui.QVBoxLayout()
-        self.outputComs = eventComms
+        self.logic = logic
         self.game = SelectorBlock('Game location', 'gameloc',
-                                  self, self.outputComs)
+                                  self, self.logic)
         self.patch = SelectorBlock('Patch location', 'patchloc',
-                                   self, self.outputComs)
+                                   self, self.logic)
         self.trans = SelectorBlock('Translation Location', 'transloc',
-                                   self, self.outputComs)
-        self.patchopts = PatchOptions(self, self.outputComs)
+                                   self, self.logic)
+        self.patchopts = PatchOptions(self, self.logic)
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
         self.comms = QtGui.QLabel('Waiting for backend..')
@@ -152,7 +167,7 @@ class MainWindow(QtGui.QWidget):
         self.setLayout(vbox)
         self.setWindowTitle('RPGMaker Trans v%s' % versionString)
         self.gobutton.released.connect(
-            lambda: self.outputComs.send('button', 'go'))
+            lambda: self.logic.button('go'))
         iconimagefn = os.path.join(os.path.split(__file__)[0],
                                    'rpgtranslogo.svg')
         if os.path.exists(iconimagefn):
@@ -204,7 +219,7 @@ class MainWindow(QtGui.QWidget):
     def closeEvent(self, event):
         """Override the close event to get confirmation from user if
         patching"""
-        self.outputComs.send('stop')
+        self.logic.stop()
         event.ignore()
 
     def displayMessage(self, style, title, maintext):

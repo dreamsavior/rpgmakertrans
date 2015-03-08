@@ -6,8 +6,7 @@ translator3
 :copyright: 2012-2014
 :license: GNU Public License version 3
 
-Version 3 of the patch file format. Currently WIP. Different from experimental
-newtranslator, although backwards compatible with it.
+Version 3 of the patch file format. 
 """
 
 from collections import OrderedDict
@@ -15,6 +14,52 @@ from fuzzywuzzy import process
 
 from .translatorbase import Translator, TranslatorError
 
+def _convertContext(context):
+    """Convert any filename component to upper case
+    internally"""
+    if '/' in context:
+        fn, _, remainder = context.partition('/')
+        return '%s/%s' % (fn.upper(), remainder)
+    else:
+        return context
+        
+class ContextDict(dict):
+    """Special dictionary that handles context->translation
+    mapping. Takes into account that the first element of a multipart
+    context is a filename and therefore case insensitive due to,
+    well, Windows."""
+    
+    def get(self, key, *args, **kwargs):
+        """Implement get method, converting key as appropriate"""
+        return super().get(_convertContext(key), *args, **kwargs)
+    
+    def __contains__(self, item):
+        """Implement contains, converting key as appropriate"""
+        return super().__contains__(_convertContext(item))
+    
+    def __getitem__(self, key):
+        """Implement getitem, converting key as appropriate"""
+        return super().__getitem__(_convertContext(key))
+    
+    def __setitem__(self, key, value):
+        """Implement setitem, converting key as appropriate"""
+        return super().__setitem__(_convertContext(key), value)
+    
+    def __delitem__(self, key):
+        """Implement delitem, converting key as appropriate"""
+        return super().__delitem__(_convertContext(key))
+    
+class ContextSet(ContextDict):
+    """Thin implementation of a set over ContextDict; Implemented
+    over ContextDict rather than Set for ease of programming."""
+    def add(self, key):
+        """Add element to set"""
+        self[key] = True
+        
+    def remove(self, key):
+        """Delete element from set"""
+        del self[key]
+             
 class TranslationLine:
     """A token representing a single line of a translation file"""
     escapes = [('\\', '\\\\'), ('>', '\\>'), ('#', '\\#')]
@@ -79,6 +124,8 @@ class TranslationLine:
                 data = data.partition('<')[0].strip()
             else:
                 data = data.strip()
+        elif string.startswith('>'):
+            raise Exception('Invalid command %s' % string)
         elif len(comment) > 0 and not data.strip():
             cType = 'comment'
         else:
@@ -131,7 +178,7 @@ class Translation:
         self.items = items
         currentContexts = ['RAW']
         currentString = []
-        strings = {}
+        strings = ContextDict()
         for item in self.items:
             if item.cType != 'data':
                 if currentString:
@@ -145,7 +192,7 @@ class Translation:
         self.__addTranslations(strings, currentString, currentContexts)
         self.raw = strings.pop('RAW')
         self.translations = strings
-        self.usedContexts = set()
+        self.usedContexts = ContextSet()
 
     @classmethod
     def fromDesc(cls, raw, contexts):
@@ -176,7 +223,7 @@ class Translation:
         """Insert a new context (and translation) after a given context"""
         indx = 0
         line = self.items[indx]
-        while indx < len(self.items) and not (line.cType == 'context' and line.data == afterContext):
+        while indx < len(self.items) and not (line.cType == 'context' and _convertContext(line.data) == afterContext):
             indx += 1
             line = self.items[indx]
         while indx < len(self.items) and line.cType == 'context':
@@ -217,9 +264,9 @@ class Translation:
 
 
 class TranslationFile:
-    """Represents a v3.1 Translation File. Also has the capacity to convert
-    v3.0 patch files"""
-    version = (3, 1)
+    """Represents a v3.2 Translation File. Also has the capacity to convert
+    v3.0/v3.1 patch files"""
+    version = (3, 2)
     header = 'RPGMAKER TRANS PATCH FILE VERSION'
     def __init__(self, filename, translateables, enablePruning=True):
         """Initialise from a filename and list of translateables"""
@@ -241,7 +288,10 @@ class TranslationFile:
         if fileVersion[1] == 0:
             lines = cls.convertFrom30(lines)
             fileVersion[1] = 1
-        if fileVersion[1] != 1:
+        if fileVersion[1] == 1:
+            lines = cls.convertFrom31(lines)
+            fileVersion[1] = 2
+        if fileVersion[1] != 2:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
         return cls(filename, translateables, *args, **kwargs)
@@ -265,6 +315,7 @@ class TranslationFile:
 
     def addTranslation(self, translation):
         """Add a translation to the file"""
+        assert isinstance(translation, Translation)
         self.translateables.append(translation)
 
     @staticmethod
@@ -280,7 +331,7 @@ class TranslationFile:
             current.append(translationLine)
         if current:
             yield current
-
+    
     @staticmethod
     def convertFrom30(lines):
         """Convert a file from 3.0 format"""
@@ -299,6 +350,38 @@ class TranslationFile:
                 ls[indx] = '\>'
         return ''.join(ls)
 
+    @staticmethod
+    def convertFrom31(lines):
+        """Convert contexts from v3.1 to v3.2. This does 3 things:
+        1) Remove class names from contexts
+        2) Flip the order of descriptor and position in page for 
+        Dialogue and Choice
+        3) Remove Scripts prefix from InlineScripts, so that they can
+        be better fuzzy matched. The InlineScript contexts are horribly
+        broken, so they can't be rewritten, but hopefully the fuzzy
+        matcher is enough.
+        """
+        removeParts = ('Class', 'Map', 'Enemy', 'Armor', 'Weapon', 
+                       'System', 'Actor', 'Item', 'State', 'Troop', 'Skill',
+                       'Event', 'System::Terms')
+        flippers = ('Dialogue', 'Choice')
+        newLines = []
+        for line in lines:
+            if line.startswith('> CONTEXT:'):
+                tmp, _, comment = line.partition('#')
+                context = tmp.partition(':')[2].partition('<')[0]
+                parts = context.split('/')
+                for flipper in flippers:
+                    if flipper in parts:
+                        indx = parts.index(flipper)
+                        parts[indx], parts[indx+1] = parts[indx+1], parts[indx]
+                if 'InlineScript' in parts and parts[0].lower() == 'scripts':#
+                    parts.pop(0)
+                newContext = '/'.join([parts[0]] + [part for part in parts[1:] if part not in removeParts])
+                line = '> CONTEXT: %s%s' % (newContext, ('#%s' % comment) if comment else '')
+            newLines.append(line) 
+        return newLines
+    
 class CanonicalTranslation:
     """Seperate from the structure of the files, the canonical translation
     keeps tabs on which Translation object holds translations for what context
@@ -306,7 +389,7 @@ class CanonicalTranslation:
     def __init__(self, raw):
         """Initialise a canonical translation for the given string"""
         self.raw = raw
-        self.contexts = {}
+        self.contexts = ContextDict()
         self.__default = None
 
     @property
@@ -337,15 +420,11 @@ class CanonicalTranslation:
             if context == 'Default':
                 self.__default = context, translation
         self.contexts.update(newContexts)
-
-    def translate(self, context):
-        """Return a translation for given context. If context is untranslated,
-        try using FuzzyWuzzy to find a good match. If no match found, use
-        default. Either way, update relevant translation with the new
-        context"""
+        
+    def __translate(self, context):
         if context in self.contexts:
             self.contexts[context][0].useContext(context)
-            return self.contexts[context][1] # Simple case
+            return self.contexts[context] # Simple case
         else:
             bestMatch, confidence = process.extractOne(context, self.contexts.keys())
             if confidence > 90:
@@ -354,13 +433,32 @@ class CanonicalTranslation:
                 matchContext, matchTranslation = self.default
             matchTranslation[0].insert(context, matchContext, matchTranslation[1])
             matchTranslation[0].useContext(context)
-            return matchTranslation[1]
+            return matchTranslation
+        
+    def translate(self, context):
+        """Return a translation for given context. If context is untranslated,
+        try using FuzzyWuzzy to find a good match. If no match found, use
+        default. Either way, update relevant translation with the new
+        context"""
+        return self.__translate(context)[1]
+    
+    def getTranslationObj(self, context):
+        return self.__translate(context)[0]
+
 
 class TranslationDict(dict):
     """An object to lazily create CanonicalTranslations"""
     def __missing__(self, key):
         """Lazily create a CanonicalTranslation"""
         self[key] = CanonicalTranslation(key)
+        return self[key]
+    
+class TranslationFileDict(dict):
+    def __init__(self, enablePruning):
+        self.enablePruning = enablePruning
+        
+    def __missing__(self, key):
+        self[key] = TranslationFile(key, [], self.enablePruning)
         return self[key]
 
 class Translator3(Translator):
@@ -371,7 +469,7 @@ class Translator3(Translator):
         super().__init__(*args, **kwargs)
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
-        self.translationFiles = {}
+        self.translationFiles = TranslationFileDict(enablePruning)
         for name, string in namedStrings:
             self.translationFiles[name] = TranslationFile.fromString(name, string, enablePruning=enablePruning)
         self.translationDB = TranslationDict()
@@ -390,10 +488,7 @@ class Translator3(Translator):
             baseContext = contexts[0]
             name = baseContext.partition('/')[0]
             transObj = Translation.fromDesc(raw, contexts)
-            if name not in self.translationFiles:
-                self.translationFiles[name] = TranslationFile(name, [transObj])
-            else:
-                self.translationFiles[name].addTranslation(transObj)
+            self.translationFiles[name].addTranslation(transObj)
         ret = {}
         for name in self.translationFiles:
             ret[name] = self.translationFiles[name].asString()
@@ -420,3 +515,39 @@ class Translator3(Translator):
         else:
             return ret
         
+class Translator3Rebuild(Translator3):
+    """Specialised version of Translator3 which rebuilds the patch,
+    i.e. it puts every translation where RPGMaker Trans thinks it
+    would go in a new patch"""
+    def __init__(self, *args, **kwargs):
+        """Initialise Translator3Rebuilds extra things"""
+        super().__init__(*args, **kwargs)
+        self.newPatch = TranslationFileDict(True)
+        self.reassigned = set()
+        
+    def translate(self, string, context):
+        """Wraps translate so that the translation object is
+        reassigned in the new patch, strips out any untranslated
+        and unused items, and places any unused but translated items
+        in a special file."""
+        ret = super().translate(string, context)
+        string = '\n'.join(line.rstrip() for line in string.split('\n'))
+        if string in self.translationDB:
+            transObj = self.translationDB[string].getTranslationObj(context)
+            newFile = context.partition('/')[0]
+            if transObj not in self.reassigned:
+                self.newPatch[newFile].addTranslation(transObj)
+                self.reassigned.add(transObj)
+        return ret
+    
+    def getPatchData(self):
+        """Wraps getPatchData to substitute the new patch"""
+        for transFile in self.translationFiles.values():
+            for transObj in transFile.translateables:
+                if any(transObj.translations.values()) and transObj not in self.reassigned:
+                    self.newPatch['Unused'].addTranslation(transObj)
+        self.oldPatch, self.translationFiles = self.translationFiles, self.newPatch
+        ret = super().getPatchData()
+        self.translationFiles = self.oldPatch
+        return ret
+    

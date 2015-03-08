@@ -81,6 +81,10 @@ class FileCopier(object, metaclass=ErrorMeta):
             self.newmtimes[outfn] = infnmtime
 
     def changeDir(self, path, partA, partB):
+        if partA.endswith(os.sep):
+            partA = partA.rstrip(os.sep)
+        if partB.endswith(os.sep):
+            partB = partB.rstrip(os.sep)
         if path.startswith(partA):
             path = path.replace(partA, partB, 1)
         else:

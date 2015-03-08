@@ -21,6 +21,11 @@ from ...controllers.socketcomms import SocketComms
 from ..rubyparse import translateRuby
 from ...errorhook import errorWrap, handleError
 
+def _sortKey(item):
+    if 'Map' in item[0]: return (1, item[0])
+    elif 'CommonEvents' in item[0]: return (2, item[0])
+    else: return (0, item[0])
+    
 class RBCommsError(Exception):
     """Error raised when something goes wrong in RBComms"""
 
@@ -29,10 +34,8 @@ class RBComms(SocketComms):
     to Ruby processes. In general, I think I'd like to migrate away from
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
 
-    maxRubyErrors = 10
-
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
@@ -41,20 +44,22 @@ class RBComms(SocketComms):
         self.scripts = []
         self.magicNumbers = {}
         self.translatedScripts = {}
+        self.rawScripts = []
         self.scriptInput = None
         self.scriptOutput = None
         self.scriptWaiting = False
         self.outputComs.send('setProgressDiv', 'patching',
                              len(filesToProcess))
         for item in [x for x in filesToProcess]:
-            if item.endswith('Scripts.rvdata'):
+            fn = os.path.split(item)[1]
+            if fn.lower().startswith('scripts'):
                 self.scriptWaiting = True
                 self.scriptInput = item
                 self.scriptOutput = filesToProcess.pop(item)[0]
         self.scriptsAreTranslated = not self.scriptWaiting
         self.scriptsRebuilding = False
         self.scriptsDumped = False
-        self.filesToProcess = OrderedDict(filesToProcess)
+        self.filesToProcess = OrderedDict(sorted(filesToProcess.items(), key=_sortKey))
         self.rpgversion = rpgversion
         self.codeHandlers.update({1: self.translate,
                                   2: self.translateScript,
@@ -62,15 +67,34 @@ class RBComms(SocketComms):
                                   4: self.loadVersion,
                                   5: self.translateInlineScript,
                                   6: self.getTranslatedScript,
-                                  7: self.doneTranslation,})
+                                  7: self.doneTranslation,
+                                  8: self.getScripts,})
         self.rawArgs.update({2: True, 5: True})
         self.subprocesses = subprocesses
         self.debugRb = debugRb
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
-        self.rubyErrorMessages = set()
-        self.rubyErrors = 0
         self.setEnv()
+        self.loadBaseScripts()
+    
+    def doFatalError(self, msg):
+        """Send a fatal error message, then stop"""
+        self.outputComs.send('fatalError', msg)
+        self.going = False
+        
+    def loadBaseScripts(self):
+        """Adds the base scripts to rawscripts, so that Ruby will be able
+        to load the game."""
+        versionMap = {'vxace': 3, 'vx': 2, 'xp': 1}
+        if self.rpgversion not in versionMap:
+            raise NotImplementedError('Not implemented this RGSS version yet')
+        else:
+            version = versionMap[self.rpgversion]
+        basePath = os.path.join(self.basedir, 'rubyscripts', 'rgss%s' % version)
+        for subdir in ('Base', 'Modules'):
+            for fn in sorted(x for x in os.listdir(os.path.join(basePath, subdir)) if x.endswith('.rb')):
+                with open(os.path.join(basePath, subdir, fn)) as f:
+                    self.rawScripts.append('# %s\n%s' % (fn, f.read()))
 
     def setEnv(self):
         """Set the variables for the ruby interpreter used"""
@@ -89,20 +113,10 @@ class RBComms(SocketComms):
                     self.rubypath = attempt
                     return
             if self.rubypath is None:
-                raise Exception('No applicable Ruby found\nDo you have the pruby folder or Ruby 1.93 installed?\n(Tried:\n%s)' %
-                                '\n'.join(rubyPaths))
+                self.doFatalError('No applicable Ruby found\nDo you have the pruby folder or Ruby 1.93 installed?\n(Tried:\n%s)' %
+                                     '\n'.join(rubyPaths))
         else:
-            raise Exception('Unsupported Platform')
-
-    @staticmethod
-    def makeFilesToProcess(indir, outdir):
-        """Make the list of files to process."""
-        files = {}
-        for fn in os.listdir(indir):
-            if fn.endswith('.rvdata'): # TODO: Support for VX Ace + XP
-                files[os.path.join(indir, fn)] = (os.path.join(outdir, fn),
-                                                  fn.rpartition('.rvdata')[0])
-        return files
+            self.doFatalError('Unsupported platform')
 
     def openRuby(self):
         """Open a ruby process"""
@@ -133,19 +147,8 @@ class RBComms(SocketComms):
                             self.outputComs.send('nonfatalError',
                                                  'WARNING: Ruby with nonzero exit code %s' % rbpoll)
                             errMsg = ruby.stderr.read().decode('utf-8')
-                            self.rubyErrors += 1
-                            if errMsg in self.rubyErrorMessages:
-                                # TODO: Replace these errors with fatal error messages
-                                raise RBCommsError('Repeated Ruby Error Message %s, Quitting' % errMsg)
-                                self.going = False
-                            elif self.rubyErrors >= type(self).maxRubyErrors:
-                                errorMessageLS = ['More than %s Ruby Error Messages:' % type(self).maxRubyErrors]
-                                errorMessageLS.extend(errMsg for errMsg in self.rubyErrorMessages)
-                                raise RBCommsError('\n'.join(errorMessageLS))
-                                self.going = False
-                            self.rubyErrorMessages.add(errMsg)
-                            if self.debugRb:
-                                print(errMsg)
+                            if errMsg:
+                                self.doFatalError('ERROR: Ruby unexpectedly quit.\nRuby Traceback:\n%s' % errMsg)
                             self.rubies.append(self.openRuby())
                 if len(self.rubies) == 0:
                     self.going = False
@@ -179,6 +182,8 @@ class RBComms(SocketComms):
                                      self.translator, self.inputComs,
                                      self.outputComs)
                 self.scripts.append(name)
+                if name.lower() != 'main':
+                    self.rawScripts.append('# %s\n%s' % (name, script))
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:
@@ -196,9 +201,9 @@ class RBComms(SocketComms):
             try:
                 script = bScript.decode(encoding)
                 try:
-                    return translateRuby(script, context, self.translator)[1]
+                    return translateRuby(script, context, self.translator, self.outputComs, inline=True)[1]
                 except Exception as excpt:
-                    errmsg = 'Error parsing inline script: %s; script not translated' % str(excpt)
+                    errmsg = 'Error parsing inline script: %s; script not translated. Script %s' % (str(excpt), script)
                     self.outputComs.send('nonfatalError', errmsg)
                     return script
             except UnicodeDecodeError:
@@ -209,6 +214,15 @@ class RBComms(SocketComms):
     def setTranslatedScript(self, name, script):
         """Handler to receive the translation of a script"""
         self.translatedScripts[name] = script
+        self.outputComs.send('incProgress', 'scripts')
+    
+    @asyncio.coroutine
+    def getScripts(self):
+        """Returns the raw scripts, for loading into Ruby. Coroutine so that
+        it can wait for the scripts to be loaded first."""
+        while not self.scriptsDumped:
+            yield from asyncio.sleep(0.1)
+        return self.rawScripts
 
     def getTranslatedScript(self):
         """Handler to output a translated script to Ruby"""
@@ -246,6 +260,7 @@ class RBComms(SocketComms):
         """Handler to register completion of a task"""
         if context == 'ScriptsDumped':
             self.scriptsDumped = True
+            self.outputComs.send('setProgressDiv', 'scripts', len(self.scripts))
         else:
             self.outputComs.send('incProgress', 'patching')
 
@@ -254,13 +269,9 @@ class RBComms(SocketComms):
         return self.rpgversion
 
 @errorWrap
-def startRBComms(indir, outdir, translator, mtimes, newmtimes,
-                 outputComs, inputComs, socket=None):
-    """Entry point for multiprocessing to start RBComms.
-    VX only at present. The input/output directories should be
-    the data directories (todo: recursive approach)"""
-    filesToProcess = RBComms.makeFilesToProcess(indir, outdir)
-    rpgversion = 'vx'
+def startRBComms(filesToProcess, translator, mtimes, newmtimes,
+                 outputComs, inputComs, rpgversion, socket=None):
+    """Entry point for multiprocessing to start RBComms."""
     subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses, socket=socket)

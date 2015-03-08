@@ -11,7 +11,7 @@ Provides a simple server to perform Ruby script translations asynchronously.
 import time
 
 from ...errorhook import errorWrap
-from .parser import translateRuby
+from .scripttranslator import translateRuby
 
 @errorWrap
 def rbTranslationServer(inputComs, outputComs, translator):
@@ -34,7 +34,7 @@ def rbOneOffTranslation(outputComs, errorComs, scriptName, script, translator):
     """Perform a simple Ruby translation. Should the parser blow up anywhere,
     the error message get's propagated out to the GUI"""
     try:
-        tname, tscript = translateRuby(script, scriptName, translationHandler=translator)
+        tname, tscript = translateRuby(script, scriptName, translationHandler=translator, errorComs=errorComs)
     except Exception as excpt:
         tname, tscript = scriptName, script
         errorComs.send('nonfatalError',

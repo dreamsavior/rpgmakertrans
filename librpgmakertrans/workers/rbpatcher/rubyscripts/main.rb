@@ -19,16 +19,16 @@ if ARGV[1] != 'compile'
 end
 
 require_relative 'socketcall.rb'
-require_relative 'rgss.rb'
-require_relative 'transvx.rb'
+require_relative 'patcher.rb'
 going = true
-
-if ARGV[1] == 'compile'
-  puts 'compile mode - press enter to finish'
-  $stdin.gets
-  exit
-end
+loadedScripts = false
 versionString = getVersion()
+
+def loadScripts()
+  getScripts.each{|script|
+    eval script
+  }
+end
 
 def translateFile(infile, outfile, context)
   #puts('working on %s' % context)
@@ -67,6 +67,10 @@ while going
   elsif code == 'translateScripts'
     translateScripts(values[1])
   elsif code == 'translateFile'
+    if loadedScripts == false
+      loadedScripts = true
+      loadScripts()
+    end
     translateFile(values[1], values[2], values[3])
   elsif code == 'rebuildScripts'
     rebuildScripts(values[1])

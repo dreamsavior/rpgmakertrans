@@ -6,12 +6,12 @@ headlessvxarc
 :copyright: 2012-2014
 :license: GNU Public License version 3
 
-A Headless implementation to unpack VX archives
+A Headless implementation to unpack packed archives
 '''
 import os
 
 from .headless import HeadlessUtils
-from .headlessvx import HeadlessVX
+from .headlessrb import HeadlessXP, HeadlessVX, HeadlessVXAce
 from ..workers.unpackers import unpackFile, unpackData
 from ..workers.sniffers import sniffer, SniffedType
 
@@ -20,11 +20,10 @@ def unpackDataAndNotify(fileName, key, data, outputComs):
     unpackData(fileName, key, data)
     outputComs.send('incProgress', 'unpacking')
 
-class HeadlessVXArc(HeadlessUtils):
-    """Headless implementation to unpack an encrypted game"""
-
-    arcName = 'Game.rgss2a'
-
+class HeadlessArc(HeadlessUtils):
+    """Headless implementation to unpack a packed game. Must be
+    specialised."""
+    
     def __init__(self, *args, **kwargs):
         """Initialise the task counter"""
         super().__init__(*args, **kwargs)
@@ -63,22 +62,58 @@ class HeadlessVXArc(HeadlessUtils):
         os.remove(arcFileName)
         self.going = False
 
+class HeadlessXPArc(HeadlessArc):
+    arcName = 'Game.rgssad'
+    
+class HeadlessVXArc(HeadlessArc):
+    arcName = 'Game.rgss2a'
+
+class HeadlessVXAceArc(HeadlessArc):
+    arcName = 'Game.rgss3a'
+
+class RPGXPPacked(SniffedType):
+    """Sniffed type for an untranslated packed VX game - set to chain
+    directly onto a VX game."""
+    maintype, subtypes = 'GAME', ['XP', 'ARC']
+    headlessClass = (HeadlessXPArc, HeadlessXP)
+
 class RPGVXPacked(SniffedType):
     """Sniffed type for an untranslated packed VX game - set to chain
     directly onto a VX game."""
     maintype, subtypes = 'GAME', ['VX', 'ARC']
     headlessClass = (HeadlessVXArc, HeadlessVX)
 
-@sniffer(RPGVXPacked)
-def sniffVXEncryptedGame(path):
-    """Sniffer for encrypted VX games"""
+class RPGVXAcePacked(SniffedType):
+    """Sniffed type for an untranslated packed VX game - set to chain
+    directly onto a VX game."""
+    maintype, subtypes = 'GAME', ['VXAce', 'ARC']
+    headlessClass = (HeadlessVXAceArc, HeadlessVXAce)
+
+def sniffPackedGame(path, unpackClass):
+    """Sniffer for packed games"""
     if os.path.isfile(path):
-        return sniffVXEncryptedGame(os.path.split(path)[0])
+        return sniffPackedGame(os.path.split(path)[0], unpackClass)
     elif os.path.isdir(path):
+        arcName = unpackClass.arcName.upper()
         pathContents = os.listdir(path)
-        if any(x.upper().endswith('GAME.RGSS2A') for x in pathContents):
+        if any(x.upper().endswith(arcName) for x in pathContents):
             return path
         else:
             return False
     else:
         return False
+
+@sniffer(RPGVXPacked)
+def sniffXPPackedGame(path):
+    """Sniffer for packed XP games"""
+    return sniffPackedGame(path, HeadlessXPArc)
+    
+@sniffer(RPGVXPacked)
+def sniffVXPackedGame(path):
+    """Sniffer for packed VX games"""
+    return sniffPackedGame(path, HeadlessVXArc)
+
+@sniffer(RPGVXAcePacked)
+def sniffVXAcePackedGame(path):
+    """Sniffer for packed VX games"""
+    return sniffPackedGame(path, HeadlessVXAceArc)
