@@ -26,7 +26,13 @@ versionString = getVersion()
 
 def loadScripts()
   getScripts.each{|script|
-    eval script
+    begin
+      eval script
+    rescue Exception => e
+      #puts script
+      # TODO: Some non fatal error code maybe?
+      raise e
+    end
   }
 end
 

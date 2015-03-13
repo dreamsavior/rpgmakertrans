@@ -27,4 +27,20 @@ module Graphics
   
   def resize_screen(w, h)
   end
+  
+  def add_sprite(sprite)
+  end
+
+  def remove_sprite(sprite)
+  end
+
+  def fullscreen?
+  end
+
+  def latest
+  end
+
+  def set_fullscreen(bool)
+  end
+
 end

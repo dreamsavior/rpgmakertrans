@@ -30,13 +30,6 @@ class Tilemap
   end
 
   def dispose
-    for layer in @layers
-      layer.bitmap.dispose
-      layer.dispose
-    end
-    for layer in @animated_layer
-      layer.dispose
-    end
     @disposed = true
   end
 

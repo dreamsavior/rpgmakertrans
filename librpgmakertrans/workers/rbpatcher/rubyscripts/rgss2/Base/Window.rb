@@ -34,23 +34,10 @@ class Window
   
   def windowskin=(bit)
     @windowskin = bit
-    @sprites[:back] = Sprite.new
-    Graphics.remove_sprite(@sprites[:back])
-    bitm = Bitmap.new(128, 128)
-    @sprites[:back].bitmap = bitm
-    if bit != nil
-      bitm.stretch_blt(Rect.new(0, 0, @width, @height), bit, Rect.new(0, 0, 128, 64), 255)
-      setup_background_overlay
-      setup_arrows
-      setup_pauses
-      setup_border
-      setup_cursor
-    end
   end
   
   def contents=(bit)
     @contents = bit
-    @sprites[:contents].bitmap = bit
   end
   
   def stretch=(bool)
@@ -60,12 +47,6 @@ class Window
   
   def opacity=(int)
     @opacity = int
-    @sprites.values.each {|a|
-      a.opacity = int
-    }
-    @sprites[:back_opacity].opacity = @back_opacity
-    @sprites[:contents].opacity = @contents_opacity
-    @sprites[:cursor].opacity = 255
   end
   
   def back_opacity=(int)
@@ -91,5 +72,20 @@ class Window
   def height=(int)
     @height = int
     setup_border
+  end
+  
+  def setup_background_overlay
+  end
+  
+  def setup_arrows
+  end
+  
+  def setup_pauses
+  end
+  
+  def setup_border
+  end
+  
+  def setup_cursor
   end
 end

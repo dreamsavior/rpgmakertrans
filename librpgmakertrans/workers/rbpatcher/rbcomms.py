@@ -35,7 +35,7 @@ class RBComms(SocketComms):
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
 
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = False, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
@@ -70,7 +70,7 @@ class RBComms(SocketComms):
                                   7: self.doneTranslation,
                                   8: self.getScripts,})
         self.rawArgs.update({2: True, 5: True})
-        self.subprocesses = subprocesses
+        self.subprocesses = subprocesses if not debugRb else 1
         self.debugRb = debugRb
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
