@@ -25,11 +25,13 @@ loadedScripts = false
 versionString = getVersion()
 
 def loadScripts()
+  b = binding
   getScripts.each{|script|
     begin
-      eval script
+      eval(script, b, script.split("\n").first)
+      #eval(script)
     rescue Exception => e
-      #puts script
+      puts script
       # TODO: Some non fatal error code maybe?
       raise e
     end

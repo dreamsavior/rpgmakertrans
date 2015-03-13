@@ -42,7 +42,6 @@ class Window
   
   def stretch=(bool)
     @stretch = bool
-    self.windowskin = @windowskin
   end
   
   def opacity=(int)
