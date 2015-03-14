@@ -24,6 +24,12 @@ going = true
 loadedScripts = false
 versionString = getVersion()
 
+def setupLoadData(path)
+  path.force_encoding 'utf-8'
+  loadData = "def load_data(path)\npath.force_encoding 'utf-8'\ndata = 0\nFile.open( File.join('%s', path), 'rb' ) do |datafile|\ndata=data = Marshal.load(datafile)\nend\nreturn data\nend\n" % path
+  eval(loadData)
+end
+
 def loadScripts()
   b = binding
   getScripts.each{|script|

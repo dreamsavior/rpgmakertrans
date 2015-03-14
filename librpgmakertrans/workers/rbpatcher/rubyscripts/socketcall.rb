@@ -82,3 +82,7 @@ end
 def getScripts()
   return socketCall(8, [])
 end
+
+def setupLoadData()
+  return socketCall(9, [])
+end
