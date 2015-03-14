@@ -7,7 +7,7 @@
 #==============================================================================
 #
 #   Yet another Tilemap Script (for any map size /w autotiles)
-#   by MeÃ¢ €žÂ¢ / Derk-Jan Karrenbeld (me@solarsoft.nl)
+#   by MeÃ¢ / Derk-Jan Karrenbeld (me@solarsoft.nl)
 #   version 1.0 released on 08 nov 08
 #   version 1.2
 #
