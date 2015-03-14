@@ -103,7 +103,7 @@ def sniffPackedGame(path, unpackClass):
     else:
         return False
 
-@sniffer(RPGVXPacked)
+@sniffer(RPGXPPacked)
 def sniffXPPackedGame(path):
     """Sniffer for packed XP games"""
     return sniffPackedGame(path, HeadlessXPArc)
