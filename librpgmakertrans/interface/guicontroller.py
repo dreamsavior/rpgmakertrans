@@ -287,7 +287,7 @@ class GUIController(CoreProtocol):
         self.currentState['gameloc'] = None
         self.setMessage('Finished')
 
-    def abortPatching(self):
+    def patchingAborted(self):
         """Update UI when aborting patch"""
         self.currentState['enabled'] = True
         self.currentState['gameloc'] = None
