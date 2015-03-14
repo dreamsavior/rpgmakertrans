@@ -28,6 +28,7 @@ class Window
       :pause_four => Sprite.new,
       :cursor => Sprite.new
     }
+    @contents = @sprites[:contents]
     @sprites.values.each {|a| Graphics.remove_sprite(a) }
     Graphics.add_sprite(self)
   end
