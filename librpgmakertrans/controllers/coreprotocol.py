@@ -16,7 +16,7 @@ import time
 import signal
 from collections import defaultdict
 from .sender import SenderManager, SenderID
-from ..errorhook import setErrorOut
+from ..errorhook import setErrorOut, handleError
 import sys
 import collections
 
@@ -286,6 +286,9 @@ class CoreProtocol:
             code, args, kwargs = events.pop(0)
             if (hasattr(self, code) and
                 isinstance(getattr(self, code), collections.Callable)):
-                getattr(self, code)(*args, **kwargs)
+                try:
+                    getattr(self, code)(*args, **kwargs)
+                except Exception:
+                    handleError()
             else:
                 self.errout.send('ERROR', 'Got an unknown code: ' + str(code))
