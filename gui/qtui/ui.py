@@ -11,7 +11,7 @@ The implementation of the QT user interface.
 
 import os, itertools
 from PySide import QtGui, QtCore, QtSvg
-from ...version import versionString
+from librpgmakertrans.version import versionString
 
 from .logointernal import LOGOINTERNAL
 

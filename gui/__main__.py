@@ -1,6 +1,6 @@
 """
-rpgmakertrans_gui
-*****************
+gui.__main__
+************
 
 :author: Aleph Fell <habisain@gmail.com>
 :copyright: 2012-2014
@@ -12,7 +12,7 @@ freezing.
 import sys
 import itertools
 from multiprocessing import freeze_support
-from librpgmakertrans.interface.guicontroller import GUIController
+from .guicontroller import GUIController
 from librpgmakertrans.controllers.coreprotocol import CoreRunner
 from librpgmakertrans.workers.sniffers import sniff
 

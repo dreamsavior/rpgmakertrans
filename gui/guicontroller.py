@@ -17,12 +17,12 @@ let's face it, is lacking.
 """
 import os
 
-from ..controllers.coreprotocol import CoreRunner, CoreProtocol
-from ..workers.sniffers import sniffAll, sniff
-from ..controllers.headless import initialiseHeadless, HeadlessConfig
-from .qtui import startView, errorMsg
-from ..version import versionCheck
+from librpgmakertrans.controllers.coreprotocol import CoreRunner, CoreProtocol
+from librpgmakertrans.workers.sniffers import sniffAll, sniff
+from librpgmakertrans.controllers.headless import initialiseHeadless, HeadlessConfig
+from librpgmakertrans.version import versionCheck
 
+from .qtui import startView, errorMsg
 
 class IDStore(dict):
     """IDStore is basically a dict which also keeps track

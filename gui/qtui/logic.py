@@ -14,10 +14,12 @@ if __name__ == '__main__':
     import sys
     sys.path.append('..')
 
-from ...controllers.coreprotocol import CoreProtocol
-from .ui import MainWindow, Timer
 from PySide import QtGui
-from ...errorhook import errorWrap
+
+from librpgmakertrans.controllers.coreprotocol import CoreProtocol
+from librpgmakertrans.errorhook import errorWrap
+
+from .ui import MainWindow, Timer
 
 class QTLogic(CoreProtocol):
     """Implements the logic for the GUI; these are the functions available
