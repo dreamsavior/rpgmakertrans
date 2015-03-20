@@ -7,6 +7,7 @@ def unmarshall(fn)
       end
     rescue ArgumentError => exc
       name = exc.message.split(' ').last
+      puts 'examining %s' % name
       if name[name.length-2..name.length] == '::'
         name = name[0..name.length-3]
       end
@@ -15,8 +16,12 @@ def unmarshall(fn)
         partName = splitName[0..x].join('::')
         puts partName
         begin
-          eval(partName)
+          if eval('%s.name != "%s"' % [partName, partName])
+            puts('defining')
+            eval("class %s\nend" % partName)
+          end
         rescue
+          puts('defining')
           eval("class %s\nend" % partName)
         end
       }
