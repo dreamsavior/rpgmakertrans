@@ -32,7 +32,7 @@ setup(
     name= "RPGMaker Trans CLI %s" % version,
     version= str(version),
     description="Translation tool for RPGMaker games, CLI Version",
-    executables=[Executable('__main__.py', base=None)],
+    executables=[Executable('__main__.py', base=None, targetName='rpgmt')],
     options={'build_exe': build_exe_options},
 )
 
