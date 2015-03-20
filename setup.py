@@ -18,35 +18,37 @@ from cx_Freeze import setup, Executable
 from librpgmakertrans.version import version
 
 base = None
+includeFiles = ['README.txt', 'LICENSE.txt']
 
-build_exe_options = {
-"include_files": [(os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'pruby'),
-                   'pruby'),
-                  (os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'rubyscripts'),
-                   'rubyscripts'), 'README.txt', 'LICENSE.txt']
-}
+if sys.platform == 'win32':
+    includeFiles.extend([(os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'pruby'),
+                          'pruby'),
+                         (os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'rubyscripts'),
+                          'rubyscripts'), ])
 
-build_exe_cli_options = build_exe_options.copy()
-icoext = '.ico' if os.name == 'nt' else '.svg'
-build_exe_cli_options['icon'] = os.path.abspath(os.path.join('icons', 'rpgtranslogocli%s' % icoext))
-build_exe_gui_options = build_exe_options.copy()
-build_exe_gui_options['icon'] = os.path.abspath(os.path.join('icons', 'rpgtranslogo%s' % icoext))
+build_exe_options = {"include_files": includeFiles}
+
+icoext = '.ico' if sys.platform == 'win32' else '.svg'
+
+if '--cli' in sys.argv:
+    sys.argv.remove('--cli')
+    baseScript = "rpgmakertrans_cli.py"
+    name = "RPGMaker Trans CLI %s"
+    build_exe_options['icon'] = os.path.abspath(os.path.join('icons', 'rpgtranslogocli%s' % icoext))
+
+else:
+    baseScript = "rpgmakertrans_gui.py"
+    if sys.platform == "win32":
+        base = "Win32GUI"
+    name = "RPGMaker Trans %s"
+    build_exe_options['icon'] = os.path.abspath(os.path.join('icons', 'rpgtranslogo%s' % icoext))
 
 setup(
-    name="RPGMaker Trans CLI %s" % version,
-    version="%s" % version,
-    description="Translation tool for RPGMaker games, CLI mode",
-    executables=[Executable("rpgmakertrans_cli.py", base=base)],
-    options={'build_exe': build_exe_cli_options},
-)
-
-if sys.platform == "win32":
-    base = "Win32GUI"
-
-setup(
-    name="RPGMaker Trans %s" % version,
-    version="%s" % version,
+    name= name % version,
+    version= str(version),
     description="Translation tool for RPGMaker games",
-    executables=[Executable("rpgmakertrans_gui.py", base=base)],
-    options={'build_exe': build_exe_gui_options},
+    executables=[Executable(baseScript, base=base)],
+    options={'build_exe': build_exe_options},
 )
+
+
