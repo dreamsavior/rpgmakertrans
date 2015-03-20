@@ -10,8 +10,16 @@ def unmarshall(fn)
       if name[name.length-2..name.length] == '::'
         name = name[0..name.length-3]
       end
-      definition = "class %s\nend" % name
-      eval(definition)
+      splitName = name.split('::')
+      splitName.each_index { |x|
+        partName = splitName[0..x].join('::')
+        puts partName
+        begin
+          eval(partName)
+        rescue
+          eval("class %s\nend" % partName)
+        end
+      }
     rescue TypeError => exc
       name = exc.message.split(' ')[1]
       definition = "class %s\ndef initialize data\n@marshalldata = data\nend\ndef self._load data\nnew(data)\nend\ndef _dump\n@marshalldata\nend\nend" % name

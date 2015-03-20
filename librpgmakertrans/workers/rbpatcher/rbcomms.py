@@ -182,8 +182,8 @@ class RBComms(SocketComms):
                                      self.translator, self.inputComs,
                                      self.outputComs)
                 self.scripts.append(name)
-                if name.lower() != 'main':
-                    self.rawScripts.append('# %s\n%s' % (name, script))
+                #if name.lower() != 'main':
+                #    self.rawScripts.append('# %s\n%s' % (name, script))
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:

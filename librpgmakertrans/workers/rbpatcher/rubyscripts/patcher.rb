@@ -11,7 +11,7 @@
 require 'zlib'
 require_relative 'socketcall.rb'
 require_relative 'matcher.rb'
-
+require_relative 'unmarshall.rb'
 def contextStr(context)
   result = ''
   context.each{|x| 
@@ -183,10 +183,10 @@ def patch(data, context)
 end
 
 def patchFile(infn, outfn, context)
-  data = 0
-  File.open( infn, "rb" ) do |datafile|
-    data = Marshal.load(datafile)
-  end
+  data = unmarshall(infn)
+  #File.open( infn, "rb" ) do |datafile|
+  #  data = Marshal.load(datafile)
+  #end
   patch(data, [context])
   File.open( outfn, "wb+") do |datafile|
     Marshal.dump(data, datafile)
