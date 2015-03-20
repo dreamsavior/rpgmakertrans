@@ -13,10 +13,10 @@ this does not yet work on Windows.
 import sys
 import argparse
 import shutil
-from ..workers.sniffers import sniff
-from ..controllers.coreprotocol import CoreProtocol
-from ..controllers.headless import initialiseHeadless, HeadlessConfig
-from ..version import versionString
+from librpgmakertrans.workers.sniffers import sniff
+from librpgmakertrans.controllers.coreprotocol import CoreProtocol
+from librpgmakertrans.controllers.headless import initialiseHeadless, HeadlessConfig
+from librpgmakertrans.version import versionString
 
 
 class CLIMode(CoreProtocol):
