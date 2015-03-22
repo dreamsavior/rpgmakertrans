@@ -107,7 +107,7 @@ class RBComms(SocketComms):
         elif os.name == 'nt':
             self.rubypath = None
             rubyPaths = (os.path.join(self.basedir, 'pruby', 'bin', 'rubyw.exe'),
-                         'C:\\Ruby193\\bin\\ruby.exe')
+                         'C:\\Ruby21\\bin\\ruby.exe')
             for attempt in rubyPaths:
                 if os.path.isfile(attempt):
                     self.rubypath = attempt
