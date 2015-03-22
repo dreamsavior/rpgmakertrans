@@ -1,3 +1,19 @@
+# unmarshall.rb
+# **********
+#
+# :author: Aleph Fell <habisain@gmail.com>
+# :copyright: 2012-2015
+# :license: GNU Public License version 3
+#
+# A universal unmarshaller. It should be able to unmarshall literally
+# anything, by inspecting the exceptions for unknown classes.
+# This only works with Ruby 2.1 or greater; Ruby <= 2.0 seems to
+# be happy to unmarshall stuff to the wrong class without error or
+# even a warning (normally referencing a top level class in this
+# manner gives a warning!)
+#
+
+
 def unmarshall(fn)
   data = nil
   while data == nil do
@@ -14,14 +30,11 @@ def unmarshall(fn)
       splitName = name.split('::')
       splitName.each_index { |x|
         partName = splitName[0..x].join('::')
-        puts partName
         begin
           if eval('%s.name != "%s"' % [partName, partName])
-            puts('defining')
             eval("class %s\nend" % partName)
           end
         rescue
-          puts('defining')
           eval("class %s\nend" % partName)
         end
       }
