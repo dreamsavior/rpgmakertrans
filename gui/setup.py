@@ -24,9 +24,11 @@ if sys.platform == 'win32':
                           'rubyscripts'), ])
     base = "Win32GUI"
     icoext = '.ico'
+    ext = '.exe
 else:
     base = None
     icoext = '.svg'
+    ext = ''
 
 build_exe_options = {"include_files": includeFiles}
 
@@ -36,7 +38,7 @@ setup(
     name= "RPGMaker Trans %s" % version,
     version= str(version),
     description="Translation tool for RPGMaker games",
-    executables=[Executable("__main__.py", base="base", targetName="RPGMakerTrans")],
+    executables=[Executable("__main__.py", base="base", targetName="RPGMakerTrans%s" % ext)],
     options={'build_exe': build_exe_options},
 )
 
