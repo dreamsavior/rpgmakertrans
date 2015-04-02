@@ -9,6 +9,7 @@ translator3
 Version 3 of the patch file format. 
 """
 
+from operator import itemgetter
 from collections import OrderedDict
 from fuzzywuzzy import process
 
@@ -404,11 +405,7 @@ class CanonicalTranslation:
                 if translationString not in tally:
                     tally[translationString] = [0, context]
                 tally[translationString][0] += 1
-            bestScore, bestContext = 0, None
-            for translationString in tally:
-                score, context = tally[translationString]
-                if score > bestScore:
-                    bestScore, bestContext = score, context
+            bestContext = max(tally.values(), key=itemgetter(0))[1]
             self.__default = bestContext, self.contexts[bestContext]
         return self.__default
 
