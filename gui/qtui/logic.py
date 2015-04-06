@@ -29,6 +29,7 @@ class QTLogic(CoreProtocol):
         super(QTLogic, self).__init__(*args, **kwargs)
         self.app = QtGui.QApplication([])
         self.window = MainWindow(self)
+        self.app.setActiveWindow(self.window)
         self.timer = Timer(100, self.update)
         self.browsePatchDirs = False
 
