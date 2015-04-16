@@ -597,7 +597,10 @@ def debugGetStats(directory, onlyIncomplete=True):
     stats = translator.getStats()
     for filename, stat in stats.items():
         if stat.contexts > stat.translations:
-            print(filename, stat)
+            percentage = int((stat.translations / stat.contexts) * 100)
+            print('%s: U:%s, C:%s, T:%s, P:%s%%' %
+                  (filename, stat.strings, stat.contexts, 
+                   stat.translations, percentage))
 
 if __name__ == '__main__':
     import sys
