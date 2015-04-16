@@ -14,7 +14,7 @@ import sys
 import argparse
 import shutil
 from librpgmakertrans.workers.sniffers import sniff
-from librpgmakertrans.controllers.coreprotocol import CoreProtocol
+from librpgmakertrans.controllers.coreprotocol import CoreProtocol, CoreRunner
 from librpgmakertrans.controllers.headless import initialiseHeadless, HeadlessConfig
 from librpgmakertrans.version import versionString
 
@@ -146,3 +146,9 @@ def CLIBackend(runner):
     sys.stderr = t
     x = runner.initialise(CLIMode, cargs=args)
     return x
+
+def launchCLI():
+    """Launch the CLI"""
+    runner = CoreRunner()
+    CLIBackend(runner)
+    runner.run()

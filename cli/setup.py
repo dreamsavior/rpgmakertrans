@@ -23,9 +23,11 @@ if sys.platform == 'win32':
                           'rubyscripts'), ])
     icoext = '.ico'
     ext = '.exe'
+    mainscript = os.path.join('..', 'rpgmt.py')
 else:
     ext = ''
     icoext = '.svg'
+    mainscript = '__main__.py'
 
 build_exe_options = {"include_files": includeFiles}
 
@@ -35,7 +37,7 @@ setup(
     name= "RPGMaker Trans CLI %s" % version,
     version= str(version),
     description="Translation tool for RPGMaker games, CLI Version",
-    executables=[Executable('__main__.py', base=None, targetName='rpgmt%s' % ext)],
+    executables=[Executable(mainscript, base=None, targetName='rpgmt%s' % ext)],
     options={'build_exe': build_exe_options},
 )
 
