@@ -299,7 +299,6 @@ class TranslationFile:
         self.stats = TLFileStats()
         for translateable in translateables:
             self.stats += translateable.stats
-        print(self.filename, self.stats)
 
     @classmethod
     def fromString(cls, filename, string, *args, **kwargs):
@@ -516,6 +515,13 @@ class Translator3(Translator):
         for name in self.translationFiles:
             ret[name] = self.translationFiles[name].asString()
         return ret
+    
+    def getStats(self):
+        statDict = OrderedDict()
+        for translationFileName in sorted(self.translationFiles):
+            translationFile = self.translationFiles[translationFileName]
+            statDict[translationFileName] = translationFile.stats
+        return statDict
 
     def translate(self, string, context):
         """Get translation of string in given context"""
@@ -582,9 +588,19 @@ def debugLoadDir(directory):
     for fn in ls:
         with open(os.path.join(directory, fn)) as f:
             data[fn.rpartition('.')[0]] = f.read()
-    translator = Translator3(data, mtime=0)
+    return Translator3(data, mtime=0)
+
+def debugGetStats(directory, onlyIncomplete=True):
+    """Debug function to get stats from a directory based patch"""
+    translator = debugLoadDir(directory)
+    print(translator)
+    stats = translator.getStats()
+    for filename, stat in stats.items():
+        if stat.contexts > stat.translations:
+            print(filename, stat)
 
 if __name__ == '__main__':
     import sys
-    debugLoadDir(sys.argv[1])
+    if sys.argv[1] == '-d':
+        debugGetStats(sys.argv[2])
     
