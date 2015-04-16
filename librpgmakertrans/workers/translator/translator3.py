@@ -166,6 +166,22 @@ class TranslationLine:
             return '%s%s%s' % (self.command, self.escapeString(self.data),
                                self.comment)
 
+class TLFileStats:
+    def __init__(self, strings = 0, contexts = 0, translations = 0):
+        self.strings = strings
+        self.contexts = contexts
+        self.translations = translations
+        
+    def __str__(self):
+        return 'TLFileStats(%s, %s, %s)' % (self.strings, self.contexts,
+                                            self.translations)
+    
+    def __add__(self, other):
+        assert isinstance(other, TLFileStats), 'Wrong type'
+        return TLFileStats(self.strings + other.strings,
+                           self.contexts + other.contexts,
+                           self.translations + other.translations)
+        
 class Translation:
     """A single block of translations, usually referring to all instances
     of a single string in a game with 1 or more contexts."""
@@ -177,6 +193,7 @@ class Translation:
             items.append(TranslationLine.End())
             items.append(TranslationLine.Data(''))
         self.items = items
+        self.stats = TLFileStats(1)
         currentContexts = ['RAW']
         currentString = []
         strings = ContextDict()
@@ -210,13 +227,18 @@ class Translation:
     @classmethod
     def fromString(cls, string):
         """Create a Translation from a string of a translation"""
-        items = [TranslationLine.fromString(line) for line in string.split('\n')]
+        items = Translation([TranslationLine.fromString(line)
+                             for line in string.split('\n')])
         return items
 
-    @staticmethod
-    def __addTranslations(stringDict, stringLS, contexts):
+    def __addTranslations(self, stringDict, stringLS, contexts):
         """Add translations to a given dictionary"""
         string = '\n'.join(stringLS)
+        amount = len(contexts)
+        if 'RAW' in contexts: amount -= 1
+        self.stats.contexts += amount
+        if string.strip():
+            self.stats.translations += amount
         for context in contexts:
             stringDict[context] = string
 
@@ -274,6 +296,10 @@ class TranslationFile:
         self.filename = filename
         self.translateables = translateables
         self.enablePruning = enablePruning
+        self.stats = TLFileStats()
+        for translateable in translateables:
+            self.stats += translateable.stats
+        print(self.filename, self.stats)
 
     @classmethod
     def fromString(cls, filename, string, *args, **kwargs):
@@ -547,4 +573,18 @@ class Translator3Rebuild(Translator3):
         ret = super().getPatchData()
         self.translationFiles = self.oldPatch
         return ret
+    
+def debugLoadDir(directory):
+    """Debug function for loading a directory based patch"""
+    import os
+    data = OrderedDict()
+    ls = sorted([fn for fn in os.listdir(directory) if fn.endswith('.txt')])
+    for fn in ls:
+        with open(os.path.join(directory, fn)) as f:
+            data[fn.rpartition('.')[0]] = f.read()
+    translator = Translator3(data, mtime=0)
+
+if __name__ == '__main__':
+    import sys
+    debugLoadDir(sys.argv[1])
     
