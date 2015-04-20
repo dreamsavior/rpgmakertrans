@@ -27,7 +27,7 @@ if sys.platform == 'win32':
     paths = [os.path.dirname(__file__)]
 else:
     ext = ''
-    icoext = '.svg'
+    icopath = 'rpgtranslogocli.svg'
     mainscript = '__main__.py'
     paths = []
 
