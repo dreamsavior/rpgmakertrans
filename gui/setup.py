@@ -23,6 +23,7 @@ if sys.platform == 'win32':
                          (os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'rubyscripts'),
                           'rubyscripts'), ])
     base = "Win32GUI"
+    mainscript = 'rpgmakertrans.py'
     icopath = os.path.join('gui', 'rpgtranslogo.ico')
     ext = '.exe'
     paths = [os.path.dirname(__file__)]
