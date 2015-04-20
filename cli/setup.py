@@ -17,27 +17,29 @@ from librpgmakertrans.version import version
 includeFiles = ['README.txt', 'LICENSE.txt']
 
 if sys.platform == 'win32':
-    includeFiles.extend([(os.path.join('..', 'librpgmakertrans', 'workers', 'rbpatcher', 'pruby'),
+    includeFiles.extend([(os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'pruby'),
                           'pruby'),
-                         (os.path.join('..', 'librpgmakertrans', 'workers', 'rbpatcher', 'rubyscripts'),
+                         (os.path.join('librpgmakertrans', 'workers', 'rbpatcher', 'rubyscripts'),
                           'rubyscripts'), ])
-    icoext = '.ico'
+    icopath = os.path.join('cli', 'rpgtranslogocli.ico')
     ext = '.exe'
-    mainscript = os.path.join('..', 'rpgmt.py')
+    mainscript = 'rpgmt.py'
+    paths = [os.path.dirname(__file__)]
 else:
     ext = ''
     icoext = '.svg'
     mainscript = '__main__.py'
+    paths = []
 
 build_exe_options = {"include_files": includeFiles}
-
-build_exe_options['icon'] = os.path.abspath('rpgtranslogocli%s' % icoext)
+build_exe_options['icon'] = os.path.abspath(icopath)
+build_exe_options['build_exe'] = 'rpgmt_cli_v%s' % version
 
 setup(
     name= "RPGMaker Trans CLI %s" % version,
     version= str(version),
     description="Translation tool for RPGMaker games, CLI Version",
-    executables=[Executable(mainscript, base=None, targetName='rpgmt%s' % ext)],
+    executables=[Executable(mainscript, base=None, path=paths, targetName='rpgmt%s' % ext)],
     options={'build_exe': build_exe_options},
 )
 

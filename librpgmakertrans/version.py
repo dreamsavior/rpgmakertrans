@@ -14,7 +14,7 @@ import datetime
 
 version = 4.0
 expiry = datetime.date(2016, 4, 1)
-debug = True
+debug = False
 
 versionString = '%s%s' % (str(version), ' [DEBUG]' if debug else '')
 
