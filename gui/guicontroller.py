@@ -16,11 +16,15 @@ rather than headless. asyncio would be better for responsiveness, which
 let's face it, is lacking.
 """
 import os
+import itertools
+import sys
 
 from librpgmakertrans.controllers.coreprotocol import CoreRunner, CoreProtocol
 from librpgmakertrans.workers.sniffers import sniffAll, sniff
 from librpgmakertrans.controllers.headless import initialiseHeadless, HeadlessConfig
 from librpgmakertrans.version import versionCheck
+from librpgmakertrans.controllers.coreprotocol import CoreRunner
+from librpgmakertrans.workers.sniffers import sniff
 
 from .qtui import startView, errorMsg
 
@@ -318,6 +322,15 @@ def sniffAllTrigger(path, coms):
     coms.send('trigger', 'sniffingDone')
     return ret
 
+def launchGUI():
+    """Convenience function to launch GUI"""
+    runner = CoreRunner()
+    guicontroller = runner.initialise(GUIController)
+    sniffedData = itertools.chain.from_iterable([sniff(path) for path in sys.argv[1:]])
+    if sniffedData:
+        guicontroller.setUpSniffedData(sniffedData)
+    runner.run()
+    
 if __name__ == '__main__':
     z = CoreRunner()
     x = z.initialise(GUIController)
