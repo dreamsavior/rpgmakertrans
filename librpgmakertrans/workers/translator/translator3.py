@@ -525,6 +525,7 @@ class Translator3(Translator):
 
     def translate(self, string, context):
         """Get translation of string in given context"""
+        translateLabels = False
         super().translate(string, context)
         string = '\n'.join(line.rstrip() for line in string.split('\n'))
         if not string:
@@ -533,6 +534,8 @@ class Translator3(Translator):
             print('TRANSLATORDEBUG: %s:%s' % (string, context))
         if string in self.translationDB:
             ret = self.translationDB[string].translate(context)
+        elif not translateLabels and context.endswith('Label'):
+            return string
         else:
             if string not in self.newtranslations:
                 self.newtranslations[string] = []

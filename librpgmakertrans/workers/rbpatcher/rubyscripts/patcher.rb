@@ -91,6 +91,13 @@ def patchPage(page, context)
         }
         newPageList.push(eventCommand)
         currIndx += 1
+      when 118
+        label = eventCommand.instance_variable_get(:@parameters)[0].rstrip
+        contextStr = contextString + '%s/Label' % currIndx.to_s
+        translatedLabel = translate(label, contextStr)
+        eventCommand.instance_variable_get(:@parameters)[0] = translatedLabel
+        newPageList.push(eventCommand)
+        currIndx += 1
       when 402
         choiceString = eventCommand.instance_variable_get(:@parameters)[1].rstrip
         choiceData = choiceContextData[choiceString]
