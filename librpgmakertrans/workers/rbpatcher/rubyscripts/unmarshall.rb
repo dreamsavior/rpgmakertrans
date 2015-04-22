@@ -23,7 +23,6 @@ def unmarshall(fn)
       end
     rescue ArgumentError => exc
       name = exc.message.split(' ').last
-      puts 'examining %s' % name
       if name[name.length-2..name.length] == '::'
         name = name[0..name.length-3]
       end
