@@ -582,15 +582,19 @@ class Translator3Rebuild(Translator3):
         ret = super().getPatchData()
         self.translationFiles = self.oldPatch
         return ret
-    
-def debugLoadDir(directory):
-    """Debug function for loading a directory based patch"""
+
+def debugDirToNamedStrings(directory):
     import os
     data = OrderedDict()
     ls = sorted([fn for fn in os.listdir(directory) if fn.endswith('.txt')])
     for fn in ls:
         with open(os.path.join(directory, fn)) as f:
             data[fn.rpartition('.')[0]] = f.read()
+    return data
+
+def debugLoadDir(directory):
+    """Debug function for loading a directory based patch"""
+    data = debugDirToNamedStrings(directory)
     return Translator3(data, mtime=0)
 
 def debugGetStats(directory, onlyIncomplete=True):

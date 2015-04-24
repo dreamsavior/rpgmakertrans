@@ -91,7 +91,7 @@ def patchPage(page, context)
         }
         newPageList.push(eventCommand)
         currIndx += 1
-      when 118
+      when 118, 119
         label = eventCommand.instance_variable_get(:@parameters)[0].rstrip
         contextStr = contextString + '%s/Label' % currIndx.to_s
         translatedLabel = translate(label, contextStr)
