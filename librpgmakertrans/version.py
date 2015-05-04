@@ -12,11 +12,13 @@ Provides functionality related to versioning, including the version check.
 from urllib.request import urlopen
 import datetime
 
-version = 4.0
+version = 4.003
 expiry = datetime.date(2016, 4, 1)
-debug = False
+debug = True
+beta = True
 
-versionString = '%s%s' % (str(round(version, 2)), ' [DEBUG]' if debug else '')
+versionString = '%s%s%s' % (str(round(version, 2)), ' [DEBUG]' if debug else '',
+                            ' [BETA]' if beta else '')
 
 def versionCheck(coms):
     """Check to see if a new version is available"""
@@ -25,14 +27,15 @@ def versionCheck(coms):
         return
     try:
         versionURL = 'http://rpgmakertrans.bitbucket.org/rpgmakertransversion'
+        if beta:
+            versionURL += 'beta'
         with urlopen(versionURL) as versionFile:
             versionData = versionFile.read()
         webver = float(versionData.strip())
         if webver > version:
             coms.send('newVerAvailable', webver)
     except Exception as e:
-        print('error %s' % e)
-        pass
+        coms.send('nonfatalError', 'Error checking version: %s' % e)
 
 if __name__ == '__main__':
     from .controllers.sender import ErrorSender
