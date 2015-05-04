@@ -33,7 +33,7 @@ else:
 
 build_exe_options = {"include_files": includeFiles}
 build_exe_options['icon'] = os.path.abspath(icopath)
-build_exe_options['build_exe'] = 'rpgmt_cli_v%s' % version
+build_exe_options['build_exe'] = 'rpgmt_cli_v%s' % round(version, 2)
 
 setup(
     name= "RPGMaker Trans CLI %s" % version,
