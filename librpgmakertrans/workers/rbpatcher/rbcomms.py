@@ -20,6 +20,7 @@ import multiprocessing
 from ...controllers.socketcomms import SocketComms
 from ..rubyparse import translateRuby
 from ...errorhook import errorWrap, handleError
+from ...version import debug as debug_flag
 
 def _sortKey(item):
     if 'Map' in item[0]: return (1, item[0])
@@ -35,7 +36,7 @@ class RBComms(SocketComms):
     subprocess Senders to asyncio + sockets, but this can ultimately wait."""
 
     def __init__(self, translator, filesToProcess, rpgversion, inputComs,
-                 outputComs, subprocesses, debugRb = True, *args, **kwargs):
+                 outputComs, subprocesses, debugRb = None, *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(*args, **kwargs)
         self.inputComs = inputComs
@@ -71,7 +72,7 @@ class RBComms(SocketComms):
                                   8: self.getScripts,})
         self.rawArgs.update({2: True, 5: True})
         self.subprocesses = subprocesses if not debugRb else 1
-        self.debugRb = debugRb
+        self.debugRb = debugRb if debugRb is not None else debug_flag
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
         self.setEnv()
