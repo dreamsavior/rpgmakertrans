@@ -172,9 +172,14 @@ class TLFileStats:
         self.contexts = contexts
         self.translations = translations
         
-    def __str__(self):
+    def __repr__(self):
         return 'TLFileStats(%s, %s, %s)' % (self.strings, self.contexts,
                                             self.translations)
+        
+    def __str__(self):
+        percentage = int((self.translations / self.contexts) * 100)
+        return 'U:%s, C:%s, T:%s, P:%s%%' % (self.strings, self.contexts, 
+                                             self.translations, percentage)
     
     def __add__(self, other):
         assert isinstance(other, TLFileStats), 'Wrong type'
@@ -603,13 +608,11 @@ def debugLoadDir(directory):
 def debugGetStats(directory, onlyIncomplete=True):
     """Debug function to get stats from a directory based patch"""
     translator = debugLoadDir(directory)
-    stats = translator.getStats([lambda x: '/Label' in x])
+    stats = translator.getStats([lambda x: '/Label' in x, lambda x: 'TROOP' in x and 'name' in x])
     for filename, stat in stats.items():
         if stat.contexts > stat.translations:
-            percentage = int((stat.translations / stat.contexts) * 100)
-            print('%s: U:%s, C:%s, T:%s, P:%s%%' %
-                  (filename, stat.strings, stat.contexts, 
-                   stat.translations, percentage))
+            print('%s: %s' % (filename, stat))
+    print('Total: %s' % (sum(stats.values(), TLFileStats())))
 
 if __name__ == '__main__':
     import sys
