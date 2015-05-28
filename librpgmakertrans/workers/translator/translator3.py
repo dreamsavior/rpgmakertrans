@@ -193,7 +193,6 @@ class Translation:
             items.append(TranslationLine.End())
             items.append(TranslationLine.Data(''))
         self.items = items
-        self.stats = TLFileStats(1)
         currentContexts = ['RAW']
         currentString = []
         strings = ContextDict()
@@ -211,7 +210,7 @@ class Translation:
         self.raw = strings.pop('RAW')
         self.translations = strings
         self.usedContexts = ContextSet()
-
+        
     @classmethod
     def fromDesc(cls, raw, contexts):
         """Method to create a new Translation based on untranslated string
@@ -234,13 +233,14 @@ class Translation:
     def __addTranslations(self, stringDict, stringLS, contexts):
         """Add translations to a given dictionary"""
         string = '\n'.join(stringLS)
-        amount = len(contexts)
-        if 'RAW' in contexts: amount -= 1
-        self.stats.contexts += amount
-        if string.strip():
-            self.stats.translations += amount
         for context in contexts:
             stringDict[context] = string
+            
+    def getStats(self, filters=()):
+        translations = [self.translations[x] for x in self.translations if all(not f(x) for f in filters)]
+        stats = TLFileStats(1, len(translations), sum(1 for t in translations if t.strip()))
+        return stats
+
 
     def insert(self, context, afterContext, translation):
         """Insert a new context (and translation) after a given context"""
@@ -296,9 +296,6 @@ class TranslationFile:
         self.filename = filename
         self.translateables = translateables
         self.enablePruning = enablePruning
-        self.stats = TLFileStats()
-        for translateable in translateables:
-            self.stats += translateable.stats
 
     @classmethod
     def fromString(cls, filename, string, *args, **kwargs):
@@ -321,6 +318,12 @@ class TranslationFile:
             raise TranslatorError('Wrong version')
         translateables = [Translation(x) for x in cls.splitLines(lines)]
         return cls(filename, translateables, *args, **kwargs)
+    
+    def getStats(self, filters=()):
+        stats = TLFileStats()
+        for translateable in self.translateables:
+            stats += translateable.getStats(filters)
+        return stats
 
     def __iter__(self):
         """Iterate over translateables"""
@@ -516,11 +519,11 @@ class Translator3(Translator):
             ret[name] = self.translationFiles[name].asString()
         return ret
     
-    def getStats(self):
+    def getStats(self, filters=()):
         statDict = OrderedDict()
         for translationFileName in sorted(self.translationFiles):
             translationFile = self.translationFiles[translationFileName]
-            statDict[translationFileName] = translationFile.stats
+            statDict[translationFileName] = translationFile.getStats(filters)
         return statDict
 
     def translate(self, string, context):
@@ -600,8 +603,7 @@ def debugLoadDir(directory):
 def debugGetStats(directory, onlyIncomplete=True):
     """Debug function to get stats from a directory based patch"""
     translator = debugLoadDir(directory)
-    print(translator)
-    stats = translator.getStats()
+    stats = translator.getStats([lambda x: '/Label' in x])
     for filename, stat in stats.items():
         if stat.contexts > stat.translations:
             percentage = int((stat.translations / stat.contexts) * 100)
