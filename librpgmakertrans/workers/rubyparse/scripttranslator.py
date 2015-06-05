@@ -41,11 +41,12 @@ class ScriptTranslator:
                 base = indices.file if indices.file.endswith('/') else indices.file + '/'
                 context = '%s%s:%s' % (base, indices.line, indices.char)
             output.append(self.string[lastIndex:indices[0]])
-            translation = self.translationHandler.translate(self.string[indices[0]:indices[1]], context)
+            original = self.string[indices[0]:indices[1]]
+            translation = self.translationHandler.translate(original, context)
             if checkRuby(translation):
                 output.append(translation)
             else:
-                self.errorComs.send('nonfatalError', 'Could not parse the following script translation: %s' % translation)
+                self.errorComs.send('nonfatalError', 'Could not parse the following script translation: %s->%s' % (original, translation))
                 output.append(self.string[indices[0]:indices[1]])
             lastIndex = indices[1]
         output.append(self.string[lastIndex:])
