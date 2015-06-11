@@ -243,7 +243,7 @@ class Translation:
             
     def getStats(self, filters=()):
         translations = [self.translations[x] for x in self.translations if all(not f(x) for f in filters)]
-        stats = TLFileStats(1, len(translations), sum(1 for t in translations if t.strip()))
+        stats = TLFileStats(min(1, len(translations)), len(translations), sum(1 for t in translations if t.strip()))
         return stats
 
 
