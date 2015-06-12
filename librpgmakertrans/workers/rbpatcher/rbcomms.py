@@ -271,9 +271,9 @@ class RBComms(SocketComms):
 
 @errorWrap
 def startRBComms(filesToProcess, translator, mtimes, newmtimes,
-                 outputComs, inputComs, rpgversion, socket=None):
+                 outputComs, inputComs, rpgversion, config=None):
     """Entry point for multiprocessing to start RBComms."""
     subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
-                      outputComs, subprocesses, socket=socket)
+                      outputComs, subprocesses, config=config)
     rbcomms.start()

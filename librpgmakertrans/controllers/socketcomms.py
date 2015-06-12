@@ -38,9 +38,9 @@ def writePacket(args):
 class SocketCommsMisread(Exception): pass
 
 class SocketComms:
-    def __init__(self, socket=None):
+    def __init__(self, config=None):
         self.loop = asyncio.get_event_loop()
-        self.socket = 27899 if socket is None else socket
+        self.socket = 27899 if config is None else config.socket
         self.codeHandlers = {10: self.debug}
         self.rawArgs = {0: False}
         self.tickTasks = [self.checkForQuit]

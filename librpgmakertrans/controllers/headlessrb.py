@@ -62,7 +62,7 @@ class HeadlessRB(Headless):
         self.submit('patcher', startRBComms, filesToProcess,
                     translator, mtimes=mtimes, newmtimes=newmtimes,
                     outputComs=self.inputcoms, inputComs=rbCommsIn,
-                    socket=config.socket, rpgversion=type(self).rpgversion)
+                    config=config, rpgversion=type(self).rpgversion)
               
 class HeadlessXP(HeadlessRB):
     """Headless specialised for XP games."""
