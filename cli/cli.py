@@ -6,8 +6,7 @@ cli
 :copyright: 2012-2015
 :license: GNU Public License version 3
 
-A CLI for RPGMaker Trans. Unfortunately, due to Windows being Windows,
-this does not yet work on Windows.
+A CLI for RPGMaker Trans.
 """
 
 import sys
