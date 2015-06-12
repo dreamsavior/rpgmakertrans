@@ -22,15 +22,18 @@ from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 
 class HeadlessConfig:
     """Simple container to contain all config variables"""
-    def __init__(self, useBOM=False, socket=27899, rebuild=False):
+    def __init__(self, useBOM=False, socket=27899, rebuild=False,
+                 dumpScripts=False):
         """Current variables in config:
           - useBOM: If the patch should be written with byte order marks
           - socket: Name of socket to use in SocketComms
           - rebuild: If the patch should be rebuilt
+          - dumpScripts: If specified, a directory to dump scripts to
         """
         self.useBOM = useBOM
         self.socket = socket
         self.rebuild = rebuild
+        self.dumpScripts = dumpScripts
 
 class HeadlessUtils(CoreProtocol):
     """Defines the utility functions that Headless uses to communicate with

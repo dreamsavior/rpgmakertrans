@@ -40,14 +40,29 @@ class HeadlessRB(Headless):
     
     def translateScript(self, scriptName, script, translator, outputComs, errorComs):
         """Submit a script for translation"""
+        if self.config.dumpScripts is not None:
+            sanitizedName = scriptName
+            for char in ':\/?!*':
+                sanitizedName = sanitizedName.replace(char, '_')
+            if not sanitizedName.endswith('.rb'): sanitizedName += '.rb'
+            with open(os.path.join(self.config.dumpScripts, sanitizedName), 'w') as f:
+                f.write(script)
         self.submit('patcher', rbOneOffTranslation, outputComs, errorComs, scriptName,
                     script, translator)
 
     def processGame(self, indir, outdir, translator, mtimes, newmtimes,
                     config):
         """Process a VX game"""
+        self.config = config
         rbCommsIn = self.senderManager.Sender()
         self.registerSender(rbCommsIn)
+        if config.dumpScripts is not None:
+            try:
+                os.makedirs(config.dumpScripts, exist_ok=True)
+            except OSError:
+                self.outputcoms.send('fatalError', 
+                                     'Could not dump scripts to %s' % config.dumpScripts)
+                return
         inifn = os.path.normcase(os.path.join(indir, 'Game.ini'))
         if os.path.isfile(inifn):
             self.submit('patcher', patchGameIni, inifn,

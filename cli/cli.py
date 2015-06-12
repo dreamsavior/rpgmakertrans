@@ -33,11 +33,14 @@ class CLIMode(CoreProtocol):
                                  'ERROR: %s not a compatible patch')
         trans = self.handleInput(cargs.output, ['TRANS'], 'Output path: %s',
                                  'ERROR: %s not a valid target')
+        if cargs.dump_scripts:
+            self.normalPrint('Dumping Scripts to %s' % cargs.dump_scripts)
         self.progressPrint('Starting patcher...')
         self.message = ''
         self.progress = 0
         config = HeadlessConfig(useBOM=cargs.use_bom, socket=cargs.socket,
-                                rebuild=cargs.rebuild)
+                                rebuild=cargs.rebuild,
+                                dumpScripts=cargs.dump_scripts)
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
                            config)
 
@@ -140,6 +143,8 @@ def CLIBackend(runner):
     parser.add_argument('-s', '--socket', type=int, default=27899,
                         help='Socket to use for XP/VX/VX Ace patching'
                         '(default: 27899)')
+    parser.add_argument('--dump-scripts', type=str, default=None,
+                        help="Dump scripts to given directory")
     t = sys.stderr # Hacks to ensure that custom error handling is suppressed
     sys.stderr = sys.__stderr__
     args = parser.parse_args()
