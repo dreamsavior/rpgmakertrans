@@ -441,6 +441,10 @@ class CanonicalTranslation:
             bestContext = max(tally.values(), key=itemgetter(0))[1]
             self.__default = bestContext, self.contexts[bestContext]
         return self.__default
+    
+    def markAllUsed(self):
+        for context, translation in self.contexts.items():
+            translation[0].useContext(context)
 
     def addTranslation(self, translation):
         """Add a Translation object to this CanonicalTranslation"""
@@ -530,6 +534,11 @@ class Translator3(Translator):
             translationFile = self.translationFiles[translationFileName]
             statDict[translationFileName] = translationFile.getStats(filters)
         return statDict
+    
+    def markAllUsed(self):
+        """Mark everything as being used - useful for debug tools"""
+        for canonicalTranslation in self.translationDB.values():
+            canonicalTranslation.markAllUsed()
 
     def translate(self, string, context):
         """Get translation of string in given context"""
