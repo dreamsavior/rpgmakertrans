@@ -11,8 +11,10 @@ A simple test runner for the ruby parser.
 
 import os
 import sys
-from .parser import translateRuby, RubyParserException
+from .parser import RubyParserException
+from .scripttranslator import translateRuby
 from .customdelimiters import HereDocError
+from ...controllers.sender import ErrorSender
 
 class DummyTranslator:
     def translate(self, string, context):
@@ -23,15 +25,17 @@ class DummyTranslator:
 
 dt = DummyTranslator()
 
-def test(string, verbose = None, filename = '', succeeds = True):
+def test(string, verbose = None, filename = '', succeeds = True, errout=ErrorSender()):
+    assert isinstance(string, str)
     if verbose is None:
         verbose = '-v' in sys.argv
     if verbose:
         print(string + ' ' +  str(succeeds))
     errored = False
     try:
-        outscript = translateRuby(string, filename = filename,
-                                  translationHandler = dt, verbose = verbose)
+        fn, outscript = translateRuby(string, filename = filename,
+                                  translationHandler = dt, errorComs=errout, 
+                                  verbose = verbose)
         assert outscript == string, 'Did not get same string back with no translations'
     except (RubyParserException, HereDocError):
         errored = True
@@ -40,25 +44,30 @@ def test(string, verbose = None, filename = '', succeeds = True):
     if succeeds is False and errored is False:
         raise Exception('Succeeded when should have failed')
 
-test('')
-test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
-test('"%s" % @varName\n')
-test('"%s, %s" % (@varName, otherName)\n')
-test('/\//\n')
-test('("Hello")')
-test('# "Not Actually A String"\n')
-test('( # Tricky one this)\n', succeeds = False)
-test('print << "yo"')
-test('print <<END\nHeredoc\nEND', succeeds = False)
-test('print <<-END\nHeredoc\nEND', succeeds = False)
-test('x /x')
-test('x/x\nx /x')
-test('%q[Hello2]')
-test('"#{""}"')
-test('"#{\'\'}"')
-test('a/a "Hello"')
-#for filename in os.listdir('testdata'):
-#    if filename.endswith('.rb'):
-#        with open(os.path.join('testdata', filename), 'r', encoding='utf-8') as f:
-#            print(filename)
-#            test(f.read(), filename = filename)
+if len(sys.argv) == 1:
+    test('')
+    test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
+    test('"%s" % @varName\n')
+    test('"%s, %s" % (@varName, otherName)\n')
+    test('/\//\n')
+    test('("Hello")')
+    test('# "Not Actually A String"\n')
+    test('( # Tricky one this)\n', succeeds = False)
+    test('print << "yo"')
+    test('print <<END\nHeredoc\nEND', succeeds = False)
+    test('print <<-END\nHeredoc\nEND', succeeds = False)
+    test('x /x')
+    test('x/x\nx /x')
+    test('%q[Hello2]')
+    test('"#{""}"')
+    test('"#{\'\'}"')
+    test('a/a "Hello"')
+else:
+    target = sys.argv[1]
+    if os.path.isdir(target): fns = [os.path.join(target, fn) for fn in os.listdir(target)]
+    else: fns = [target]
+    for filename in fns:
+        if filename.endswith('.rb'):
+            with open(filename, 'r', encoding='utf-8') as f:
+                print(filename)
+                test(f.read(), filename = filename)
