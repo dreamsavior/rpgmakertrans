@@ -3,7 +3,7 @@ parser
 ******
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 Implementation of the Ruby Parser.
@@ -37,9 +37,11 @@ class RubyParserState:
         RubyParserState"""
         indx1 = max(0, self.index-2)
         indx2 = min(self.index+3, len(self.string))
-        return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s)' %
+        line = self.string.count('\n', 0, self.index)
+        col = self.index - self.string.find('\n', 0, self.index)
+        return ('RubyParserState(string=..%s.., index=%s, ruleStack=%s) # %s:%s' %
                 (repr(self.string[indx1:indx2]),
-                 self.index, [str(rule) for rule in self.ruleStack]))
+                 self.index, [str(rule) for rule in self.ruleStack], line, col))
 
     def __getitem__(self, indx):
         """Get an item from the Ruby parsers string, offset by
@@ -162,16 +164,18 @@ class RubyParserState:
         if not ruleTerminated:
             self.index += self.currentRule.advance(self)
             
+    def checkFailure(self):
+        if self.failed:
+            if not self.resumeRollback():
+                raise RubyParserException('Entered failed state: %s' % self)
+            
     def parse(self):
         self.addRule(Base(self))
         while self.ruleStack:
             if self.index > len(self.string):
                 if not self.resumeRollback():
                     raise RubyParserException('String out of bounds: %s' % self)
-            if self.failed:
-                if not self.resumeRollback():
-                    raise RubyParserException('Entered failed state: %s' % self)
+            self.checkFailure()
             self.checkNextRule()
             self.popRules()
-
-
+            self.checkFailure()

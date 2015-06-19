@@ -3,7 +3,7 @@ rubyparse_main
 **************
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2014
+:copyright: 2012-2015
 :license: GNU Public License version 3
 
 A simple test runner for the ruby parser.
@@ -24,11 +24,14 @@ class DummyTranslator:
         return string
 
 dt = DummyTranslator()
-
+VERBOSE = '-v' in sys.argv
+if '-v' in sys.argv:
+    sys.argv.remove('-v')
+    
 def test(string, verbose = None, filename = '', succeeds = True, errout=ErrorSender()):
     assert isinstance(string, str)
     if verbose is None:
-        verbose = '-v' in sys.argv
+        verbose = VERBOSE
     if verbose:
         print(string + ' ' +  str(succeeds))
     errored = False
@@ -62,6 +65,9 @@ if len(sys.argv) == 1:
     test('"#{""}"')
     test('"#{\'\'}"')
     test('a/a "Hello"')
+    test('/./m()')
+    test('/\\[Vv]\[(\d+)\]/')
+    test('RPG::Cache.windowskin("Letter_"+($1.to_i/16).to_s).width / 4')
 else:
     target = sys.argv[1]
     if os.path.isdir(target): fns = [os.path.join(target, fn) for fn in os.listdir(target)]
