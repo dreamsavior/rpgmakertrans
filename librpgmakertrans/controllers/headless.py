@@ -23,7 +23,7 @@ from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 class HeadlessConfig:
     """Simple container to contain all config variables"""
     def __init__(self, useBOM=False, socket=27899, rebuild=False,
-                 dumpScripts=False):
+                 dumpScripts=None):
         """Current variables in config:
           - useBOM: If the patch should be written with byte order marks
           - socket: Name of socket to use in SocketComms
