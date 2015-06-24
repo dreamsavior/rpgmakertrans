@@ -59,6 +59,7 @@ if len(sys.argv) == 1:
     test('"%s" % @varName\n')
     test('"%s, %s" % (@varName, otherName)\n')
     test('/\//\n')
+    test(r'/[\\]/')
     test('("Hello")')
     test('# "Not Actually A String"\n')
     test('( # Tricky one this)\n', succeeds = False)

@@ -98,14 +98,13 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
     without a lot more work in parsing.    
     """
     successorClass = EmbeddedCodeSuccessor
-    escapeRules = [r'\/', r'\\', r'\#']
+    escapeRules = [r'\/', r'\\', r'\#', r'\[', r'\]', r'\(', r'\)']
     terminator = '/'
     
     matchBrackets = {'[': ']', '(': ')'}
     
     def __init__(self, parser):
         self.brackets = []
-        self.escape = False
         self.bracketCounts = defaultdict(int)
         self.regexBegins = parser.index
         super().__init__(parser)
@@ -113,10 +112,6 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
     def advance(self, parser):
         if parser.currentChar == '\n':
             parser.failed = True
-        elif self.escape:
-            self.escape = False
-        elif parser.currentChar == '\\':
-            self.escape = True
         elif self.brackets and parser.currentChar == self.brackets[-1]:
             self.brackets.pop()
         elif parser.currentChar in type(self).matchBrackets.values():
