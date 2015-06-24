@@ -108,6 +108,7 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
         self.escape = False
         self.bracketCounts = defaultdict(int)
         self.regexBegins = parser.index
+        super().__init__(parser)
 
     def advance(self, parser):
         if parser.currentChar == '\n':

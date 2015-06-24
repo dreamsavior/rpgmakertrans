@@ -18,18 +18,24 @@ from ...controllers.sender import ErrorSender
 
 class DummyTranslator:
     def translate(self, string, context):
-        if '-p' in sys.argv:
+        if DUMP:
             print('C::' + context)
             print('S::' + string)
         return string
 
 dt = DummyTranslator()
 VERBOSE = '-v' in sys.argv
+DUMP = '-p' in sys.argv
+
 if '-v' in sys.argv:
     sys.argv.remove('-v')
+if '-p' in sys.argv:
+    sys.argv.remove('-p')
     
 def test(string, verbose = None, filename = '', succeeds = True, errout=ErrorSender()):
+    if not string.startswith('/'): return
     assert isinstance(string, str)
+    if DUMP: print('FULL STRING: %s' % string)
     if verbose is None:
         verbose = VERBOSE
     if verbose:
