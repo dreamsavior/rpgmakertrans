@@ -37,10 +37,12 @@ def writePacket(args):
 
 class SocketCommsMisread(Exception): pass
 
+class SocketCommsError(Exception): pass
+
 class SocketComms:
     def __init__(self, config=None):
         self.loop = asyncio.get_event_loop()
-        self.socket = 27899 if config is None else config.socket
+        self.sockets = [27899, 41092, 31241, 53426, 12046] if (config is None or config.socket is None) else [config.socket]
         self.codeHandlers = {10: self.debug}
         self.rawArgs = {0: False}
         self.tickTasks = [self.checkForQuit]
@@ -104,7 +106,18 @@ class SocketComms:
             yield from asyncio.sleep(5)
 
     def start(self):
-        coro = asyncio.start_server(self.handleRequest, '127.0.0.1', self.socket, loop=self.loop)
+        coro = None
+        sockets = self.sockets[:]
+        while not coro:
+            try:
+                socket = sockets.pop(0)
+                coro = asyncio.start_server(self.handleRequest, '127.0.0.1', 
+                                            socket, loop=self.loop)
+                self.socket = socket
+            except OSError:
+                pass
+            except IndexError:
+                raise SocketCommsError('Could not start server on specified ports %s' % self.socket)
         self.server = self.loop.run_until_complete(coro)
         # Serve requests until CTRL+c is pressed
         loopCondition = asyncio.wait([coro() for coro in self.tickTasks])

@@ -17,7 +17,7 @@ import sys
 from collections import OrderedDict
 import multiprocessing
 
-from ...controllers.socketcomms import SocketComms
+from ...controllers.socketcomms import SocketComms, SocketCommsError
 from ..rubyparse import translateRuby
 from ...errorhook import errorWrap, handleError
 from ...version import debug as debug_flag
@@ -277,4 +277,8 @@ def startRBComms(filesToProcess, translator, mtimes, newmtimes,
     subprocesses = multiprocessing.cpu_count()
     rbcomms = RBComms(translator, filesToProcess, rpgversion, inputComs,
                       outputComs, subprocesses, config=config)
-    rbcomms.start()
+    try:
+        rbcomms.start()
+    except SocketCommsError as e:
+        outputComs.send('nonFatalError', 'Could not start Ruby Patcher.\nTry opening ports, killing processes, or logging off and on again.\nThe following error gives more information\n')
+        outputComs.send('fatalError', str(e))
