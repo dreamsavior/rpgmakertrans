@@ -10,7 +10,7 @@ Socket based communication. Intended to be used for
 communicating with Ruby.
 '''
 
-import asyncio, struct
+import asyncio, struct, random
 from ..errorhook import handleError
 
 def readPacket(packet):
@@ -42,7 +42,7 @@ class SocketCommsError(Exception): pass
 class SocketComms:
     def __init__(self, config=None):
         self.loop = asyncio.get_event_loop()
-        self.sockets = [27899, 41092, 31241, 53426, 12046] if (config is None or config.socket is None) else [config.socket]
+        self.sockets = [27899, 47807, 34500, random.randint(40000, 50000), random.randint(40000, 50000)] if (config is None or config.socket is None) else [config.socket]
         self.codeHandlers = {10: self.debug}
         self.rawArgs = {0: False}
         self.tickTasks = [self.checkForQuit]
