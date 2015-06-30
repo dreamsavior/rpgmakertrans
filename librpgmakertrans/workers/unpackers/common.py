@@ -9,6 +9,11 @@ common
 Provides the common functions to unpack RPGMaker XP/VX/VX Ace files.
 """
 
+try:
+    from . import _fastunpack
+except ImportError:
+    _fastunpack = None
+
 import multiprocessing
 import struct
 import os
@@ -31,20 +36,39 @@ def keyGen(baseKey):
         if not stay:
             current = (current * 7 + 3) & 0xFFFFFFFF
 
-def unpackData(fileName, key, data):
-    """Write unpacked data to the given filename, using key to
-    unscramble the given data"""
-    fileSize = len(data)
-    padding = b'\x00' * (4 - len(data) % 4)
-    data += padding
-    frmt = 'I' * (len(data) // 4)
-    unpacked = struct.unpack(frmt, data)
-    decrypted = [x ^ k for x, k in zip(unpacked, keyGen(key))]
-    decryptedPacked = struct.pack(frmt, *decrypted)[:fileSize]
-    f = open(fileName, 'wb')
-    f.write(decryptedPacked)
-    f.close()
-
+if _fastunpack is None:
+    def unpackData(fileName, key, data):
+        """Write unpacked data to the given filename, using key to
+        unscramble the given data"""
+        fileSize = len(data)
+        padding = b'\x00' * (4 - len(data) % 4)
+        data += padding
+        frmt = 'I' * (len(data) // 4)
+        unpacked = struct.unpack(frmt, data)
+        decrypted = [x ^ k for x, k in zip(unpacked, keyGen(key))]
+        decryptedPacked = struct.pack(frmt, *decrypted)[:fileSize]
+        f = open(fileName, 'wb')
+        f.write(decryptedPacked)
+        f.close()
+else:
+    def unpackData(fileName, key, data):
+        """Write unpacked data to the given filename, using key to
+        unscramble the given data. This function uses the fast C unpacker"""
+        fileSize = len(data)
+        padding = b'\x00' * (4 - len(data) % 4)
+        data += padding
+        frmt = 'I' * (len(data) // 4)
+        unpacked = struct.unpack(frmt, data)
+        ffi = _fastunpack.ffi
+        lib = _fastunpack.lib
+        cdata = ffi.new('unsigned int[]', unpacked)
+        lib.unpackData(key, len(unpacked), cdata)
+        decrypted = [x for x in cdata]
+        decryptedPacked = struct.pack(frmt, *decrypted)[:fileSize]
+        f = open(fileName, 'wb')
+        f.write(decryptedPacked)
+        f.close()
+        
 def unpackFile(fileName, unpackFunc=unpackData):
     """Unpack an rgssad file; creates directory structure as needed"""
     with open(fileName, 'rb') as f:

@@ -8,3 +8,6 @@ pylint.html
 testdata/*
 .settings/*
 *.sh
+*.o
+*.so
+_fastunpack.c
