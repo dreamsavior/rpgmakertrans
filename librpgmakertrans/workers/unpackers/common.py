@@ -18,6 +18,8 @@ import multiprocessing
 import struct
 import os
 
+from concurrent.futures import ThreadPoolExecutor
+
 SPLITTERS = {}
 
 def Splitter(version):
@@ -97,3 +99,15 @@ def mpunpackFile(fileName):
     unpackFile(fileName, mpunpack)
     pool.close()
     pool.join()
+    
+def threadUnpackFile(fileName):
+    """Threading unpacker. Only makes sense to use if using the C unpacker,
+    but performance should be significantly better than mpunpack on
+    Windows. Again, a test function only."""
+    futures = []
+    cpus = os.cpu_count()
+    with ThreadPoolExecutor(max_workers=cpus) as e:
+        threadUnpack = lambda x,y,z: futures.append(e.submit(unpackData, x, y, z))
+        unpackFile(fileName, threadUnpack)
+    for res in futures:
+        res.result()

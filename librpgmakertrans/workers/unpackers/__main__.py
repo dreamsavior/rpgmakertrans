@@ -12,6 +12,14 @@ Simply unpack the RGSS archive on command line.
 
 import sys
 
-from .common import mpunpackFile
+from .common import mpunpackFile, threadUnpackFile, unpackFile
 
-mpunpackFile(sys.argv[1])
+argmap = {'-m': mpunpackFile, '-t': threadUnpackFile, '-u': unpackFile}
+
+unpackFunc = threadUnpackFile
+
+for arg in sys.argv:
+    if arg in argmap:
+        unpackFunc = argmap[arg]
+        
+unpackFunc(sys.argv[1])
