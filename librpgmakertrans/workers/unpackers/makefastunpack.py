@@ -23,4 +23,4 @@ ffi.set_source(modName, cfunc)
 ffi.cdef(cdef)
 ffi.compile()
 for mod in [fn for fn in os.listdir() if fn.startswith(modName)]:
-  shutil.move(mod, os.path.join(os.path.dirname(__file__), mod))
+    shutil.move(mod, os.path.join(os.path.dirname(__file__), mod))

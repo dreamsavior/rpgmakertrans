@@ -61,7 +61,7 @@ else:
         lib = _fastunpack.lib
         cdata = ffi.new('unsigned char[]', data)
         lib.unpackData(key, len(data) // 4, cdata)
-        decryptedPacked = ffi.buffer(cdata, fileSize)#[:fileSize]
+        decryptedPacked = ffi.buffer(cdata, fileSize)
         f = open(fileName, 'wb')
         f.write(decryptedPacked)
         f.close()
