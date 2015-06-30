@@ -57,14 +57,11 @@ else:
         fileSize = len(data)
         padding = b'\x00' * (4 - len(data) % 4)
         data += padding
-        frmt = 'I' * (len(data) // 4)
-        unpacked = struct.unpack(frmt, data)
         ffi = _fastunpack.ffi
         lib = _fastunpack.lib
-        cdata = ffi.new('unsigned int[]', unpacked)
-        lib.unpackData(key, len(unpacked), cdata)
-        decrypted = [x for x in cdata]
-        decryptedPacked = struct.pack(frmt, *decrypted)[:fileSize]
+        cdata = ffi.new('unsigned char[]', data)
+        lib.unpackData(key, len(data) // 4, cdata)
+        decryptedPacked = ffi.buffer(cdata, fileSize)#[:fileSize]
         f = open(fileName, 'wb')
         f.write(decryptedPacked)
         f.close()

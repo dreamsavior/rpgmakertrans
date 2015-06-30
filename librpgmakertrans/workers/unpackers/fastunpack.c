@@ -12,12 +12,13 @@ of multiprocessing from unpackers in favor of threading
 (as C Extensions release GIL)
 */
 
-void unpackData(unsigned int key, unsigned int len, unsigned int * data); # DEF
+void unpackData(unsigned int key, unsigned int len, unsigned char * data); # DEF
 
-void unpackData(unsigned int key, unsigned int len, unsigned int * data){
+void unpackData(unsigned int key, unsigned int len, unsigned char * data){
   int count;
+  unsigned int* idata = (unsigned int*) data;
   for (count = 0; count < len; count++){
-      data[count] = data[count] ^ key;
+      idata[count] = idata[count] ^ key;
       key = (key * 7 + 3) & 0xFFFFFFFF;
   }
 }
