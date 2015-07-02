@@ -23,7 +23,7 @@ class SniffedType:
     maintype = None
     subtypes = []
 
-    def __init__(self, canonicalpath=None, extraData=None):
+    def __init__(self, canonicalpath=None):
         """Initialise the SniffedType"""
         if isinstance(canonicalpath, type(self)):
             self.canonicalpath = canonicalpath.canonicalpath
@@ -34,8 +34,7 @@ class SniffedType:
                             str(type(canonicalpath)))
         if self.canonicalpath.endswith(os.path.sep):
             self.canonicalpath = self.canonicalpath.rstrip(os.path.sep)
-        if extraData is None: extraData = {}
-        self.extraData = extraData
+        self.extraData = {}
 
     def __str__(self):
         """Return a string representation"""

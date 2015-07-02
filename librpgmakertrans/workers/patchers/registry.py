@@ -19,13 +19,13 @@ class FilePatchv2(SniffedType):
 
 class FilePatchv3(SniffedType):
     """Sniffed type for FilePatch v3"""
-    def __init__(self, path=None, extraData=None):
-        if extraData is None: extraData = {}
-        bannerfn = os.path.join(path, 'banner.html')
-        if os.path.isfile(bannerfn):
-            with open(bannerfn) as f:
-                extraData['banner.html'] = f.read() 
-        super().__init__(path, extraData)
+    def __init__(self, path=None):
+        super().__init__(path)
+        bannerfns = ['banner.html', 'banner.txt']
+        for fn in os.listdir(self.canonicalpath):
+            if fn.lower() in bannerfns:
+                with open(os.path.join(self.canonicalpath, fn)) as f:
+                    self.extraData[fn.lower()] = f.read()
         
     maintype, subtypes = 'PATCH', ['v3', 'update']
 
