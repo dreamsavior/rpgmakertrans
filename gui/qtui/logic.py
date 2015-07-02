@@ -51,7 +51,10 @@ class QTLogic(CoreProtocol):
         elements are gameloc, transloc, patchloc, options and go."""
         for element, state in list(states.items()):
             self.window.enableElement(element, state)
-
+    
+    def setPatchBanner(self, banner):
+        self.window.setPatchBanner(banner)
+        
     def browseGame(self):
         """Display a browse window for a game"""
         newgameloc = self.window.fileDialog(

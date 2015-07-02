@@ -10,7 +10,7 @@ The implementation of the QT user interface.
 """
 
 import os, itertools
-from PySide import QtGui, QtCore, QtSvg, QtWebKit
+from PySide import QtGui, QtCore, QtSvg
 from librpgmakertrans.version import versionString
 
 from .logointernal import LOGOINTERNAL
@@ -141,6 +141,8 @@ class PatchBanner(QtGui.QGroupBox):
         name = 'Patch Banner'
         super().__init__(name, qtparent)
         self.banner = QtGui.QLabel()
+        self.banner.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse);
+        self.banner.setOpenExternalLinks(True);
         html = '''No patch banner loaded'''
         self.banner.setText(html)
         layout = QtGui.QVBoxLayout()
@@ -304,6 +306,7 @@ class MainWindow(QtGui.QWidget):
             self.patchBanner.show()
         else:
             self.patchBanner.hide()
+        self.fixSize()
 
     def setProgress(self, percent):
         """Set the progress bar, in percent"""
