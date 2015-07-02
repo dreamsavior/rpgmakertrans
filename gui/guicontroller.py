@@ -225,8 +225,10 @@ class GUIController(CoreProtocol):
             elif idtoken == 'patchloc':
                 patchdata = self.patchDB.reverse[self.currentState['patchloc']]
                 if patchdata.extraData:
-                    if 'banner.html' in patchdata.extraData:
-                        self.outputcoms.send('setPatchBanner', patchdata.extraData['banner.html'])
+                    for bannername in ('banner.html', 'banner.txt'):
+                        if bannername in patchdata.extraData:
+                            self.outputcoms.send('setPatchBanner', patchdata.extraData[bannername])
+                            break
                 if self.currentState['gameloc'] is not None:
                     gamepath = self.gameDB.reverse[self.currentState['gameloc']]
                     defaulttranspath = gamepath.canonicalpath + '_translated'
