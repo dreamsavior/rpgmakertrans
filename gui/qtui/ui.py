@@ -10,7 +10,7 @@ The implementation of the QT user interface.
 """
 
 import os, itertools
-from PySide import QtGui, QtCore, QtSvg
+from PySide import QtGui, QtCore, QtSvg, QtWebKit
 from librpgmakertrans.version import versionString
 
 from .logointernal import LOGOINTERNAL
@@ -135,6 +135,21 @@ class PatchOptions(QtGui.QGroupBox):
         """Enable or disable the block"""
         for widget in itertools.chain.from_iterable(self.widgets):
             widget.setEnabled(state)
+            
+class PatchBanner(QtGui.QGroupBox):
+    def __init__(self, qtparent):
+        name = 'Patch Banner'
+        super().__init__(name, qtparent)
+        self.banner = QtGui.QLabel()
+        html = '''No patch banner loaded'''
+        self.banner.setText(html)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.banner)
+        self.setLayout(layout)
+        
+    def setBanner(self, banner):
+        self.banner.setText(banner)
+
 
 
 class MainWindow(QtGui.QWidget):
@@ -157,12 +172,14 @@ class MainWindow(QtGui.QWidget):
         self.errorLog = QtGui.QPlainTextEdit()
         self.errorLog.setReadOnly(True)
         self.errorLog.hide()
+        self.patchBanner = PatchBanner(self)
+        self.patchBanner.hide()
         self.gobutton = QtGui.QPushButton('Go!')
         label = QtGui.QLabel(labelString)
         label.setWordWrap(True)
         for x in (self.game, self.patch, self.trans, self.patchopts,
-                  self.progress, self.comms, self.errorLog, self.gobutton,
-                  label):
+                  self.patchBanner, self.progress, self.comms, self.errorLog,
+                  self.gobutton, label):
             vbox.addWidget(x)
         self.setLayout(vbox)
         self.setWindowTitle('RPGMaker Trans v%s' % versionString)
@@ -279,6 +296,14 @@ class MainWindow(QtGui.QWidget):
                'patchid': self.patch.getCurrentSelectedID(),
                'transid': self.trans.getCurrentSelectedID(), }
         return ret
+    
+    def setPatchBanner(self, banner):
+        """Set the patch banner"""
+        if banner:
+            self.patchBanner.setBanner(banner)
+            self.patchBanner.show()
+        else:
+            self.patchBanner.hide()
 
     def setProgress(self, percent):
         """Set the progress bar, in percent"""
