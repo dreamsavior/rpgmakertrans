@@ -39,7 +39,7 @@ def unmarshall(fn)
       }
     rescue TypeError => exc
       name = exc.message.split(' ')[1]
-      definition = "class %s\ndef initialize data\n@marshalldata = data\nend\ndef self._load data\nnew(data)\nend\ndef _dump\n@marshalldata\nend\nend" % name
+      definition = "class %s\ndef initialize data\n@marshalldata = data\nend\ndef self._load data\nnew(data)\nend\ndef _dump(x)\n@marshalldata\nend\nend" % name
       eval(definition)
     end
   end
