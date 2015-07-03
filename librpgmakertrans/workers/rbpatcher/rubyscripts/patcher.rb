@@ -210,7 +210,7 @@ def dumpScriptsFile(infn)
     magicNo = data[x][0]
     scriptName = data[x][1]
     scriptStr = Zlib::Inflate.inflate(data[x][2])
-    if scriptName != '' and scriptStr != ''
+    if scriptStr != ''
       sendScript(scriptName, scriptStr, magicNo.to_s)
     end
   }
@@ -220,7 +220,7 @@ def writeScriptsFile(outfn, data)
   data.each_index{|x|
     scriptName = data[x][1]
     scriptStr = data[x][2]
-    if scriptName != '' and scriptStr != ''
+    if scriptStr != ''
       data[x][2] = Zlib::Deflate.deflate(scriptStr)
     end
   }

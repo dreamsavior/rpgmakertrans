@@ -30,6 +30,13 @@ def _sortKey(item):
 class RBCommsError(Exception):
     """Error raised when something goes wrong in RBComms"""
 
+class DummyScriptName(str): pass
+
+def makeDummyScriptName(name, n):
+    ret = DummyScriptName('%s(%s)' % (name, n))
+    ret.raw = name
+    return ret
+
 class RBComms(SocketComms):
     """RBComms is the specific instance of SocketComms to handle talking
     to Ruby processes. In general, I think I'd like to migrate away from
@@ -177,15 +184,15 @@ class RBComms(SocketComms):
     def translateScript(self, bName, bScript, magicNo):
         """Handler to request translation of a string"""
         name = bName.decode('utf-8')
+        if name == '' or name in self.scripts:
+            name = makeDummyScriptName(name, self.scripts.count(name))
         for encoding in ('utf-8', 'cp932'):
             try:
                 script = bScript.decode(encoding)
                 self.outputComs.send('translateScript', name, script,
                                      self.translator, self.inputComs,
-                                     self.outputComs)
+                                     self.outputComs) 
                 self.scripts.append(name)
-                #if name.lower() != 'main':
-                #    self.rawScripts.append('# %s\n%s' % (name, script))
                 self.magicNumbers[name] = magicNo.decode('utf-8')
                 return
             except UnicodeDecodeError:
@@ -230,10 +237,11 @@ class RBComms(SocketComms):
         """Handler to output a translated script to Ruby"""
         if self.scripts:
             name = self.scripts.pop(0)
+            rName = name.raw if isinstance(name, DummyScriptName) else name
             script = self.translatedScripts.pop(name)
             if len(self.scripts) == 0:
                 self.scriptsAreTranslated = True
-            return (str(len(self.scripts)), name, self.magicNumbers[name],
+            return (str(len(self.scripts)), rName, self.magicNumbers[name],
                     script)
         else:
             raise RBCommsError('Asked for translated script'
