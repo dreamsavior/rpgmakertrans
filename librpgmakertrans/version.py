@@ -13,9 +13,9 @@ from urllib.request import urlopen
 import datetime
 
 version = 4.005
-expiry = datetime.date(2016, 4, 1)
-debug = True
-beta = True
+expiry = datetime.date(2016, 7, 1)
+debug = False
+beta = False
 
 versionString = '%s%s%s' % (str(round(version, 2)), ' [DEBUG]' if debug else '',
                             ' [BETA]' if beta else '')
