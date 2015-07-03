@@ -43,8 +43,10 @@ class HeadlessUtils(CoreProtocol):
         """Initialise values"""
         super().__init__(*args, **kwargs)
         self.progress = defaultdict(lambda: [0, float('inf')])
-        self.progressVal = 0
+        self.progressVal = -1
+        self.epsilon = 1e-2
         self.progressCompleteTriggers = {}
+        self.updateProgress()
 
     def nonfatalError(self, msg):
         """Sends a nonfatal error message to the controller of headless"""
@@ -84,9 +86,12 @@ class HeadlessUtils(CoreProtocol):
 
     def updateProgress(self):
         """Update the progress value; communicate if necessary"""
-        newProgressVal = min((x[0] / x[1]
-                              for x in list(self.progress.values())))
-        if newProgressVal > self.progressVal: # Only increment progress bar
+        if self.progress:
+            newProgressVal = min((x[0] / x[1]
+                                  for x in list(self.progress.values())))
+        else:
+            newProgressVal = 0
+        if newProgressVal >= self.progressVal + self.epsilon: 
             self.outputcoms.send('setProgress', newProgressVal)
             self.progressVal = newProgressVal
         for key in self.progress:
