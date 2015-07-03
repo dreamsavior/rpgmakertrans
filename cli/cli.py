@@ -24,6 +24,7 @@ class CLIMode(CoreProtocol):
         """Initialise the CLI mode, with given CLI arguments"""
         super(CLIMode, self).__init__(*args, **kwargs)
         self.quiet = cargs.quiet
+        self.needNewLine = False
         self.normalPrint('RPGMaker Trans v%s' % versionString)
         game = self.handleInput(cargs.input, ['GAME', 'TRANS'],
                                 'Input path: %s',
@@ -93,6 +94,9 @@ class CLIMode(CoreProtocol):
     def normalPrint(self, string):
         """Print something if we're supposed to print"""
         if not self.quiet:
+            if self.needNewLine:
+                print()
+            self.needNewLine = False
             print(string)
 
     def progressPrint(self, string):
@@ -101,6 +105,7 @@ class CLIMode(CoreProtocol):
             columns = shutil.get_terminal_size().columns - 2
             print('\r' + string.ljust(columns), end=' ')
             sys.stdout.flush()
+            self.needNewLine = True
 
     def setProgress(self, progress):
         """Set the current progress"""
