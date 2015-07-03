@@ -43,10 +43,9 @@ class HeadlessUtils(CoreProtocol):
         """Initialise values"""
         super().__init__(*args, **kwargs)
         self.progress = defaultdict(lambda: [0, float('inf')])
-        self.progressVal = -1
+        self.progressVal = 0
         self.epsilon = 1e-2
         self.progressCompleteTriggers = {}
-        self.updateProgress()
 
     def nonfatalError(self, msg):
         """Sends a nonfatal error message to the controller of headless"""

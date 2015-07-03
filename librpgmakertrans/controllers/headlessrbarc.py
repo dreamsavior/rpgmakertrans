@@ -56,8 +56,9 @@ class HeadlessArc(HeadlessUtils):
     def finish(self, arcFileName):
         """Finish the unpacking process."""
         self.displayMessage('Finished Unpacking - Deleting original archive')
+        self.outputcoms.send('setProgress', 0)
         self.resniffInput()
-        self.setMessage('')
+        self.setMessage('Waiting for patcher...')
         self.shutdown(['unpack'])
         os.remove(arcFileName)
         self.going = False
