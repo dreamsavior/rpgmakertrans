@@ -34,6 +34,9 @@ class CLIMode(CoreProtocol):
                                  'ERROR: %s not a valid target')
         if cargs.dump_scripts:
             self.normalPrint('Dumping Scripts to %s' % cargs.dump_scripts)
+        if patch.extraData:
+            if 'banner.txt' in patch.extraData:
+                self.normalPrint('Patch Banner:\n\n%s' % patch.extraData['banner.txt'])
         self.progressPrint('Starting patcher...')
         self.message = ''
         self.progress = 0
