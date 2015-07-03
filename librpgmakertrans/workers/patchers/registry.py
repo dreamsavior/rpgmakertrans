@@ -10,6 +10,7 @@ Provides a repository for sniffer functions which can
 inform which type of backend to use.
 """
 import os.path
+import zipfile
 from ..sniffers import sniffer, sniff, SniffedType
 
 
@@ -36,6 +37,17 @@ class ZipPatchv2(SniffedType):
 class ZipPatchv3(SniffedType):
     """Sniffed type for ZipPatchv3"""
     maintype, subtypes = 'PATCH', ['v3', 'use']
+    def __init__(self, path=None):
+        super().__init__(path)
+        bannerfns = ['banner.html', 'banner.txt']
+        if os.path.isfile(self.canonicalpath) and zipfile.is_zipfile(self.canonicalpath):
+            z = zipfile.ZipFile(self.canonicalpath)
+            for fn in z.namelist():
+                for bannerfn in bannerfns:
+                    if fn.lower().endswith(bannerfn):
+                        with z.open(fn) as f:
+                            self.extraData[bannerfn] = f.read(1e6).decode('utf-8')
+            
 
 class NewDir(SniffedType):
     """Sniffed type for an empty directory"""
