@@ -17,9 +17,10 @@ from .logointernal import LOGOINTERNAL
 
 labelString = ''.join([
     "RPGMaker Trans (C) Habisain 2011-2015\n",
-    "Redistributing a game patched by RPGMaker Trans will likely\n", 
-    "breach copyright on that game, and so you should not do so\n"
-    "without the original authors permission, even for free games."])
+    "Redistributing a game patched by RPGMaker Trans will"
+    "likely breach copyright on that game, and so you should"
+    "not do so without the original authors permission," 
+    "even for free games."])
 
 
 class SelectorBlock(QtGui.QGroupBox):
@@ -151,14 +152,29 @@ class PatchBanner(QtGui.QGroupBox):
     def setBanner(self, banner):
         self.banner.setText(banner)
 
-
-
+class ErrorLog(QtGui.QGroupBox):
+    def __init__(self, qtparent):
+        name = 'Error Log'
+        super().__init__(name, qtparent)
+        layout = QtGui.QVBoxLayout()
+        self.errorLog = QtGui.QPlainTextEdit()
+        self.errorLog.setReadOnly(True)
+        layout.addWidget(self.errorLog)
+        self.setLayout(layout)
+        
+    def appendPlainText(self, text):
+        self.errorLog.appendPlainText(text)
+        
+    def setPlainText(self, text):
+        self.errorLog.setPlainText(text)
+        
 class MainWindow(QtGui.QWidget):
     """The main window for the QT UI"""
     def __init__(self, logic):
         """Setup the main window - this is a big function"""
         super(MainWindow, self).__init__()
-        vbox = QtGui.QVBoxLayout()
+        vboxLeft, vboxRight = QtGui.QVBoxLayout(), QtGui.QVBoxLayout()
+        hbox, vboxAll = QtGui.QHBoxLayout(), QtGui.QVBoxLayout()
         self.logic = logic
         self.game = SelectorBlock('Game location', 'gameloc',
                                   self, self.logic)
@@ -170,19 +186,25 @@ class MainWindow(QtGui.QWidget):
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
         self.comms = QtGui.QLabel('Waiting for backend..')
-        self.errorLog = QtGui.QPlainTextEdit()
-        self.errorLog.setReadOnly(True)
-        self.errorLog.hide()
+        self.errorLog = ErrorLog(self)
         self.patchBanner = PatchBanner(self)
-        self.patchBanner.hide()
         self.gobutton = QtGui.QPushButton('Go!')
         label = QtGui.QLabel(labelString)
         label.setWordWrap(True)
-        for x in (self.game, self.patch, self.trans, self.patchopts,
-                  self.patchBanner, self.progress, self.comms, self.errorLog,
+        for x in (self.game, self.patch, self.trans, self.patchopts):
+            vboxLeft.addWidget(x)
+        for x in  (self.patchBanner, self.errorLog):
+            vboxRight.addWidget(x)
+        for x in (vboxLeft, vboxRight):
+            vwidget = QtGui.QWidget()
+            vwidget.setLayout(x)
+            hbox.addWidget(vwidget)
+        hwidget = QtGui.QWidget()
+        hwidget.setLayout(hbox)
+        for x in (hwidget, self.progress, self.comms, 
                   self.gobutton, label):
-            vbox.addWidget(x)
-        self.setLayout(vbox)
+            vboxAll.addWidget(x)
+        self.setLayout(vboxAll)
         self.setWindowTitle('RPGMaker Trans v%s' % versionString)
         self.gobutton.released.connect(
             lambda: self.logic.button('go'))
