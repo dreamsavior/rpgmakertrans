@@ -143,7 +143,7 @@ class PatchBanner(QtGui.QGroupBox):
         self.banner = QtGui.QLabel()
         self.banner.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse);
         self.banner.setOpenExternalLinks(True);
-        html = '''No patch banner loaded'''
+        html = '''Select a patch for more info'''
         self.banner.setText(html)
         layout = QtGui.QVBoxLayout()
         layout.addWidget(self.banner)
@@ -193,7 +193,7 @@ class MainWindow(QtGui.QWidget):
         label.setWordWrap(True)
         for x in (self.game, self.patch, self.trans, self.patchopts):
             vboxLeft.addWidget(x)
-        for x in  (self.patchBanner, self.errorLog):
+        for x in  (self.patchBanner,):
             vboxRight.addWidget(x)
         for x in (vboxLeft, vboxRight):
             vwidget = QtGui.QWidget()
@@ -201,7 +201,7 @@ class MainWindow(QtGui.QWidget):
             hbox.addWidget(vwidget)
         hwidget = QtGui.QWidget()
         hwidget.setLayout(hbox)
-        for x in (hwidget, self.progress, self.comms, 
+        for x in (hwidget, self.errorLog, self.progress, self.comms, 
                   self.gobutton, label):
             vboxAll.addWidget(x)
         self.setLayout(vboxAll)
