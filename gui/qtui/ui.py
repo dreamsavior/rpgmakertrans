@@ -17,10 +17,9 @@ from .logointernal import LOGOINTERNAL
 
 labelString = ''.join([
     "RPGMaker Trans (C) Habisain 2011-2015\n",
-    "Redistributing a game patched by RPGMaker Trans ",
-    "will likely breach copyright on that game, and ",
-    "so you should not do so without the original ",
-    "authors permission, even for free games. "])
+    "Redistributing a game patched by RPGMaker Trans will likely\n", 
+    "breach copyright on that game, and so you should not do so\n"
+    "without the original authors permission, even for free games."])
 
 
 class SelectorBlock(QtGui.QGroupBox):
