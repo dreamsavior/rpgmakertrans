@@ -21,6 +21,20 @@ def contextStr(context)
   return result
 end
 
+module RPG
+end
+
+class RPG::EventCommand
+  def initialize(code = 0, indent = 0, parameters = [])
+    @code = code
+    @indent = indent
+    @parameters = parameters
+  end
+  attr_accessor :code
+  attr_accessor :indent
+  attr_accessor :parameters
+end
+
 def patchPage(page, context)
   # Some notes for VX:
   # code 101 sets up / clears a dialogue box.
