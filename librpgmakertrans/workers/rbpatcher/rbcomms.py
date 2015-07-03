@@ -33,7 +33,8 @@ class RBCommsError(Exception):
 class DummyScriptName(str): pass
 
 def makeDummyScriptName(name, n):
-    ret = DummyScriptName('%s(%s)' % (name, n))
+    dummyName = name if name else 'Unnamed Script' 
+    ret = DummyScriptName('%s(%s)' % (dummyName, n))
     ret.raw = name
     return ret
 
