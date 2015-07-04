@@ -187,6 +187,7 @@ class MainWindow(QtGui.QWidget):
         self.progress.setMinimum(0)
         self.comms = QtGui.QLabel('Waiting for backend..')
         self.errorLog = ErrorLog(self)
+        self.errorLog.hide()
         self.patchBanner = PatchBanner(self)
         self.gobutton = QtGui.QPushButton('Go!')
         label = QtGui.QLabel(labelString)

@@ -231,7 +231,7 @@ class GUIController(CoreProtocol):
                             patchBanner = patchdata.extraData[bannername]
                             break
                 if patchBanner is None:
-                    pathhBanner = 'No patch banner available'
+                    patchBanner = 'No patch banner available'
                 self.outputcoms.send('setPatchBanner', patchBanner)
                 if self.currentState['gameloc'] is not None:
                     gamepath = self.gameDB.reverse[self.currentState['gameloc']]
