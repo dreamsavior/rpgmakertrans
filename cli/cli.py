@@ -12,6 +12,7 @@ A CLI for RPGMaker Trans.
 import sys
 import argparse
 import shutil
+import os
 from librpgmakertrans.workers.sniffers import sniff
 from librpgmakertrans.controllers.coreprotocol import CoreProtocol, CoreRunner
 from librpgmakertrans.controllers.headless import initialiseHeadless, HeadlessConfig
@@ -29,9 +30,11 @@ class CLIMode(CoreProtocol):
         game = self.handleInput(cargs.input, ['GAME', 'TRANS'],
                                 'Input path: %s',
                                 'ERROR: %s not a compatible game')
-        patch = self.handleInput(cargs.patch, ['PATCH'], 'Patch path: %s',
+        patchPath = cargs.patch if cargs.patch else game.canonicalpath.rstrip(os.sep) + '_patch'
+        patch = self.handleInput(patchPath, ['PATCH'], 'Patch path: %s',
                                  'ERROR: %s not a compatible patch')
-        trans = self.handleInput(cargs.output, ['TRANS'], 'Output path: %s',
+        outPath = cargs.output if cargs.output else game.canonicalpath.rstrip(os.sep) + '_translated'
+        trans = self.handleInput(outPath, ['TRANS'], 'Output path: %s',
                                  'ERROR: %s not a valid target')
         if cargs.dump_scripts:
             self.normalPrint('Dumping Scripts to %s' % cargs.dump_scripts)
@@ -139,9 +142,10 @@ def CLIBackend(runner):
     """Function to run the CLI Backend"""
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="Path of input game to patch")
-    parser.add_argument("patch", help="Path of patch (directory or zip)")
-    parser.add_argument("output", help="Path to output directory"
-                        " (will create)")
+    parser.add_argument("-p", "--patch", help="Path of patch (directory or zip)"
+                        "(Defaults to input_directory_patch")
+    parser.add_argument("-o", "--output", help="Path to output directory "
+                        "(will create) (Defaults to input_directory_translated)")
     parser.add_argument('-q', '--quiet', help='Suppress all output',
                         action='store_true')
     parser.add_argument('-b', '--use-bom', help='Use UTF-8 BOM in Patch'
