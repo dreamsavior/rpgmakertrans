@@ -93,7 +93,8 @@ class GUIController(CoreProtocol):
                                   'create': False,
                                   'enabled': True,
                                   'bom': False,
-                                  'rebuild': False})
+                                  'rebuild': False,
+                                  'translateLabels': False})
 
         self.headless = None
 
@@ -270,7 +271,9 @@ class GUIController(CoreProtocol):
         transdata = self.transDB.reverse[self.currentState['transloc']]
         useBOM = self.currentState['bom']
         rebuild = self.currentState['rebuild']
-        config = HeadlessConfig(useBOM=useBOM, rebuild=rebuild)
+        translateLabels = self.currentState['translateLabels']
+        config = HeadlessConfig(useBOM=useBOM, rebuild=rebuild,
+                                translateLabels=translateLabels)
         initialiseHeadless(self.runner, self.inputcoms, gamedata,
                            patchdata, transdata, config)
         self.currentState['enabled'] = False

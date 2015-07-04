@@ -110,7 +110,18 @@ class PatchOptions(QtGui.QGroupBox):
             'is particularly useful if a patch becomes damaged,\n' 
             'a game undergoes major changes, or a patch is\n'
             'upgraded or has new types of translation added.')
-        self.widgets = [[self.create, self.useBOM], [self.rebuild]]
+        self.translateLabels = QtGui.QCheckBox('Dump Labels', self)
+        self.translateLabels.setToolTip(
+            "When translating a XP/VX/VX Ace game, it might be necessary\n"
+            "to modify the labels used in events due to lazy programming\n"
+            "which combines control and interface logic. A classic symptom\n"
+            "of this is a choice that when translated no longer gives the\n"
+            "correct outcome. If you encounter this, check this box to tell\n"
+            "RPGMaker Trans to dump labels to the translation patch.\n"
+            "Translating labels in the correct way will fix the problem.\n"
+            "\nIf you're just applying the patch, this option is not\n"
+            "necessary")
+        self.widgets = [[self.create, self.useBOM], [self.rebuild, self.translateLabels]]
         vbox = QtGui.QVBoxLayout()
         for row in self.widgets:
             hbox = QtGui.QHBoxLayout()
@@ -124,7 +135,11 @@ class PatchOptions(QtGui.QGroupBox):
         self.useBOM.toggled.connect(lambda: self.toggle('bom',
                                     self.useBOM.isChecked()))
         self.rebuild.toggled.connect(lambda: self.toggle('rebuild',
-                                    self.useBOM.isChecked()))
+                                    self.rebuild.isChecked()))
+        self.translateLabels.toggled.connect(
+            lambda: self.toggle('translateLabels', 
+                                self.translateLabels.isChecked())
+        )
 
     def toggle(self, signal, val):
         """Trigger for when an item is toggled (use lambda
