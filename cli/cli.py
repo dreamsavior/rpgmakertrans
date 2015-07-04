@@ -43,7 +43,8 @@ class CLIMode(CoreProtocol):
         self.progress = 0
         config = HeadlessConfig(useBOM=cargs.use_bom, socket=cargs.socket,
                                 rebuild=cargs.rebuild,
-                                dumpScripts=cargs.dump_scripts)
+                                dumpScripts=cargs.dump_scripts,
+                                translateLabels=cargs.dump_labels)
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
                            config)
 
@@ -150,8 +151,11 @@ def CLIBackend(runner):
     parser.add_argument('-s', '--socket', type=int, default=27899,
                         help='Socket to use for XP/VX/VX Ace patching'
                         '(default: 27899)')
+    parser.add_argument('-l', '--dump-labels', action="store_true",
+                        help="Dump labels to patch file")
     parser.add_argument('--dump-scripts', type=str, default=None,
                         help="Dump scripts to given directory")
+    
     t = sys.stderr # Hacks to ensure that custom error handling is suppressed
     sys.stderr = sys.__stderr__
     args = parser.parse_args()
