@@ -321,8 +321,8 @@ class Translator2kv2f:
 
 class Translator2kv2(Translator):
 
-    def __init__(self, data, mtime, coms):
-        super(Translator2kv2, self).__init__(mtime)
+    def __init__(self, data, mtime, coms, *args, **kwargs):
+        super(Translator2kv2, self).__init__(mtime, *args, **kwargs)
         self.translators = defaultdict(lambda: Translator2kv2f(coms))
         for name in data:
             uname = name.upper()

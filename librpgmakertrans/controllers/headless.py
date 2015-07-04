@@ -23,17 +23,19 @@ from ..workers.mtimesmanager import MTimesHandlerManager, loadMTimes, dumpMTimes
 class HeadlessConfig:
     """Simple container to contain all config variables"""
     def __init__(self, useBOM=False, socket=None, rebuild=False,
-                 dumpScripts=None):
+                 dumpScripts=None, translateLabels=False):
         """Current variables in config:
           - useBOM: If the patch should be written with byte order marks
           - socket: Name of socket to use in SocketComms
           - rebuild: If the patch should be rebuilt
           - dumpScripts: If specified, a directory to dump scripts to
+          - translateLabels: If True, put labels into patch
         """
         self.useBOM = useBOM
         self.socket = socket
         self.rebuild = rebuild
         self.dumpScripts = dumpScripts
+        self.translateLabels = translateLabels
 
 class HeadlessUtils(CoreProtocol):
     """Defines the utility functions that Headless uses to communicate with
@@ -139,7 +141,7 @@ class Headless(HeadlessUtils):
                              type(self).defaultPatchVersion)
         self.submit('patcher', loadMTimes, mtimesManager, self.inputcoms)
         translatorRet = self.submit('patcher', makeTranslator, patcher,
-                                    self.inputcoms)
+                                    self.inputcoms, config)
         self.comboTrigger('startTranslation',
                           ['translatorReady', 'mtimesReady'])
         self.localWaitUntil('startTranslation', self.beginTranslation,

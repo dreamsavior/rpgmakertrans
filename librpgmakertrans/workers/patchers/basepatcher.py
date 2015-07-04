@@ -82,14 +82,14 @@ class BasePatch(metaclass=PatchMeta):
             data = translator.getPatchData()
             self.writePatchData(data, encoding)
 
-    def makeTranslator(self, coms):
+    def makeTranslator(self, coms, config=None):
         """Make a translator object from this patch"""
         data, mtime = self.loadPatchData()
         tClassName = (type(self).translatorClass if not self.rebuild 
                       else type(self).rebuildClass)
         translatorClass = getattr(self.translatorManager,
                                   tClassName)
-        return translatorClass(data, mtime=mtime, coms=coms)
+        return translatorClass(data, mtime=mtime, coms=coms, config=config)
 
     def getAssetFiles(self):
         """Get asset files for this patch"""
@@ -121,9 +121,9 @@ class BasePatcherV3(BasePatch):
     header = '> RPGMAKER TRANS PATCH'
     patchMarker = '> RPGMAKER TRANS PATCH V3'
 
-def makeTranslator(patcher, coms):
+def makeTranslator(patcher, coms, config):
     """Make a translator from this patch"""
-    ret = patcher.makeTranslator(coms)
+    ret = patcher.makeTranslator(coms, config)
     coms.send('trigger', 'translatorReady')
     return ret
 

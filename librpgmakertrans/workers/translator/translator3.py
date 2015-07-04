@@ -497,7 +497,8 @@ class TranslationFileDict(dict):
 
 class Translator3(Translator):
     """A Version 3 Translator"""
-    def __init__(self, namedStrings, enablePruning = True, debug = False, *args, **kwargs):
+    def __init__(self, namedStrings, enablePruning = True, debug = False, 
+                 config=None, *args, **kwargs):
         """Initialise the translator from a dictionary of filenames to
         file contents"""
         super().__init__(*args, **kwargs)
@@ -513,6 +514,7 @@ class Translator3(Translator):
                 self.translationDB[translation.raw].addTranslation(translation)
         self.newtranslations = OrderedDict()
         self.debug = debug
+        self.translateLabels = False if config is None else config.translateLabels
 
     def getPatchData(self):
         """Return a dictionary of filenames to file contents of the patch"""
@@ -542,7 +544,6 @@ class Translator3(Translator):
 
     def translate(self, string, context):
         """Get translation of string in given context"""
-        translateLabels = False
         super().translate(string, context)
         string = '\n'.join(line.rstrip() for line in string.split('\n'))
         if not string:
@@ -551,7 +552,7 @@ class Translator3(Translator):
             print('TRANSLATORDEBUG: %s:%s' % (string, context))
         if string in self.translationDB:
             ret = self.translationDB[string].translate(context)
-        elif not translateLabels and context.endswith('Label'):
+        elif not self.translateLabels and context.endswith('Label'):
             return string
         else:
             if string not in self.newtranslations:
