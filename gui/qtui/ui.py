@@ -158,6 +158,8 @@ class PatchBanner(QtGui.QGroupBox):
         self.banner = QtGui.QLabel()
         self.banner.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse);
         self.banner.setOpenExternalLinks(True);
+        self.banner.setMinimumHeight(400)
+        self.banner.setMinimumWidth(300)
         html = '''Select a patch for more info'''
         self.banner.setText(html)
         layout = QtGui.QVBoxLayout()
