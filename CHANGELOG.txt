@@ -1,0 +1,172 @@
+v4.01
+
+NEW: First non beta release to have good VX support and any XP/VX Ace support
+ENH: Patch banners now set to have a minimum 300x400 display area
+
+v4.005 Beta 04/07/2015
+
+NEW: Patch Banners - A patch can now contain the special files banner.txt and banner.html to display a message to the user. The CLI uses banner.txt; the GUI will try banner.html and then fall back to banner.txt. 
+NEW: CLI mode changed so that patch and output directories are optional and guessed by default
+NEW: Dump labels+patch rebuild functionality exposed
+ENH: Reworked GUI
+ENH: Removed Ruby scripts which are unnecessary since Unmarshall
+ENH: GUI mode tries multiple ports (including 2 random) before failing
+FIX: Regex's now translateable again
+FIX: Unnamed scripts are no longer filtered out
+
+v4.004 Beta 21/06/2015
+
+NEW: Validate RegEx's in scripts to prevent errors only being found at end of script and therefore scripts taking far, far too long to parse.
+
+v4.003 Beta 09/05/2015
+
+NEW: Unmarshall script - should fix all compatibility issues
+NEW: GUI/CLI modes separated into separate packages - Windows version now works
+NEW: Release channels to enable update checking on Beta versions
+NEW: Hidden functionality (patch rebuild and dump labels) not yet exposed
+ENH: Major tidy up of source code
+
+v4.002 Beta 09/03/2015
+
+FIX: Crash when launching a Ruby process from GUI mode
+
+v4.001 Beta 08/03/2015
+
+FIX: Crash when choosing a game in file picker
+
+v4.00 Beta 07/03/2015
+
+NEW: Support for XP and VX Ace games
+ENH: Translated scripts now have some validation applied
+ENH: Improved support for heavily customised games (previously only relatively vanilla games would work)
+NEW: v3.2 Patch Format with simpler contexts
+FIX: Games residing in a non-ASCII folder should now work
+
+v3.07 26/02/2015
+
+FIX: Multiline inline scripts would not parse
+FIX: Include the README and LICENSE files in the distributed binaries
+
+v3.05 18/02/2015
+
+FIX: Supplied Ruby binary wasn't working
+
+v3.04 16/02/2015
+
+FIX: Potential (although obscure) confusion with Patch/Asset files/folders in v3 patches 
+FIX: Patched inline comments crashing the game
+FIX: (Temporary) Crash on exit
+
+v3.03 13/02/2015
+
+FIX: Comments in v3 patches modifying the inserted string
+FIX: Crashes with version controlled games/patches
+
+v3.02 31/01/2015
+
+FIX: Problems in Windows case-insensitive file system that prevented VX games from being patched
+
+v3.01 30/01/2015
+
+FIX: Pruby was in wrong location, crashing RPGMaker Trans
+
+v3.0 28/01/2015
+
+NEW: VX support
+NEW: 3.1 Patch format for VX Games
+NEW: Command line mode
+FIX: Race condition that could randomly delete bits of patches
+
+v2.06 29/06/2014
+
+NEW: First Open Source release
+FIX: Various Bug Fixes
+
+v2.05 08/05/2014
+
+FIX: ZIP patches no longer crash RPGMaker Trans if patch not contained in a subdirectory
+ENH: Crash reporter has a handy 'copy error to clipboard and open bug report page' button 
+
+v2.04 29/03/2014
+
+NEW: Support the UTF-8 BOM in the GUI
+
+v2.03 23/03/2014
+
+FIX: Use different version of cx_freeze to avoid myterious bug
+
+v2.02 22/03/2014
+
+FIX: Version checker
+FIX: Error windows popping up on program exit
+NEW: Nonfatal errors - allow error messages without killing RPGMaker Trans
+NEW: Readme
+
+v2.01 03/03/2014
+
+FIX: Error affecting high core count PCs
+ENH: Lower memory usage
+FIX: Read only files no longer crash copier
+FIX: Progress bar no longer gets stuck at 99%
+
+v2.00 09/02/2014
+
+NEW: CLI mode - probably not functional on Windows
+NEW: New GUI based on PySide
+ENH: Now using Python 3
+FIX: The myriad of problems caused by Python 2's Unicode string handling being sub par.
+
+v1.991 25/12/2012
+
+ENH: Unused strings now in fixed order
+
+v1.99 10/11/2012
+
+FIX: Problem with translating names/classes set by scripts
+FIX: Bugs in error logging code
+
+v1.98 30/06/2012
+
+NEW: Speedy patching engine to massively improve speed of translating 2k games
+ENH: Copy files to translated directory whilst patching
+FIX: Game folders with Unicode file names
+ENH: Improved UI
+
+v1.97 16/04/2012
+
+NEW: Speedy patching engine (which was broken in this release and reverted until 1.98)
+FIX: Can translate "Set Hero Class" commands
+
+v1.95 14/08/2011
+
+NEW: GUI - No more text box
+ENH: ZIP Patches should not work with less required structure
+FIX: Always get log files
+
+v1.91 04/06/2011
+
+FIX: Undocumented event code was crashing the patcher
+FIX: Converting old 1.0 patch format to 2.0 should not work
+ENH: Don't dump null strings
+
+v1.9 16/04/2011
+
+ENH: Advice field - gives assistance on text line limits etc
+FIX: Improve security against malicious patches
+FIX: Fix escaping issues
+ENH: Remove Terrain Data from translateables
+
+v1.81 05/03/2011
+
+FIX: Assets crashing patcher
+NEW: BOM support
+
+v1.8 04/03/2011
+
+NEW: Multiprocessing - big speedup
+NEW: Patch File Format 2.0
+NEW: Update checker
+NEW: Security enhancement - malicious patches could overwrite arbitrary data
+ENH: Confirmation that patch is applied correctly - stops error messages from just disappearing.
+ENH: Logging mode - to capture problems
+
