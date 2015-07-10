@@ -1,4 +1,4 @@
-v4.01
+v4.1 11/07/2015
 
 NEW: First non beta release to have good VX support and any XP/VX Ace support
 ENH: Patch banners now set to have a minimum 300x400 display area
