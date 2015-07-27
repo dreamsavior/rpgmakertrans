@@ -12,3 +12,4 @@ testdata/*
 *.so
 _fastunpack.c
 librpgmakertrans/workers/rbpatcher/pruby/
+*.orig
