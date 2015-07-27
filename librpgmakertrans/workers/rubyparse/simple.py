@@ -137,3 +137,28 @@ class Regex(SimpleRule, Translateable, metaclass = BaseSuccessor):
         if self.brackets:
             parser.failed = True
         return super().exit(parser)
+
+class DollarVar(Rule, metaclass = BaseSuccessor):
+    """These Dollar values are particularly annoying in parsing Ruby, because
+    things like $' are a special value. So the parser must handle the
+    specially, otherwise characters like the ' in $' mess up the state. Note
+    these *can't* be handled by the Ruby variable parser, because e.g. $a' is
+    not a valid variable name!"""
+    dvars = ['$!', '$@', '$&', '$`', '$\'', '$+',
+             '$1', '$2', '$3', '$4', '$5', '$6',
+             '$7', '$8', '$9', '$=', '$/', '$,',
+             '$.', '$<', '$FILENAME', '$>', '$0',
+             '$*', '$$', '$?', '$:', '$"', '$stderr',
+             '$stdin', '$stdout', '$-d', '$-K', '$-v',
+             '$-a', '$-i', '$-l', '$-p', '$-w']
+    
+    @classmethod
+    def match(cls, parser):
+        if parser.currentChar == '$':
+            for dvar in cls.dvars:
+                if parser.startswith(dvar):
+                    return len(dvar) - 1
+        return False
+    
+    def terminate(self, parser):
+        return True
