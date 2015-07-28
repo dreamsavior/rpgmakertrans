@@ -12,26 +12,42 @@ Custom Delimiter based strings
 from .base import Rule, Translateable
 from .simple import SimpleRule
 from .successor import BaseSuccessor, AllCodeSuccessor, EmbeddedCodeSuccessor
-
+    
 class RubyVar(Rule, metaclass = AllCodeSuccessor):
     """Hackish Ruby variable detector - just an alphanumeric string.
     It would also work for string literals.
-    TODO: It needs to handle attributes (prefixed @) and any other non
-    alphanumeric prefixes."""
+    Also, it now handles the annoying non-standard predefined $variables
+    """
+    
+    dvars = ['$!', '$@', '$&', '$`', '$\'', '$+',
+             '$1', '$2', '$3', '$4', '$5', '$6',
+             '$7', '$8', '$9', '$=', '$/', '$,',
+             '$.', '$<', '$FILENAME', '$>', '$0',
+             '$*', '$$', '$?', '$:', '$"', '$stderr',
+             '$stdin', '$stdout', '$-d', '$-K', '$-v',
+             '$-a', '$-i', '$-l', '$-p', '$-w']
+        
     def __init__(self, parser):
         super().__init__(parser)
         self.gotAl = False
         self.terminated = False
+        self.dvar = any(parser.startswith(dvar) for dvar in type(self).dvars)
 
     @classmethod
     def match(cls, parser):
         char = parser.currentChar
+        if char == '$':
+            for dvar in cls.dvars:
+                if parser.startswith(dvar):
+                    return len(dvar) - 1
         return 0 if char and (char in '@$' or char.isalnum()) else False
 
     def advance(self, parser):
         return 0 if self.terminated else 1
 
     def terminate(self, parser):
+        if self.dvar:
+            return True
         char = parser.currentChar
         if not self.gotAl and (char == '@' or char == '$'):
             return False
@@ -118,3 +134,5 @@ class CustomBacktick(CustomDelimiter, metaclass=AllCodeSuccessor):
 
 class CustomSymbols(CustomDelimiter, Translateable, metaclass=AllCodeSuccessor):
     begins = '%s'
+    
+    
