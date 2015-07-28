@@ -35,111 +35,133 @@ class RPG::EventCommand
   attr_accessor :parameters
 end
 
+module PageMatchers
+  extend self
+  # TODO: Write all of these matchers.
+  def match101(code, currentCommand)
+    if code == 101
+      return :@patch101
+    else
+      return false
+    end
+  end
+end
+
+module PagePatchers
+  extend self
+  
+  def patch101(currIndx, contextString, pageList, newPageList, storage)
+    # TODO: Fix for XP
+    dialogueLoc = currIndx
+    currIndx += 1
+    windowInit = pageList[currIndx]
+    indent = windowInit.instance_variable_get(:@indent)
+    currentStr = ''
+    while pageList[currIndx].instance_variable_get(:@code) == 401 and currIndx < pageList.length do
+      currentStr += pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip + "\n"
+      currIndx += 1
+    end
+    currentStr.rstrip!
+    translatedString = translate(currentStr, contextString + '%s/Dialogue' % dialogueLoc.to_s)
+    if translatedString == ''
+      translatedString = ' '
+    end
+    lineCount = 0
+    newPageList.push(windowInit)
+    translatedString.split("\n").each {|line|
+      if lineCount == 4
+        lineCount = 0
+        newPageList.push(windowInit)
+      end
+      lineCount += 1
+      newPageList.push(RPG::EventCommand.new(401, indent, [line]))
+    }
+    return currIndx
+  end
+  
+  def patch102(currIndx, contextString, pageList, newPageList, storage)
+    choicePos = currIndx
+    choiceNo = 0
+    pageList[currIndx].instance_variable_get(:@parameters)[0].each_index{|y|
+      choiceString = pageList[currIndx].instance_variable_get(:@parameters)[0][y].rstrip
+      storage[:choiceContextData][choiceString] = [choicePos, choiceNo]
+      translatedChoice = translate(choiceString, contextString + '%s/Choice/%s' % [choicePos.to_s, choiceNo.to_s])
+      pageList[currIndx].instance_variable_get(:@parameters)[0][y] = translatedChoice
+      choiceNo += 1
+    }
+    newPageList.push(pageList[currIndx])
+    currIndx += 1
+    return currIndx    
+  end
+  
+  def patch402(currIndx, contextString, pageList, newPageList, storage)
+    choiceString = pageList[currIndx].instance_variable_get(:@parameters)[1].rstrip
+    choiceData = storage[:choiceContextData][choiceString]
+    translatedChoice = translate(choiceString,
+                                 contextString + '%s/Choice/%s' % [choiceData[0].to_s, choiceData[1].to_s])
+    pageList[currIndx].instance_variable_get(:@parameters)[1] = translatedChoice
+    newPageList.push(pageList[currIndx])
+    currIndx += 1
+    return currIndx
+  end
+  
+  def patch118119(currIndx, contextString, pageList, newPageList, storage)
+    label = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
+    contextStr = contextString + '%s/Label' % currIndx.to_s
+    translatedLabel = translate(label, contextStr)
+    pageList[currIndx].instance_variable_get(:@parameters)[0] = translatedLabel
+    newPageList.push(pageList[currIndx])
+    currIndx += 1
+    return currIndx
+  end
+
+  def patch355(currIndx, contextString, pageList, newPageList, storage)
+    # TODO: Check if this is also different in XP
+    line = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
+    scriptPos = currIndx
+    script = line + "\n"
+    indent = pageList[currIndx].instance_variable_get(:@indent)
+    currIndx += 1
+    while pageList[currIndx].instance_variable_get(:@code) == 655 and currIndx < pageList.length do
+      line = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
+      script += line + "\n"
+      currIndx += 1
+    end
+    translatedscript = translateInlineScript(script, contextString + '%s/InlineScript' % scriptPos.to_s).lines
+    code = 355
+    translatedscript.each { |line|
+      line.chomp!
+      newPageList.push(RPG::EventCommand.new(code, indent, [line]))
+      code = 655
+    }
+    return currIndx
+  end
+end
+
 def patchPage(page, context)
-  # Some notes for VX:
-  # code 101 sets up / clears a dialogue box.
-  # a 101 may be followed by 401s, each with a single line of dialogue
-  # as their only parameter. 401s may not occur anywhere else, and will
-  # *always* follow 101
-  # code 102 does choices. choices are given as parameters to 102.
-  # code 402 is the "resume" after a choice. It contains both a string
-  # of the parameter and the index, but I don't think the string
-  # absolutely has to be translated. Still, it might be a good idea to
-  # do so.
-  # code 108/408 are most likely dev comments. Interpreter ignores them
-  # completely.
-  # code 355/655 are inline scripts. Similar to 101/401 for dialogue
-  # code 111 may also have a script, if param[0] = 12, param[1] is a
-  # script. However, this is for conditional branching, and anyone putting
-  # a text based script here would be mad!
   # Note: This function TRIMs trailing newlines. This means that
   # it is not guaranteed to be an identity if it translates nothing.
   # It doesn't eliminate empty dialogue boxes
   contextString = contextStr(context)
-  currentStr = ''
-  numberConsecutive = 0
   if page != nil
     newPageList = []
-    pageListLen = page.instance_variable_get(:@list).length
+    pageList = page.instance_variable_get(:@list)
     currIndx = 0
-    choiceContextData = {}
-    while currIndx < pageListLen
-      eventCommand = page.instance_variable_get(:@list)[currIndx]
+    storage = {choiceContextData: {}}
+    while currIndx < pageList.length
+      eventCommand = pageList[currIndx]
+      # TODO: Use the matchers when they are done
       case eventCommand.instance_variable_get(:@code)
       when 101
-        dialogueLoc = currIndx
-        currIndx += 1
-        windowInit = eventCommand
-        indent = windowInit.instance_variable_get(:@indent)
-        eventCommand = page.instance_variable_get(:@list)[currIndx]
-        currentStr = ''
-        while eventCommand.instance_variable_get(:@code) == 401 and currIndx < pageListLen do
-          currentStr += eventCommand.instance_variable_get(:@parameters)[0].rstrip + "\n"
-          currIndx += 1
-          eventCommand = page.instance_variable_get(:@list)[currIndx]
-        end
-        currentStr.rstrip!
-        translatedString = translate(currentStr, contextString + '%s/Dialogue' % dialogueLoc.to_s)
-        if translatedString == ''
-          translatedString = ' '
-        end
-        lineCount = 0
-        newPageList.push(windowInit)
-        translatedString.split("\n").each {|line|
-          if lineCount == 4
-            lineCount = 0
-            newPageList.push(windowInit)
-          end
-          lineCount += 1
-          newPageList.push(RPG::EventCommand.new(401, indent, [line]))
-        }
+        currIndx = PagePatchers.patch101(currIndx, contextString, pageList, newPageList, storage)
       when 102
-        choicePos = currIndx
-        choiceNo = 0
-        eventCommand.instance_variable_get(:@parameters)[0].each_index{|y|
-          choiceString = eventCommand.instance_variable_get(:@parameters)[0][y].rstrip
-          choiceContextData[choiceString] = [choicePos, choiceNo]
-          translatedChoice = translate(choiceString, contextString + '%s/Choice/%s' % [choicePos.to_s, choiceNo.to_s])
-          eventCommand.instance_variable_get(:@parameters)[0][y] = translatedChoice
-          choiceNo += 1
-        }
-        newPageList.push(eventCommand)
-        currIndx += 1
+        currIndx = PagePatchers.patch102(currIndx, contextString, pageList, newPageList, storage)
       when 118, 119
-        label = eventCommand.instance_variable_get(:@parameters)[0].rstrip
-        contextStr = contextString + '%s/Label' % currIndx.to_s
-        translatedLabel = translate(label, contextStr)
-        eventCommand.instance_variable_get(:@parameters)[0] = translatedLabel
-        newPageList.push(eventCommand)
-        currIndx += 1
+        currIndx = PagePatchers.patch118119(currIndx, contextString, pageList, newPageList, storage)
       when 402
-        choiceString = eventCommand.instance_variable_get(:@parameters)[1].rstrip
-        choiceData = choiceContextData[choiceString]
-        translatedChoice = translate(choiceString,
-                                     contextString + '%s/Choice/%s' % [choiceData[0].to_s, choiceData[1].to_s])
-        eventCommand.instance_variable_get(:@parameters)[1] = translatedChoice
-        newPageList.push(eventCommand)
-        currIndx += 1
+        currIndx = PagePatchers.patch402(currIndx, contextString, pageList, newPageList, storage)
       when 355
-        line = eventCommand.instance_variable_get(:@parameters)[0].rstrip
-        scriptPos = currIndx
-        script = line + "\n"
-        indent = eventCommand.instance_variable_get(:@indent)
-        currIndx += 1
-        eventCommand = page.instance_variable_get(:@list)[currIndx]
-        while eventCommand.instance_variable_get(:@code) == 655 and currIndx < pageListLen do
-          line = eventCommand.instance_variable_get(:@parameters)[0].rstrip
-          script += line + "\n"
-          currIndx += 1
-          eventCommand = page.instance_variable_get(:@list)[currIndx]
-        end
-        translatedscript = translateInlineScript(script, contextString + '%s/InlineScript' % scriptPos.to_s).lines
-        code = 355
-        translatedscript.each { |line|
-          line.chomp!
-          newPageList.push(RPG::EventCommand.new(code, indent, [line]))
-          code = 655
-        }
+        currIndx = PagePatchers.patch355(currIndx, contextString, pageList, newPageList, storage)
       else
         newPageList.push(eventCommand)
         currIndx += 1
