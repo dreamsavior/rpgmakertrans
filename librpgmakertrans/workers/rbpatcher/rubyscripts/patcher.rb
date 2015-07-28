@@ -37,14 +37,38 @@ end
 
 module PageMatchers
   extend self
-  # TODO: Write all of these matchers.
-  def match101(code, currentCommand)
+  def match101(code, currentCommand, mode)
     if code == 101
-      return :@patch101
-    else
-      return false
+      return mode == :xp ? :patch101xp : :patch101
     end
   end
+  def match102(code, currentCommand, mode)
+      return code == 102 ? :patch102 : nil
+  end
+  def match402(code, currentCommand, mode)
+      return code == 402 ? :patch402 : nil
+  end
+  def match118(code, currentCommand, mode)
+      return code == 118 ? :patch118119 : nil
+  end
+  def match119(code, currentCommand, mode)
+      return code == 119 ? :patch118119 : nil
+  end
+  def match355(code, currentCommand, mode)
+      return code == 355 ? :patch355 : nil
+  end  
+end
+
+def pageMatchAll(code, currentCommand, mode)
+  PageMatchers.module_eval do
+    PageMatchers.instance_methods.each do |funcname|
+      ret = PageMatchers.send(funcname, code, currentCommand, mode)
+      if ret != nil
+        return ret
+      end
+    end
+  end
+  return nil
 end
 
 module PagePatchers
@@ -75,6 +99,37 @@ module PagePatchers
       end
       lineCount += 1
       newPageList.push(RPG::EventCommand.new(401, indent, [line]))
+    }
+    return currIndx
+  end
+  
+  def patch101xp(currIndx, contextString, pageList, newPageList, storage)
+    dialogueLoc = currIndx
+    indent = pageList[currIndx].instance_variable_get(:@indent)
+    currentStr = ''
+    firstLine = pageList[currIndx].instance_variable_get(:@parameters)[0]
+    if firstLine.class == String
+      currentStr += firstLine.rstrip + "\n"
+    end
+    currIndx += 1
+    while pageList[currIndx].instance_variable_get(:@code) == 401 and currIndx < pageList.length do
+      currentStr += pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip + "\n"
+      currIndx += 1
+    end
+    currentStr.rstrip!
+    translatedString = translate(currentStr, contextString + '%s/Dialogue' % dialogueLoc.to_s)
+    if translatedString == ''
+      translatedString = ' '
+    end
+    lineCount = 0
+    translatedString.split("\n").each {|line|
+      if lineCount == 4
+        lineCount = 0
+        newPageList.push(RPG::EventCommand.new(101, indent, [line]))
+      else
+        lineCount += 1
+        newPageList.push(RPG::EventCommand.new(401, indent, [line]))
+      end
     }
     return currIndx
   end
@@ -151,17 +206,12 @@ def patchPage(page, context)
     while currIndx < pageList.length
       eventCommand = pageList[currIndx]
       # TODO: Use the matchers when they are done
-      case eventCommand.instance_variable_get(:@code)
-      when 101
-        currIndx = PagePatchers.patch101(currIndx, contextString, pageList, newPageList, storage)
-      when 102
-        currIndx = PagePatchers.patch102(currIndx, contextString, pageList, newPageList, storage)
-      when 118, 119
-        currIndx = PagePatchers.patch118119(currIndx, contextString, pageList, newPageList, storage)
-      when 402
-        currIndx = PagePatchers.patch402(currIndx, contextString, pageList, newPageList, storage)
-      when 355
-        currIndx = PagePatchers.patch355(currIndx, contextString, pageList, newPageList, storage)
+      code = eventCommand.instance_variable_get(:@code)
+      matchedFunc = pageMatchAll(code, eventCommand, :vx)
+      if matchedFunc != nil
+        PagePatchers.module_eval do
+          currIndx = PagePatchers.send(matchedFunc, currIndx, contextString, pageList, newPageList, storage)
+        end        
       else
         newPageList.push(eventCommand)
         currIndx += 1
