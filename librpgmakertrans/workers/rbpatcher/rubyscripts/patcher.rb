@@ -193,7 +193,7 @@ module PagePatchers
   end
 end
 
-def patchPage(page, context)
+def patchPage(page, context, mode)
   # Note: This function TRIMs trailing newlines. This means that
   # it is not guaranteed to be an identity if it translates nothing.
   # It doesn't eliminate empty dialogue boxes
@@ -207,7 +207,7 @@ def patchPage(page, context)
       eventCommand = pageList[currIndx]
       # TODO: Use the matchers when they are done
       code = eventCommand.instance_variable_get(:@code)
-      matchedFunc = pageMatchAll(code, eventCommand, :vx)
+      matchedFunc = pageMatchAll(code, eventCommand, mode)
       if matchedFunc != nil
         PagePatchers.module_eval do
           currIndx = PagePatchers.send(matchedFunc, currIndx, contextString, pageList, newPageList, storage)
@@ -224,7 +224,7 @@ end
 
 $priority = [:@name, :@display_name, :@description, :@message1, :@message2, :@message3, :@message4]
   
-def patch(data, context)
+def patch(data, context, mode)
   
   matchResult = matchAll(data, context)
   
@@ -234,34 +234,34 @@ def patch(data, context)
   when :randint
     return rand(2**32)
   when :eventList
-    return patchPage(data, context)
+    return patchPage(data, context, mode)
   when :continue
     if data.class == Array
       data.each_index{|x|
-         data[x] = patch(data[x], context + [x])
+         data[x] = patch(data[x], context + [x], mode)
       }
       return data
     elsif data.class == Hash
       data.sort.each{|key, value|
-        data[key] = patch(value, context+[key])
+        data[key] = patch(value, context+[key], mode)
       }
       return data
     elsif data.class != context[-1]
       context += [data.class]
-      return patch(data, context)
+      return patch(data, context, mode)
     else
       $priority.each{|var|
         if data.instance_variables.include? var
           data.instance_variable_set(var,
                     patch(data.instance_variable_get(var),
-                          context + [var.to_s.sub(/^@/,'')]))
+                          context + [var.to_s.sub(/^@/,'')], mode))
         end
       }
       data.instance_variables.each{|var|
         if not $priority.include? var
           data.instance_variable_set(var,
             patch(data.instance_variable_get(var),
-                  context + [var.to_s.sub(/^@/,'')]))
+                  context + [var.to_s.sub(/^@/,'')], mode))
         end
       }
       return data
@@ -275,12 +275,9 @@ def patch(data, context)
   end
 end
 
-def patchFile(infn, outfn, context)
+def patchFile(infn, outfn, context, mode)
   data = unmarshall(infn)
-  #File.open( infn, "rb" ) do |datafile|
-  #  data = Marshal.load(datafile)
-  #end
-  patch(data, [context])
+  patch(data, [context], mode)
   File.open( outfn, "wb+") do |datafile|
     Marshal.dump(data, datafile)
   end

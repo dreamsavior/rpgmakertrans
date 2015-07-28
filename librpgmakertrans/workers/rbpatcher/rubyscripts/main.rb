@@ -23,6 +23,15 @@ require_relative 'patcher.rb'
 going = true
 loadedScripts = false
 versionString = getVersion()
+mode = nil
+case versionString
+when 'xp'
+  mode = :xp
+when 'vx'
+  mode = :vx
+when 'vxace'
+  mode = :vxace
+end
 
 def setupLoadData(path)
   path.force_encoding 'utf-8'
@@ -44,9 +53,9 @@ def loadScripts()
   }
 end
 
-def translateFile(infile, outfile, context)
+def translateFile(infile, outfile, context, mode)
   #puts('working on %s' % context)
-  patchFile(infile, outfile, context)
+  patchFile(infile, outfile, context, mode)
   #puts('translated %s (%s=>%s)' % [context, infile, outfile])
   doneTranslation(context)
 end
@@ -75,7 +84,6 @@ end
 while going
   values = getTaskParams()
   code = values[0]
-  #puts(code)
   if code == 'quit'
     going = false
   elsif code == 'translateScripts'
@@ -85,7 +93,7 @@ while going
       loadedScripts = true
       loadScripts()
     end
-    translateFile(values[1], values[2], values[3])
+    translateFile(values[1], values[2], values[3], mode)
   elsif code == 'rebuildScripts'
     rebuildScripts(values[1])
   elsif code == 'wait'

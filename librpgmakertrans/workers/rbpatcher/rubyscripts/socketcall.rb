@@ -64,7 +64,7 @@ def getTaskParams()
 end
 
 def getVersion()
-  return socketCall(4, [])
+  return socketCall(4, [])[0]
 end
 
 def translateInlineScript(script, context)
