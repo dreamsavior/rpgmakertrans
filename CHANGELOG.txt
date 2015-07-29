@@ -1,3 +1,9 @@
+v4.2 Beta 29/07/2015
+
+FIX: Support global predefined variables in Ruby parser - fixes variables such as $' breaking game
+FIX: Fix dialogue format for XP games - first line of dialogue should no longer be stripped
+ENH: Improved Ruby architecture for page patching - precursor to customisation of page patching for tricky games.
+
 v4.1 11/07/2015
 
 NEW: First non beta release to have good VX support and any XP/VX Ace support

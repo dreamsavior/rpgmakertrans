@@ -12,10 +12,10 @@ Provides functionality related to versioning, including the version check.
 from urllib.request import urlopen
 import datetime
 
-version = 4.1
-expiry = datetime.date(2016, 7, 1)
+version = 4.2
+expiry = datetime.date(2016, 8, 1)
 debug = False
-beta = False
+beta = True
 
 versionString = '%s%s%s' % (str(round(version, 2)), ' [DEBUG]' if debug else '',
                             ' [BETA]' if beta else '')
