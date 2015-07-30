@@ -121,10 +121,10 @@ module PagePatchers
     if translatedString == ''
       translatedString = ' '
     end
-    lineCount = 0
+    lineCount = 4
     translatedString.split("\n").each {|line|
       if lineCount == 4
-        lineCount = 0
+        lineCount = 1
         newPageList.push(RPG::EventCommand.new(101, indent, [line]))
       else
         lineCount += 1
