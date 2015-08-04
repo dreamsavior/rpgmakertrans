@@ -1,4 +1,8 @@
-v4.2 Beta 29/07/2015
+v4.21 04/08/2015
+
+FIX: Fixed a bug that caused dialogues not to appear in translated VX/VX Ace games
+
+v4.2 03/08/2015
 
 FIX: Support global predefined variables in Ruby parser - fixes variables such as $' breaking game
 FIX: Fix dialogue format for XP games - first line of dialogue should no longer be stripped

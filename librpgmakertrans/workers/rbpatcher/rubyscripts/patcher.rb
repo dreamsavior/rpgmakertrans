@@ -75,10 +75,9 @@ module PagePatchers
   extend self
   
   def patch101(currIndx, contextString, pageList, newPageList, storage)
-    # TODO: Fix for XP
     dialogueLoc = currIndx
-    currIndx += 1
     windowInit = pageList[currIndx]
+    currIndx += 1
     indent = windowInit.instance_variable_get(:@indent)
     currentStr = ''
     while pageList[currIndx].instance_variable_get(:@code) == 401 and currIndx < pageList.length do
