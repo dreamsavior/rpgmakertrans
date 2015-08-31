@@ -33,7 +33,6 @@ if '-p' in sys.argv:
     sys.argv.remove('-p')
     
 def test(string, verbose = None, filename = '', succeeds = True, errout=ErrorSender()):
-    if not string.startswith('/'): return
     assert isinstance(string, str)
     if DUMP: print('FULL STRING: %s' % string)
     if verbose is None:
@@ -77,10 +76,11 @@ if len(sys.argv) == 1:
     test('RPG::Cache.windowskin("Letter_"+($1.to_i/16).to_s).width / 4')
 else:
     target = sys.argv[1]
-    if os.path.isdir(target): fns = [os.path.join(target, fn) for fn in os.listdir(target)]
+    if os.path.isdir(target): fns = sorted([os.path.join(target, fn) for fn in os.listdir(target)])
     else: fns = [target]
     for filename in fns:
         if filename.endswith('.rb'):
             with open(filename, 'r', encoding='utf-8') as f:
                 print(filename)
-                test(f.read(), filename = filename)
+                script = f.read()
+                test(script, filename = filename)
