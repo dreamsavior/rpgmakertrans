@@ -16,6 +16,7 @@ end
 require 'socket'
 if ARGV[1] != 'compile'
   $SOCK = TCPSocket.new('127.0.0.1', socketNo)
+  $SOCK.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 end
 
 require_relative 'socketcall.rb'

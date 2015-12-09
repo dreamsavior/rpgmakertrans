@@ -10,7 +10,7 @@ Socket based communication. Intended to be used for
 communicating with Ruby.
 '''
 
-import asyncio, struct, random
+import asyncio, struct, random, socket
 from ..errorhook import handleError
 
 def readPacket(packet):
@@ -110,10 +110,12 @@ class SocketComms:
         sockets = self.sockets[:]
         while not coro:
             try:
-                socket = sockets.pop(0)
-                coro = asyncio.start_server(self.handleRequest, '127.0.0.1', 
-                                            socket, loop=self.loop)
-                self.socket = socket
+                port = sockets.pop(0)
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+                sock.bind(('127.0.0.1', port))
+                coro = asyncio.start_server(self.handleRequest, sock=sock, loop=self.loop)
+                self.socket = port
             except OSError:
                 pass
             except IndexError:
