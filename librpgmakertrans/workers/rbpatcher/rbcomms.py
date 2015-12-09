@@ -14,7 +14,7 @@ import asyncio
 import os
 import subprocess
 import sys
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import multiprocessing
 
 from ...controllers.socketcomms import SocketComms, SocketCommsError
@@ -85,6 +85,7 @@ class RBComms(SocketComms):
         self.going = True
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
         self.setEnv()
+        self.name_counts = defaultdict(int)
     
     def doFatalError(self, msg):
         """Send a fatal error message, then stop"""
@@ -170,8 +171,10 @@ class RBComms(SocketComms):
     def translateScript(self, bName, bScript, magicNo):
         """Handler to request translation of a string"""
         name = bName.decode('utf-8')
-        if name == '' or name in self.scripts:
-            name = makeDummyScriptName(name, self.scripts.count(name))
+        if name == '' or self.name_counts[name]:
+            self.name_counts[name] += 1
+            name = makeDummyScriptName(name, self.name_counts[name])
+        self.name_counts[name] += 1
         for encoding in ('utf-8', 'cp932'):
             try:
                 script = bScript.decode(encoding)
@@ -208,6 +211,7 @@ class RBComms(SocketComms):
 
     def setTranslatedScript(self, name, script):
         """Handler to receive the translation of a script"""
+        assert name not in self.translatedScripts, 'Script with duplicate name %s caused error' % name
         self.translatedScripts[name] = script
         self.outputComs.send('incProgress', 'scripts')
     
