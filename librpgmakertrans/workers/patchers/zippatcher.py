@@ -196,7 +196,7 @@ class ZIPPatcherv3(ZIPPatcher, BasePatcherV3):
         #print(self.assetFiles)
         #print(self.patchDataFiles)
 
-def sniffZip(path, matchfunc):
+def sniffZip_original(path, matchfunc):
     """A sniffer for Zipped Patches"""
     if os.path.isfile(path) and zipfile.is_zipfile(path):
         z = zipfile.ZipFile(path)
@@ -207,6 +207,11 @@ def sniffZip(path, matchfunc):
             x = f.read().decode('utf-8')
             if matchfunc(x):
                 return path
+    return False
+
+def sniffZip(path, matchfunc):
+    """Disables zip sniffing and therefore zip patching until I can get this to
+    work under windows"""
     return False
 
 @patcherSniffer(ZipPatchv2, 'ZIPPatcherv2')
