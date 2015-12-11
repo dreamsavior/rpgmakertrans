@@ -24,6 +24,13 @@ module Matcher
       return :translate
     end
   end
+
+  def matchXPTerms(data, context)
+    # Matches system terms in XP
+    if data.class == String and context[-2].class == Class and context[-2].name == 'RPG::System::Words'
+      return :translate
+    end
+  end
   
   def matchElements(data, context)
     # Match elements
@@ -41,7 +48,7 @@ module Matcher
   
   def matchStandardStrings(data, context)
     # Matches the 'standard' strings in all RPGMaker objects
-    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title', 'currency_unit'].include? context[-1]
+    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title', 'currency_unit', 'nickname'].include? context[-1]
       return :translate
     end
   end
