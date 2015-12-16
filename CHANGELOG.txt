@@ -1,3 +1,8 @@
+v4.30 07/12/2015
+
+FIX: Fixed an issue causing patcher to not terminate on games with duplicate script names
+ENH: Add nickname (for VX games) and Words (for XP games)
+
 v4.21 04/08/2015
 
 FIX: Fixed a bug that caused dialogues not to appear in translated VX/VX Ace games
