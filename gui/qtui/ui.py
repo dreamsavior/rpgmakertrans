@@ -202,6 +202,7 @@ class MainWindow(QtGui.QWidget):
         self.patchopts = PatchOptions(self, self.logic)
         self.progress = QtGui.QProgressBar()
         self.progress.setMinimum(0)
+        self.progress.setMaximum(100)
         self.comms = QtGui.QLabel('Waiting for backend..')
         self.errorLog = ErrorLog(self)
         self.errorLog.hide()
@@ -349,6 +350,7 @@ class MainWindow(QtGui.QWidget):
 
     def setProgress(self, percent):
         """Set the progress bar, in percent"""
+        print(percent)
         if percent == -1:
             self.progress.setMaximum(0)
         else:

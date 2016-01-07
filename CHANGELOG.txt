@@ -1,3 +1,9 @@
+v4.35 07/01/2016
+
+FIX: Crashes due to bugs in Windows Python
+FIX: Progress bar now goes to 100% when finished
+ENH: Inline scripts are now dumped when using dump scripts option
+
 v4.30 07/12/2015
 
 FIX: Fixed an issue causing patcher to not terminate on games with duplicate script names
