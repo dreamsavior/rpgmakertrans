@@ -198,6 +198,7 @@ class RBComms(SocketComms):
         for encoding in ('utf-8', 'cp932'):
             try:
                 script = bScript.decode(encoding)
+                self.outputComs.send('register_inline_script', script, context)
                 try:
                     return translateRuby(script, context, self.translator, self.outputComs, inline=True)[1]
                 except Exception as excpt:

@@ -13,11 +13,13 @@ progress/errors to an interface and coordinates worker progress
 """
 
 import os
+import json
 
 from .headless import Headless
 from ..workers.rbpatcher import startRBComms, patchGameIni
 from ..workers.rubyparse import rbOneOffTranslation
 from ..workers.sniffers import sniffer, SniffedType, translatedSniffer
+
 
 class HeadlessRB(Headless):
     """Headless specialised for Ruby based games.
@@ -25,6 +27,10 @@ class HeadlessRB(Headless):
     
     defaultPatchVersion = 3
     minPatcherProcesses = 2
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.inline_scripts = {}
 
     def makeFilesToProcess(self, indir, outdir):
         """Make the list of files to process."""
@@ -49,6 +55,10 @@ class HeadlessRB(Headless):
                 f.write(script)
         self.submit('patcher', rbOneOffTranslation, outputComs, errorComs, scriptName,
                     script, translator)
+
+    def register_inline_script(self, script, context):
+        if self.config.dumpScripts is not None:
+            self.inline_scripts[context] = script
 
     def processGame(self, indir, outdir, translator, mtimes, newmtimes,
                     config):
@@ -78,6 +88,13 @@ class HeadlessRB(Headless):
                     translator, mtimes=mtimes, newmtimes=newmtimes,
                     outputComs=self.inputcoms, inputComs=rbCommsIn,
                     config=config, rpgversion=type(self).rpgversion)
+
+    def finish(self, patcher):
+        super().finish(patcher)
+        if self.config.dumpScripts is not None:
+            with open(os.path.join(self.config.dumpScripts, 'inline_scripts.json'), 'w') as f:
+                json.dump(self.inline_scripts, f, ensure_ascii=False, indent=4, sort_keys=True)
+
               
 class HeadlessXP(HeadlessRB):
     """Headless specialised for XP games."""
