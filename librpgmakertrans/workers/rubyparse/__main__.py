@@ -52,28 +52,39 @@ def test(string, verbose = None, filename = '', succeeds = True, errout=ErrorSen
     if succeeds is False and errored is False:
         raise Exception('Succeeded when should have failed')
 
+heredoc = """
+  Content.new(:value => <<Eos
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+    irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+    pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+Eos
+)
+"""
 if len(sys.argv) == 1:
-    test('')
-    test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
-    test('"%s" % @varName\n')
-    test('"%s, %s" % (@varName, otherName)\n')
-    test('/\//\n')
-    test(r'/[\\]/')
-    test('("Hello")')
-    test('# "Not Actually A String"\n')
-    test('( # Tricky one this)\n', succeeds = False)
-    test('print << "yo"')
-    test('print <<END\nHeredoc\nEND', succeeds = False)
-    test('print <<-END\nHeredoc\nEND', succeeds = False)
-    test('x /x')
-    test('x/x\nx /x')
-    test('%q[Hello2]')
-    test('"#{""}"')
-    test('"#{\'\'}"')
-    test('a/a "Hello"')
-    test('/./m()')
-    test('/\\[Vv]\[(\d+)\]/')
-    test('RPG::Cache.windowskin("Letter_"+($1.to_i/16).to_s).width / 4')
+    #test('')
+    test(heredoc, succeeds=False)
+    #test('x = "abc%s" % "a"\n"Test 2"\n\'Another test\'\n\'Test4\' % \'Hi\'\n')
+    #test('"%s" % @varName\n')
+    #test('"%s, %s" % (@varName, otherName)\n')
+    #test('/\//\n')
+    #test(r'/[\\]/')
+    #test('("Hello")')
+    #test('# "Not Actually A String"\n')
+    #test('( # Tricky one this)\n', succeeds = False)
+    #test('print << "yo"')
+    #test('print <<END\nHeredoc\nEND', succeeds = False)
+    #test('print <<-END\nHeredoc\nEND', succeeds = False)
+    #test('x /x')
+    #test('x/x\nx /x')
+    #test('%q[Hello2]')
+    #test('"#{""}"')
+    #test('"#{\'\'}"')
+    #test('a/a "Hello"')
+    #test('/./m()')
+    #test('/\\[Vv]\[(\d+)\]/')
+    #test('RPG::Cache.windowskin("Letter_"+($1.to_i/16).to_s).width / 4')
 else:
     target = sys.argv[1]
     if os.path.isdir(target): fns = sorted([os.path.join(target, fn) for fn in os.listdir(target)])
