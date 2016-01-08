@@ -65,15 +65,18 @@ class ScriptTranslator:
             return ''.join(output)
 
 
-def translate_ruby(ruby):
+def translate_ruby(ruby, translator, inline, context_base):
     lexer = pygments.lexers.ruby.RubyLexer()
     tokens = iter(lexer.get_tokens_unprocessed(ruby))
     newline_count = 0
     current_string = []
     debug_strings = []
     output = []
+    newline_pos = 0
     heredoc_mode = False
     heredoc_name = ''
+
+    # TODO: Perhaps make Regex's only in verbose mode? Not sure.
     for index, token_type, token in tokens: # NOTE: Can manually advance by calling next(tokens)
         print(token_type, repr(token))
         if token_type in Token.Literal.String and token_type not in Token.Literal.String.Symbol:
@@ -96,18 +99,29 @@ def translate_ruby(ruby):
                     pass  # TODO: Possible change of Heredoc name? Would need different handling here.
                 heredoc_mode = False
             if actual_string:
+                line, col = newline_count, index - newline_pos
+                if not inline:
+                    context = 'Scripts/%s/%s:%s' % (context_base, line, col)
+                else:
+                    if not context_base.endswith('/'):
+                        context_base += '/'
+                    context = '%s%s:%s' % (context_base, line, col)
+                output.append(translator.translate(actual_string, context))
                 debug_strings.append(actual_string)
-        # TODO: Get Regexs
-        newline_count += token.count('\n')
+        else:
+            output.append(token)
+        if '\n' in token:
+            newline_count += token.count('\n')
+            newline_pos = index + token.rindex('\n')
 
-    return debug_strings
+    return output, debug_strings
 
 
 def translateRuby(string, filename, translationHandler, errorComs,
                   scriptTranslator=None, inline=False, verbose=False):
     """Translate a ruby string"""
     print(repr(string))
-    print(translate_ruby(string))
+    print(translate_ruby(string)[1])
     if scriptTranslator is None:
         scriptTranslator = ScriptTranslator(string, translationHandler,
                                             errorComs, inline=inline)
