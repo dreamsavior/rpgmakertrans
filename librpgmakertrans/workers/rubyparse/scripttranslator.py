@@ -65,63 +65,99 @@ class ScriptTranslator:
             return ''.join(output)
 
 
+class RString:
+    def __init__(self, context):
+        self.lines = []
+        self.context = context
+        self.heredoc_mode = False
+        self.__heredoc_id = None
+
+    def append(self, item):
+        if item:
+            self.lines.append(item)
+
+    @property
+    def heredoc_id(self):
+        if self.__heredoc_id is None:
+            self.__heredoc_id = self.lines[-1]
+        return self.__heredoc_id
+
+    @property
+    def string(self):
+        lines = self.lines[:]
+        if self.heredoc_mode:
+            lines.pop()
+            if lines:
+                indent = []
+                for char in lines[0]:
+                    if char.isspace():
+                        indent.append(char)
+                    else:
+                        break
+                indent = ''.join(indent)
+                lines = [line.replace(indent, '', 1) for line in lines]
+        return ''.join(lines)
+
+    def __iter__(self):
+        return iter(self.lines)
+
+    def __repr__(self):
+        return 'RString(%r, %r, %r)' % (self.context, ''.join(self.lines), self.heredoc_mode)
+
+    def __str__(self):
+        return ''.join(self.lines)
+
+
 def translate_ruby(ruby, translator, inline, context_base):
     lexer = pygments.lexers.ruby.RubyLexer()
     tokens = iter(lexer.get_tokens_unprocessed(ruby))
     newline_count = 0
-    current_string = []
     debug_strings = []
-    output = []
     newline_pos = 0
-    heredoc_mode = False
-    heredoc_name = ''
+
+    intermediate = []
 
     # TODO: Perhaps make Regex's only in verbose mode? Not sure.
     for index, token_type, token in tokens: # NOTE: Can manually advance by calling next(tokens)
-        print(token_type, repr(token))
         if token_type in Token.Literal.String and token_type not in Token.Literal.String.Symbol:
-            current_string = []
+            line, col = newline_count, index - newline_pos
+            context = 'Scripts/%s/%s:%s' % (context_base, line, col)
+            current_string = RString(context)
+            intermediate.append(current_string)
             while token_type in Token.Literal.String and token_type not in Token.Literal.String.Symbol:
                 current_string.append(token)
                 old_token_type = token_type
                 index, token_type, token = next(tokens, (None, None, ''))
                 if token_type in Token.Name.Constant and old_token_type in Token.Literal.String.Heredoc:
-                    heredoc_mode = True
-                    heredoc_name = token.strip()
+                    current_string.heredoc_mode = True
+                    current_string.append(token)
                     index, token_type, token = next(tokens, (None, None, ''))
-            actual_string = ''.join(current_string)
-            if heredoc_mode:
-                if actual_string:
-                    # TODO: Translation of heredoc name... how? Or should I automate?
-                    # TODO: Get the actual heredoc and it's indent size
-                    actual_string = "%s: %s" % (heredoc_name, actual_string)
-                else:
-                    pass  # TODO: Possible change of Heredoc name? Would need different handling here.
-                heredoc_mode = False
-            if actual_string:
-                line, col = newline_count, index - newline_pos
-                if not inline:
-                    context = 'Scripts/%s/%s:%s' % (context_base, line, col)
-                else:
-                    if not context_base.endswith('/'):
-                        context_base += '/'
-                    context = '%s%s:%s' % (context_base, line, col)
-                output.append(translator.translate(actual_string, context))
-                debug_strings.append(actual_string)
-        else:
-            output.append(token)
+
+        intermediate.append(token)
         if '\n' in token:
             newline_count += token.count('\n')
             newline_pos = index + token.rindex('\n')
 
-    return output, debug_strings
+    output = []
+    for indx, part in enumerate(intermediate):
+    #    print(indx, repr(part))
+        if isinstance(part, RString):
+            print('RRR', part.string)
+            debug_strings.append(str(part))
+            output.append(str(part))
+        else:
+            output.append(part)
+
+    return ''.join(output), debug_strings
 
 
 def translateRuby(string, filename, translationHandler, errorComs,
                   scriptTranslator=None, inline=False, verbose=False):
     """Translate a ruby string"""
     print(repr(string))
-    print(translate_ruby(string)[1])
+    print('---->NEW_TRANSLATOR')
+    print(repr(translate_ruby(string, translationHandler, inline, filename)[0]))
+    print('---->OLD_TRANSLATOR')
     if scriptTranslator is None:
         scriptTranslator = ScriptTranslator(string, translationHandler,
                                             errorComs, inline=inline)
@@ -132,7 +168,6 @@ def translateRuby(string, filename, translationHandler, errorComs,
     if translationHandler is False:
         return True
     output, debug_output = scriptTranslator.translate(debug_output=True)
-    print(debug_output)
     return filename, output
 
 
