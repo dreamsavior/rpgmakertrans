@@ -82,6 +82,14 @@ class RString:
             self.__heredoc_id = self.lines[-1]
         return self.__heredoc_id
 
+    @heredoc_id.setter
+    def heredoc_id(self, value):
+        self.__heredoc_id = value
+
+    @property
+    def just_id(self):
+        return len(self.lines) == 1
+
     @property
     def string(self):
         lines = self.lines[:]
@@ -116,6 +124,8 @@ def translate_ruby(ruby, translator, inline, context_base):
     newline_pos = 0
 
     intermediate = []
+    heredoc_ids = []
+    heredoc_strings = []
 
     # TODO: Perhaps make Regex's only in verbose mode? Not sure.
     for index, token_type, token in tokens: # NOTE: Can manually advance by calling next(tokens)
@@ -132,6 +142,10 @@ def translate_ruby(ruby, translator, inline, context_base):
                     current_string.heredoc_mode = True
                     current_string.append(token)
                     index, token_type, token = next(tokens, (None, None, ''))
+            if current_string.just_id():
+                heredoc_ids.append(current_string)
+            else:
+                heredoc_strings.append(current_string)
 
         intermediate.append(token)
         if '\n' in token:
