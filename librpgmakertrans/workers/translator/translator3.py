@@ -492,6 +492,7 @@ class TranslationFileDict(dict):
         self.enablePruning = enablePruning
         
     def __missing__(self, key):
+        assert key.lower() not in [x.lower() for x in self]  # Quick hack to protect against caes insensitive file systems
         self[key] = TranslationFile(key, [], self.enablePruning)
         return self[key]
 
