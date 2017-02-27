@@ -490,11 +490,20 @@ class TranslationDict(dict):
 class TranslationFileDict(dict):
     def __init__(self, enablePruning):
         self.enablePruning = enablePruning
+        self.missing_map = {}
         
     def __missing__(self, key):
-        assert key.lower() not in [x.lower() for x in self]  # Quick hack to protect against caes insensitive file systems
-        self[key] = TranslationFile(key, [], self.enablePruning)
-        return self[key]
+        if key not in self.missing_map:
+            for key_2 in self:
+                if key_2.lower() == key.lower():
+                    self.missing_map[key] = self[key_2]
+                    break
+        else:
+            self[key] = TranslationFile(key, [], self.enablePruning)
+        ret = self.missing_map.get(key, self.get(key, None))
+        assert ret is not None
+        return ret
+
 
 class Translator3(Translator):
     """A Version 3 Translator"""
