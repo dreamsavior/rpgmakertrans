@@ -3,7 +3,7 @@ version
 *******
 
 :author: Aleph Fell <habisain@gmail.com>
-:copyright: 2012-2015
+:copyright: 2012-2017
 :license: GNU Public License version 3
 
 Provides functionality related to versioning, including the version check.
@@ -12,8 +12,8 @@ Provides functionality related to versioning, including the version check.
 from urllib.request import urlopen
 import datetime
 
-version = 4.35
-expiry = datetime.date(2016, 8, 1)
+version = 4.4
+expiry = datetime.date(2017, 6, 1)
 debug = False
 beta = False
 
