@@ -498,8 +498,8 @@ class TranslationFileDict(dict):
                 if key_2.lower() == key.lower():
                     self.missing_map[key] = self[key_2]
                     break
-        else:
-            self[key] = TranslationFile(key, [], self.enablePruning)
+            else:
+                self[key] = TranslationFile(key, [], self.enablePruning)
         ret = self.missing_map.get(key, self.get(key, None))
         assert ret is not None
         return ret
