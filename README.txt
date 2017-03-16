@@ -1,6 +1,7 @@
-RPGMAKER TRANS v3.x README
+RPGMAKER TRANS v4.x README
 A Translation Patching Engine for RPGMaker Games
-Copyright (C) 2012-2014 Habisain
+Copyright (C) 2012-2017 Habisain
+Website: https://rpgmakertrans.bitbucket.io
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License Version 3 as
@@ -22,13 +23,6 @@ http://rpgmakertrans.bitbucket.org. A brief overview is given below.
 Simply select the game directory, patch and target directory. If you are
 starting a translation, select the 'create patch' checkbox to create an empty
 patch which can then be translated.
-
-If you are translating, checking the "Use UTF-8 BOM" checkbox will cause
-all patch files to have a UTF-8 BOM. This is needed for some editors to
-recognise UTF-8 files. However, it will break other editors, and is
-specifically not recommended by the UTF-8 Standard. If you are patching
-a game, then this checkbox has no effect; RPGMaker Trans will recognise
-patches with and without the UTF-8 BOM.
 
 RPGMaker Trans will attempt to automatically select appropriately named
 patches and target directories.
@@ -62,15 +56,7 @@ Will infringe copyright, so only do this with permission from the original
 creator. Otherwise, distribute the patch. Whilst this still technically
 infringes copyright, it is more 'acceptable' than the alternative.
 
-3) I get a "cannot get ZipImporter instance" error.
-
-Not a question, but due to bugs in cx_freeze (the component I use to turn
-Python scripts into an EXE), RPGMaker Trans cannot be run from a directory
-containing non-ASCII characters. Solution is to run RPGMaker Trans
-from a directory whose path only contains ASCII characters, or alternatively
-run using a source code distribution.
-
-4) What's pruby? Where can I get it's source code?
+3) What's pruby? Where can I get it's source code?
 
 pruby is the name I've given to the portable minimal ruby installation that
 is distributed with RPGMaker Trans. As such, source code, license etc. can
@@ -83,7 +69,7 @@ for Windows users to have (rather than having them download Ruby1.9.3). Also
 of note is that it is Windows only - OS X/Linux users are assumed to have
 easy access to a working Ruby installation.
 
-5) What's the difference between v2/v3 patches?
+4) What's the difference between v2/v3 patches?
 
 v2 patches are more of a dump of the internal state of the string insertion
 component. As such v2 patches have very few features. They are currently used
