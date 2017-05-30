@@ -124,6 +124,12 @@ class BasePatcherV3(BasePatch):
 def makeTranslator(patcher, coms, config):
     """Make a translator from this patch"""
     ret = patcher.makeTranslator(coms, config)
+    errors = patcher.errors + ret.errors
+    if errors:
+        for err in errors:
+            coms.send('nonfatalError', err)
+        coms.send('fatalError', 'Quitting due to above errors encountered when loading patch')
+        return ret
     coms.send('trigger', 'translatorReady')
     return ret
 

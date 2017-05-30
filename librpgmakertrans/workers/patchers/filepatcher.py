@@ -23,6 +23,7 @@ class FilePatcher(BasePatch):
         super(FilePatcher, self).__init__(path, *args, **kwargs)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
+        self.errors = []
 
     @property
     def patchPath(self):
@@ -45,7 +46,7 @@ class FilePatcher(BasePatch):
                 raw = f.read()
                 matched, decoded = self.tryDecodePatchFile(raw)
                 if not matched:
-                    raise Exception('Could not decode file %s' % fn)
+                    self.errors.append('Could not decode file %s; is it a UTF-8 file and does it the right header?' % fn)
                 data[name] = decoded.replace('\r', '')
         self.originalData = data.copy()
         return data, mtime

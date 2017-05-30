@@ -9,6 +9,8 @@ translator3
 Version 3 of the patch file format. 
 """
 
+import traceback
+
 from operator import itemgetter
 from collections import OrderedDict
 from fuzzywuzzy import process
@@ -515,8 +517,12 @@ class Translator3(Translator):
         if isinstance(namedStrings, dict):
             namedStrings = namedStrings.items()
         self.translationFiles = TranslationFileDict(enablePruning)
+        self.errors = []
         for name, string in namedStrings:
-            self.translationFiles[name] = TranslationFile.fromString(name, string, enablePruning=enablePruning)
+            try:
+                self.translationFiles[name] = TranslationFile.fromString(name, string, enablePruning=enablePruning)
+            except Exception:
+                self.errors.append('Encountered an error in file %s; traceback follows:\n' % (name, traceback.format_exc()))
         self.translationDB = TranslationDict()
         for translationFileName in self.translationFiles:
             translationFile = self.translationFiles[translationFileName]
