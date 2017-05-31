@@ -39,6 +39,10 @@ class BasePatch(metaclass=PatchMeta):
         self.categorisePatchFiles()
         self.translatorManager = TranslatorManager()
         self.translatorManager.start(errout)
+        self.errors = []
+
+    def get_errors(self):
+        return self.errors
 
     def quit(self):
         """Stop the associated translator manager"""
@@ -124,7 +128,7 @@ class BasePatcherV3(BasePatch):
 def makeTranslator(patcher, coms, config):
     """Make a translator from this patch"""
     ret = patcher.makeTranslator(coms, config)
-    errors = patcher.errors + ret.errors
+    errors = patcher.get_errors() + ret.get_errors()
     if errors:
         for err in errors:
             coms.send('nonfatalError', err)

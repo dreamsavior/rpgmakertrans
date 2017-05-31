@@ -23,7 +23,6 @@ class FilePatcher(BasePatch):
         super(FilePatcher, self).__init__(path, *args, **kwargs)
         if os.path.isfile(self.path):
             self.path = os.path.split(path)[0]
-        self.errors = []
 
     @property
     def patchPath(self):

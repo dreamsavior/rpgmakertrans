@@ -80,11 +80,8 @@ class CLIMode(CoreProtocol):
         self.normalPrint(message)
 
     def errorPrint(self, message):
-        """Print to stderr, removing the rerouting normally used.
-        This is also not silenced."""
-        t = sys.stderr
-        print(message, file=sys.stderr)
-        sys.stderr = t
+        """Print to stderr"""
+        print(message, file=sys.__stderr__)
 
     def nonfatalError(self, message):
         """Print a non fatal error message"""

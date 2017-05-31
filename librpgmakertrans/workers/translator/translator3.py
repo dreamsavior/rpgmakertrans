@@ -522,7 +522,7 @@ class Translator3(Translator):
             try:
                 self.translationFiles[name] = TranslationFile.fromString(name, string, enablePruning=enablePruning)
             except Exception:
-                self.errors.append('Encountered an error in file %s; traceback follows:\n' % (name, traceback.format_exc()))
+                self.errors.append('Encountered an error in file %s; traceback follows %s:\n' % (name, traceback.format_exc()))
         self.translationDB = TranslationDict()
         for translationFileName in self.translationFiles:
             translationFile = self.translationFiles[translationFileName]
@@ -531,6 +531,9 @@ class Translator3(Translator):
         self.newtranslations = OrderedDict()
         self.debug = debug
         self.translateLabels = False if config is None else config.translateLabels
+
+    def get_errors(self):
+        return self.errors
 
     def getPatchData(self):
         """Return a dictionary of filenames to file contents of the patch"""

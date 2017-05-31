@@ -185,6 +185,9 @@ class Translator2kv2f:
         return '%s containing %i entries' % (
             type(self).__name__, len(self.stringTrans))
 
+    def get_errors(self):
+        return []
+
     def translateString(self, string, context):
         if b'RPGMKTRANSKILL' in string:
             self.coms.send('fatalError',
