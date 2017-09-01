@@ -137,6 +137,9 @@ class QTLogic(CoreProtocol):
         """Set progress bar message"""
         self.window.setMessage(message)
 
+    def set_adv_text(self, message):
+        self.window.set_adv_message(message)
+
     def displayOK(self, title, message):
         """Display an OK dialogue box"""
         self.window.displayMessage('OK', title, message)

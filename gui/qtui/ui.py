@@ -201,6 +201,8 @@ class MainWindow(QtGui.QWidget):
                                    self, self.logic)
         self.patchopts = PatchOptions(self, self.logic)
         self.progress = QtGui.QProgressBar()
+        self.adv_message = QtGui.QLabel('Should be hidden')
+        self.adv_message.hide()
         self.progress.setMinimum(0)
         self.progress.setMaximum(100)
         self.comms = QtGui.QLabel('Waiting for backend..')
@@ -220,7 +222,7 @@ class MainWindow(QtGui.QWidget):
             hbox.addWidget(vwidget)
         hwidget = QtGui.QWidget()
         hwidget.setLayout(hbox)
-        for x in (hwidget, self.errorLog, self.progress, self.comms, 
+        for x in (hwidget, self.adv_message, self.errorLog, self.progress, self.comms,
                   self.gobutton, label):
             vboxAll.addWidget(x)
         self.setLayout(vboxAll)
@@ -268,6 +270,10 @@ class MainWindow(QtGui.QWidget):
         self.errorLog.show()
         self.errorLog.appendPlainText(msg)
         self.fixSize()
+
+    def set_adv_message(self, msg):
+        self.adv_message.setText(msg)
+        self.adv_message.show()
 
     def resetNonfatalErrors(self):
         """Reset the non-fatal errors"""

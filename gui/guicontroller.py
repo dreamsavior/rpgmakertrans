@@ -294,6 +294,9 @@ class GUIController(CoreProtocol):
         """For now, alias to setMessage"""
         self.nonfatalError(message)
 
+    def set_adv_text(self, message):
+        self.outputcoms.send('set_adv_text', message)
+
     def setMessage(self, message):
         """Set the message beneath the progress bar"""
         self.outputcoms.send('setMessage', message)
