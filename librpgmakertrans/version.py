@@ -9,33 +9,29 @@ version
 Provides functionality related to versioning, including the version check.
 """
 
-from urllib.request import urlopen
+from urllib.request import urlopen, URLError
 import datetime
 
-version = 4.4
-expiry = datetime.date(2017, 6, 1)
+version = 4.5
+expiry = datetime.date(2500, 6, 1)
 debug = False
 beta = False
 
-versionString = '%s%s%s' % (str(round(version, 2)), ' [DEBUG]' if debug else '',
-                            ' [BETA]' if beta else '')
+versionString = '4.5 Legacy'
 
 def versionCheck(coms):
     """Check to see if a new version is available"""
-    if expiry < datetime.date.today():
-        coms.send('expired')
-        return
     try:
-        versionURL = 'http://rpgmakertrans.bitbucket.org/rpgmakertransversion'
-        if beta:
-            versionURL += 'beta'
-        with urlopen(versionURL) as versionFile:
-            versionData = versionFile.read()
-        webver = float(versionData.strip())
-        if webver > version:
-            coms.send('newVerAvailable', webver)
+        message_url = 'https://rpgmakertrans.bitbucket.io/rpgmaker_legacy_message'
+        with urlopen(message_url) as message_file:
+            message = message_file.read()
+        if message:
+            coms.send('nonfatalError', message)
+    except URLError:
+        pass
     except Exception as e:
-        coms.send('nonfatalError', 'Error checking version: %s' % e)
+        coms.send('nonfatalError', 'Unspecified error: %s' % e)
+
 
 if __name__ == '__main__':
     from .controllers.sender import ErrorSender
