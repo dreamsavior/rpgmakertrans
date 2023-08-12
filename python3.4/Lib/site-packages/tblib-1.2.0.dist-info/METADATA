@@ -1,0 +1,517 @@
+Metadata-Version: 2.0
+Name: tblib
+Version: 1.2.0
+Summary: Traceback fiddling library. For now allows you to pickle tracebacks and raise exceptions with pickled tracebacks in different processes. This allows better error handling when running code over multiple processes (imagine multiprocessing, billiard, futures, celery etc).
+Home-page: https://github.com/ionelmc/python-tblib
+Author: Ionel Cristian Mărieș
+Author-email: contact@ionelmc.ro
+License: BSD
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Utilities
+
+=====
+tblib
+=====
+
+.. list-table::
+    :stub-columns: 1
+
+    * - docs
+      - |docs|
+    * - tests
+      - | |travis| |appveyor| |requires|
+        | |coveralls| |codecov|
+        | |landscape| |scrutinizer| |codacy| |codeclimate|
+    * - package
+      - |version| |downloads| |wheel| |supported-versions| |supported-implementations|
+
+.. |docs| image:: https://readthedocs.org/projects/python-tblib/badge/?style=flat
+    :target: https://readthedocs.org/projects/python-tblib
+    :alt: Documentation Status
+
+.. |travis| image:: https://travis-ci.org/ionelmc/python-tblib.svg?branch=master
+    :alt: Travis-CI Build Status
+    :target: https://travis-ci.org/ionelmc/python-tblib
+
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/ionelmc/python-tblib?branch=master&svg=true
+    :alt: AppVeyor Build Status
+    :target: https://ci.appveyor.com/project/ionelmc/python-tblib
+
+.. |requires| image:: https://requires.io/github/ionelmc/python-tblib/requirements.svg?branch=master
+    :alt: Requirements Status
+    :target: https://requires.io/github/ionelmc/python-tblib/requirements/?branch=master
+
+.. |coveralls| image:: https://coveralls.io/repos/ionelmc/python-tblib/badge.svg?branch=master&service=github
+    :alt: Coverage Status
+    :target: https://coveralls.io/r/ionelmc/python-tblib
+
+.. |codecov| image:: https://codecov.io/github/ionelmc/python-tblib/coverage.svg?branch=master
+    :alt: Coverage Status
+    :target: https://codecov.io/github/ionelmc/python-tblib
+
+.. |landscape| image:: https://landscape.io/github/ionelmc/python-tblib/master/landscape.svg?style=flat
+    :target: https://landscape.io/github/ionelmc/python-tblib/master
+    :alt: Code Quality Status
+
+.. |codacy| image:: https://img.shields.io/codacy/REPLACE_WITH_PROJECT_ID.svg?style=flat
+    :target: https://www.codacy.com/app/ionelmc/python-tblib
+    :alt: Codacy Code Quality Status
+
+.. |codeclimate| image:: https://codeclimate.com/github/ionelmc/python-tblib/badges/gpa.svg
+   :target: https://codeclimate.com/github/ionelmc/python-tblib
+   :alt: CodeClimate Quality Status
+.. |version| image:: https://img.shields.io/pypi/v/tblib.svg?style=flat
+    :alt: PyPI Package latest release
+    :target: https://pypi.python.org/pypi/tblib
+
+.. |downloads| image:: https://img.shields.io/pypi/dm/tblib.svg?style=flat
+    :alt: PyPI Package monthly downloads
+    :target: https://pypi.python.org/pypi/tblib
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/tblib.svg?style=flat
+    :alt: PyPI Wheel
+    :target: https://pypi.python.org/pypi/tblib
+
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/tblib.svg?style=flat
+    :alt: Supported versions
+    :target: https://pypi.python.org/pypi/tblib
+
+.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/tblib.svg?style=flat
+    :alt: Supported implementations
+    :target: https://pypi.python.org/pypi/tblib
+
+.. |scrutinizer| image:: https://img.shields.io/scrutinizer/g/ionelmc/python-tblib/master.svg?style=flat
+    :alt: Scrutinizer Status
+    :target: https://scrutinizer-ci.com/g/ionelmc/python-tblib/
+
+Traceback fiddling library. For now allows you to pickle tracebacks and raise exceptions with pickled tracebacks in different processes.
+This allows better error handling when running code over multiple processes (imagine multiprocessing, billiard, futures, celery etc).
+
+* Free software: BSD license
+
+Installation
+============
+
+::
+
+    pip install tblib
+
+Documentation
+=============
+
+Pickling tracebacks
+-------------------
+
+**Note**: The traceback objects that come out are stripped of some attributes (like variables). But you'll be able to raise exceptions with
+those tracebacks or print them - that should cover 99% of the usecases.
+
+::
+
+    >>> from tblib import pickling_support
+    >>> pickling_support.install()
+    >>> import pickle, sys
+    >>> def inner_0():
+    ...     raise Exception('fail')
+    ...
+    >>> def inner_1():
+    ...     inner_0()
+    ...
+    >>> def inner_2():
+    ...     inner_1()
+    ...
+    >>> try:
+    ...     inner_2()
+    ... except:
+    ...     s1 = pickle.dumps(sys.exc_info())
+    ...
+    >>> len(s1) > 1
+    True
+    >>> try:
+    ...     inner_2()
+    ... except:
+    ...     s2 = pickle.dumps(sys.exc_info(), protocol=pickle.HIGHEST_PROTOCOL)
+    ...
+    >>> len(s2) > 1
+    True
+
+    >>> try:
+    ...     import cPickle
+    ... except ImportError:
+    ...     import pickle as cPickle
+    >>> try:
+    ...     inner_2()
+    ... except:
+    ...     s3 = cPickle.dumps(sys.exc_info(), protocol=pickle.HIGHEST_PROTOCOL)
+    ...
+    >>> len(s3) > 1
+    True
+
+Unpickling
+----------
+
+::
+
+    >>> pickle.loads(s1)
+    (<...Exception'>, Exception('fail',), <traceback object at ...>)
+
+    >>> pickle.loads(s2)
+    (<...Exception'>, Exception('fail',), <traceback object at ...>)
+
+    >>> pickle.loads(s3)
+    (<...Exception'>, Exception('fail',), <traceback object at ...>)
+
+Raising
+-------
+
+::
+
+    >>> from six import reraise
+    >>> reraise(*pickle.loads(s1))
+    Traceback (most recent call last):
+      ...
+      File "<doctest README.rst[14]>", line 1, in <module>
+        reraise(*pickle.loads(s2))
+      File "<doctest README.rst[8]>", line 2, in <module>
+        inner_2()
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+    >>> reraise(*pickle.loads(s2))
+    Traceback (most recent call last):
+      ...
+      File "<doctest README.rst[14]>", line 1, in <module>
+        reraise(*pickle.loads(s2))
+      File "<doctest README.rst[8]>", line 2, in <module>
+        inner_2()
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+    >>> reraise(*pickle.loads(s3))
+    Traceback (most recent call last):
+      ...
+      File "<doctest README.rst[14]>", line 1, in <module>
+        reraise(*pickle.loads(s2))
+      File "<doctest README.rst[8]>", line 2, in <module>
+        inner_2()
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+
+What if we have a local stack, does it show correctly ?
+```````````````````````````````````````````````````````
+
+Yes it does::
+
+    >>> exc_info = pickle.loads(s3)
+    >>> def local_0():
+    ...     reraise(*exc_info)
+    ...
+    >>> def local_1():
+    ...     local_0()
+    ...
+    >>> def local_2():
+    ...     local_1()
+    ...
+    >>> local_2()
+    Traceback (most recent call last):
+      File "...doctest.py", line ..., in __run
+        compileflags, 1) in test.globs
+      File "<doctest README.rst[24]>", line 1, in <module>
+        local_2()
+      File "<doctest README.rst[23]>", line 2, in local_2
+        local_1()
+      File "<doctest README.rst[22]>", line 2, in local_1
+        local_0()
+      File "<doctest README.rst[21]>", line 2, in local_0
+        reraise(*exc_info)
+      File "<doctest README.rst[11]>", line 2, in <module>
+        inner_2()
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+
+
+
+The tblib.Traceback object
+--------------------------
+
+It is used by the ``pickling_support``. You can use it too if you want more flexibility::
+
+    >>> from tblib import Traceback
+    >>> try:
+    ...     inner_2()
+    ... except:
+    ...     et, ev, tb = sys.exc_info()
+    ...     tb = Traceback(tb)
+    ...     reraise(et, ev, tb.as_traceback())
+    ...
+    Traceback (most recent call last):
+      ...
+      File "<doctest README.rst[21]>", line 6, in <module>
+        reraise(et, ev, tb.as_traceback())
+      File "<doctest README.rst[21]>", line 2, in <module>
+        inner_2()
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+
+
+You can use the ``to_dict`` method and the ``from_dict`` classmethod to
+convert a Traceback into and from a dictionary serializable by the stdlib
+json.JSONDecoder::
+
+    >>> import json
+    >>> from tblib import Traceback
+    >>> from pprint import pprint
+    >>> try:
+    ...     inner_2()
+    ... except:
+    ...     et, ev, tb = sys.exc_info()
+    ...     tb = Traceback(tb)
+    ...     tb_dict = tb.to_dict()
+    ...     pprint(tb_dict)
+    {'tb_frame': {'f_code': {'co_filename': '<doctest README.rst[30]>',
+                             'co_name': '<module>'},
+                  'f_globals': {'__name__': '__main__'}},
+     'tb_lineno': 2,
+     'tb_next': {'tb_frame': {'f_code': {'co_filename': ...
+                                         'co_name': 'inner_2'},
+                              'f_globals': {'__name__': '__main__'}},
+                 'tb_lineno': 2,
+                 'tb_next': {'tb_frame': {'f_code': {'co_filename': ...
+                                                     'co_name': 'inner_1'},
+                                          'f_globals': {'__name__': '__main__'}},
+                             'tb_lineno': 2,
+                             'tb_next': {'tb_frame': {'f_code': {'co_filename': ...
+                                                                 'co_name': 'inner_0'},
+                                                      'f_globals': {'__name__': '__main__'}},
+                                         'tb_lineno': 2,
+                                         'tb_next': None}}}}
+    >>> tb_json = json.dumps(tb_dict)
+    >>> tb = Traceback.from_dict(json.loads(tb_json))
+    >>> reraise(et, ev, tb.as_traceback())
+    Traceback (most recent call last):
+      ...
+      File "<doctest README.rst[21]>", line 6, in <module>
+        reraise(et, ev, tb.as_traceback())
+      File "<doctest README.rst[21]>", line 2, in <module>
+        inner_2()
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+
+
+
+
+Decorators
+----------
+
+return_error
+------------
+
+::
+
+    >>> from tblib.decorators import return_error
+    >>> inner_2r = return_error(inner_2)
+    >>> e = inner_2r()
+    >>> e
+    <tblib.decorators.Error object at ...>
+    >>> e.reraise()
+    Traceback (most recent call last):
+      ...
+      File "<doctest README.rst[26]>", line 1, in <module>
+        e.reraise()
+      File "...tblib...decorators.py", line 19, in reraise
+        reraise(self.exc_type, self.exc_value, self.traceback)
+      File "...tblib...decorators.py", line 25, in return_exceptions_wrapper
+        return func(*args, **kwargs)
+      File "<doctest README.rst[5]>", line 2, in inner_2
+        inner_1()
+      File "<doctest README.rst[4]>", line 2, in inner_1
+        inner_0()
+      File "<doctest README.rst[3]>", line 2, in inner_0
+        raise Exception('fail')
+    Exception: fail
+
+How's this useful ? Imagine you're using multiprocessing like this::
+
+    >>> import traceback
+    >>> from multiprocessing import Pool
+    >>> from examples import func_a
+    >>> if sys.version_info[:2] >= (3, 4):
+    ...     import multiprocessing.pool
+    ...     # Undo the fix for http://bugs.python.org/issue13831 so that we can see the effects of our change.
+    ...     # because Python 3.4 will show the remote traceback (but as a string sadly)
+    ...     multiprocessing.pool.ExceptionWithTraceback = lambda e, t: e
+    >>> pool = Pool()
+    >>> try:
+    ...     for i in pool.map(func_a, range(5)):
+    ...         print(i)
+    ... except:
+    ...     print(traceback.format_exc())
+    ...
+    Traceback (most recent call last):
+      File "<doctest README.rst[...]>", line 2, in <module>
+        for i in pool.map(func_a, range(5)):
+      File "...multiprocessing...pool.py", line ..., in map
+        ...
+      File "...multiprocessing...pool.py", line ..., in get
+        ...
+    Exception: Guessing time !
+    <BLANKLINE>
+    >>> pool.terminate()
+
+Not very useful is it? Let's sort this out::
+
+    >>> from tblib.decorators import apply_with_return_error, Error
+    >>> from itertools import repeat
+    >>> pool = Pool()
+    >>> try:
+    ...     for i in pool.map(apply_with_return_error, zip(repeat(func_a), range(5))):
+    ...         if isinstance(i, Error):
+    ...             i.reraise()
+    ...         else:
+    ...             print(i)
+    ... except:
+    ...     print(traceback.format_exc())
+    ...
+    Traceback (most recent call last):
+      File "<doctest README.rst[...]>", line 4, in <module>
+        i.reraise()
+      File "...tblib...decorators.py", line ..., in reraise
+        reraise(self.exc_type, self.exc_value, self.traceback)
+      File "...tblib...decorators.py", line ..., in return_exceptions_wrapper
+        return func(*args, **kwargs)
+      File "...tblib...decorators.py", line ..., in apply_with_return_error
+        return args[0](*args[1:])
+      File "...examples.py", line 2, in func_a
+        func_b()
+      File "...examples.py", line 5, in func_b
+        func_c()
+      File "...examples.py", line 8, in func_c
+        func_d()
+      File "...examples.py", line 11, in func_d
+        raise Exception("Guessing time !")
+    Exception: Guessing time !
+    <BLANKLINE>
+    >>> pool.terminate()
+
+Much better !
+
+What if we have a local call stack ?
+````````````````````````````````````
+
+::
+
+    >>> def local_0():
+    ...     pool = Pool()
+    ...     for i in pool.map(apply_with_return_error, zip(repeat(func_a), range(5))):
+    ...         if isinstance(i, Error):
+    ...             i.reraise()
+    ...         else:
+    ...             print(i)
+    ...
+    >>> def local_1():
+    ...     local_0()
+    ...
+    >>> def local_2():
+    ...     local_1()
+    ...
+    >>> try:
+    ...     local_2()
+    ... except:
+    ...     print(traceback.format_exc())
+    Traceback (most recent call last):
+      File "<doctest README.rst[...]>", line 2, in <module>
+        local_2()
+      File "<doctest README.rst[...]>", line 2, in local_2
+        local_1()
+      File "<doctest README.rst[...]>", line 2, in local_1
+        local_0()
+      File "<doctest README.rst[...]>", line 5, in local_0
+        i.reraise()
+      File "...tblib...decorators.py", line 20, in reraise
+        reraise(self.exc_type, self.exc_value, self.traceback)
+      File "...tblib...decorators.py", line 27, in return_exceptions_wrapper
+        return func(*args, **kwargs)
+      File "...tblib...decorators.py", line 47, in apply_with_return_error
+        return args[0](*args[1:])
+      File "...tests...examples.py", line 2, in func_a
+        func_b()
+      File "...tests...examples.py", line 5, in func_b
+        func_c()
+      File "...tests...examples.py", line 8, in func_c
+        func_d()
+      File "...tests...examples.py", line 11, in func_d
+        raise Exception("Guessing time !")
+    Exception: Guessing time !
+    <BLANKLINE>
+
+
+Credits
+=======
+
+* `mitsuhiko/jinja2 <https://github.com/mitsuhiko/jinja2>`_ for figuring a way to create traceback objects.
+
+
+Changelog
+=========
+
+1.2.0 (2015-12-18)
+------------------
+
+* Fixed handling for tracebacks from generators and other internal improvements
+  and optimizations. Contributed by DRayX in `#10 <https://github.com/ionelmc/python-tblib/issues/10>`_ 
+  and `#11 <https://github.com/ionelmc/python-tblib/pull/11>`_.
+
+1.1.0 (2015-07-27)
+------------------
+
+* Added support for Python 2.6. Contributed by Arcadiy Ivanov in 
+  `#8 <https://github.com/ionelmc/python-tblib/pull/8>`_.
+
+1.0.0 (2015-03-30)
+------------------
+
+* Added ``to_dict`` method and ``from_dict`` classmethod on Tracebacks.
+  Contributed by beckjake in `#5 <https://github.com/ionelmc/python-tblib/pull/5>`_.
+
+
