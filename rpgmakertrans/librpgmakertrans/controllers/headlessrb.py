@@ -34,19 +34,30 @@ class HeadlessRB(Headless):
 
     def makeFilesToProcess(self, indir, outdir):
         """Make the list of files to process."""
+        self.config.hasScripts = False
         files = {}
         indir = os.path.normcase(indir)
         dataExt = type(self).dataExtension
         for fn in os.listdir(indir):
+            # Add logic to check if fn's filename is 'Scripts'
+            # If 'Scripts' then set the self.config.hasScripts to True
+            if os.path.splitext(fn)[0].lower() == 'scripts':
+                print("----------Script found")
+                self.config.hasScripts = True
             if fn.lower().endswith(dataExt): 
                 mapTo = (os.path.join(outdir, fn),
-                         fn.lower().rpartition(dataExt)[0].title())
+                        fn.lower().rpartition(dataExt)[0].title())
                 files[os.path.join(indir, os.path.normcase(fn))] = mapTo 
+        print("Files to process", json.dumps(files, indent=2))
+
+        #self.outputcoms.send('displayMessage', files)
         return files
+
     
     def translateScript(self, scriptName, script, translator, outputComs, errorComs):
         """Submit a script for translation"""
         if self.config.dumpScripts is not None:
+            print("    Dumping script")
             sanitizedName = scriptName
             for char in ':\/?!*':
                 sanitizedName = sanitizedName.replace(char, '_')
@@ -90,8 +101,11 @@ class HeadlessRB(Headless):
                     config=config, rpgversion=type(self).rpgversion)
 
     def finish(self, patcher):
+        print("   Finishing patcher")
+        print("   Please manually close this window if it is not closed automatically")
         super().finish(patcher)
         if self.config.dumpScripts is not None:
+            print("   Dumping script")
             with open(os.path.join(self.config.dumpScripts, 'inline_scripts.json'), 'w') as f:
                 json.dump(self.inline_scripts, f, ensure_ascii=False, indent=4, sort_keys=True)
 

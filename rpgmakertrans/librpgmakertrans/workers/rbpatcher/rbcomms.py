@@ -48,6 +48,7 @@ class RBComms(SocketComms):
                  *args, **kwargs):
         """Initialise RBComms"""
         super().__init__(config=config, *args, **kwargs)
+        self.config = config
         self.inputComs = inputComs
         self.outputComs = outputComs
         self.translator = translator
@@ -227,6 +228,13 @@ class RBComms(SocketComms):
     def getScripts(self):
         """Returns the raw scripts, for loading into Ruby. Coroutine so that
         it can wait for the scripts to be loaded first."""
+        # self.outputComs.send("displayMessage", '---getScripts')
+        # print("getScripts", self)
+        # print("config", vars(self.config))
+        if not self.config.hasScripts:
+            print("getScripts", "Script not found, skipping.")
+            return self.rawScripts
+        
         while not self.scriptsDumped:
             yield from asyncio.sleep(0.1)
         return self.rawScripts
@@ -249,7 +257,7 @@ class RBComms(SocketComms):
         """Handler to get parameters for next Ruby task"""
         if self.scriptInput is not None:
             # print("Mode translateScripts", self.scriptInput)
-            # self.outputComs.send("displayMessage", self.scriptInput)
+            self.outputComs.send("displayMessage", "Script input:"+self.scriptInput)
             ret = ('translateScripts', self.scriptInput)
             self.scriptInput = None
             return ret

@@ -16,6 +16,8 @@ require 'net/http'
 require 'uri'
 
 def send_log(label, content)
+  return
+  
   url = URI.parse("http://localhost/logger/index.php?label=#{URI.encode(label)}&t=#{URI.encode(content)}")
   response = Net::HTTP.get_response(url)
 
@@ -54,16 +56,22 @@ when 'vxace'
 end
 
 def setupLoadData(path)
+  send_log("setupLoadData", path)
+
   path.force_encoding 'utf-8'
   loadData = "def load_data(path)\npath.force_encoding 'utf-8'\ndata = 0\nFile.open( File.join('%s', path), 'rb' ) do |datafile|\ndata=data = Marshal.load(datafile)\nend\nreturn data\nend\n" % path
   eval(loadData)
 end
 
 def loadScripts()
+  send_log("loadScripts", "loading script")
+
   b = binding
   getScripts.each{|script|
     begin
+      send_log("script", script)
       eval(script, b, script.split("\n").first)
+
       #eval(script)
     rescue Exception => e
       puts script
@@ -82,6 +90,7 @@ end
 
 def translateScripts(infile)
   #puts('working on Scripts')
+  send_log("translateScripts", infile)
   dumpScriptsFile(infile)
   #puts('translated Scripts (%s)' % infile)
   doneTranslation('ScriptsDumped')
