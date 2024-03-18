@@ -54,6 +54,13 @@ def errorWrap(func):
     return wrap
 
 
+try:
+    # For Python 3.10 and above
+    from collections.abc import Callable as ABCCallable
+except ImportError:
+    # For Python versions prior to 3.10
+    ABCCallable = collections.Callable
+
 class ErrorMeta(type):
     """A metaclass which automatically applies ErrorWrap to all
     methods on the class"""
@@ -61,5 +68,5 @@ class ErrorMeta(type):
         super().__init__(name, bases, dict_)
         for x in cls.__dict__:
             f = getattr(cls, x)
-            if isinstance(f, collections.Callable):
+            if isinstance(f, ABCCallable):
                 setattr(cls, x, errorWrap(f))

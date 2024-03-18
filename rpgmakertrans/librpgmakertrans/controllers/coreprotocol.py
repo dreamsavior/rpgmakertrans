@@ -20,6 +20,13 @@ from ..errorhook import setErrorOut, handleError
 import sys
 import collections
 
+try:
+    # For Python 3.10 and above
+    from collections.abc import Callable as ABCCallable
+except ImportError:
+    # For Python versions prior to 3.10
+    ABCCallable = collections.Callable
+
 ERRORSTRING = """An error was found with the following traceback:
 
 %s
@@ -216,6 +223,7 @@ class CoreProtocol:
 
     def submit(self, pool, fn, *args, **kwargs):
         """Submit a job to a pool"""
+        #print("Target", pool, args, kwargs)
         if not self.going:
             return
         if pool == 'dbg':
@@ -285,7 +293,7 @@ class CoreProtocol:
         while events:
             code, args, kwargs = events.pop(0)
             if (hasattr(self, code) and
-                isinstance(getattr(self, code), collections.Callable)):
+                isinstance(getattr(self, code), ABCCallable)):  # Using ABCCallable
                 try:
                     getattr(self, code)(*args, **kwargs)
                 except Exception:

@@ -65,6 +65,8 @@ class HeadlessUtils(CoreProtocol):
     def setProgressDiv(self, key, div):
         """Set the divisor of a given key on the progress reporter;
         typically a notion of the size of the complete job for the key"""
+        # Dreamsavior
+        print("Progress", key, div)
         if div != 0:
             self.progress[key][1] = div
         else:
@@ -184,18 +186,28 @@ class Headless(HeadlessUtils):
     def finaliseTranslation(self, patcher, translator, mtimesManager,
                             indir, patchpath, outdir, config):
         """Finalise the translation; write the patch and get mtimes"""
+        print("Finalise translation")
         self.setMessage('Finalising Patch')
+        self.setMessage('Send to patcher')
+
         self.submit('patcher', writeTranslator, patcher, translator,
                     config.useBOM, self.inputcoms)
         self.submit('copier', dumpMTimes, mtimesManager,
                     translator.getMTime(), self.inputcoms)
-        self.comboTrigger('finish', ['translatorWritten', 'mtimesDumped'])
+        self.comboTrigger('finish', ['translatorWritten'])
+        print("translatorWritten")
+        print("waiting for copier")
+        self.comboTrigger('finish', ['mtimesDumped'])
         self.localWaitUntil('finish', self.finish, patcher)
+        print("Copier finished")
+
 
     def finish(self, patcher):
         """End Headless"""
         self.going = False
+        print("Closing patcher and copier")
         self.shutdown(['patcher', 'copier'])
+        print("Quiting patcher")
         patcher.quit()
         self.patchManager.shutdown()
         self.mtimesManager.shutdown()

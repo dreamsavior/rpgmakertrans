@@ -12,15 +12,17 @@ Provides functionality related to versioning, including the version check.
 from urllib.request import urlopen, URLError
 import datetime
 
-version = 4.5
+version = 4.6
 expiry = datetime.date(2500, 6, 1)
 debug = False
 beta = False
 
-versionString = '4.5 Legacy'
+versionString = '4.6 CLI Gateway'
 
 def versionCheck(coms):
     """Check to see if a new version is available"""
+    # Dreamsavior. Always skip version check
+    return
     try:
         message_url = 'https://rpgmakertrans.bitbucket.io/rpgmaker_legacy_message'
         with urlopen(message_url) as message_file:

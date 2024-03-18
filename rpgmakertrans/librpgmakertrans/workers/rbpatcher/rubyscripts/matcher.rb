@@ -41,14 +41,16 @@ module Matcher
   
   def matchName(data, context)
     # This matches names, but *not* event names as these don't have to be translated.
-    if data.class == String and context[-1] == 'name' and not (context[-2].class == Class and context[-2].name == 'RPG::Event')
-      return :translate
+    #Dreamsavior: include event's name anyway
+    #if data.class == String and context[-1] == 'name' and not (context[-2].class == Class and context[-2].name == 'RPG::Event')
+    if data.class == String and context[-1] == 'name'
+        return :translate
     end
   end
   
   def matchStandardStrings(data, context)
     # Matches the 'standard' strings in all RPGMaker objects
-    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title', 'currency_unit', 'nickname'].include? context[-1]
+    if data.class == String and context[-1].class == String and ['display_name', 'description', 'message1', 'message2', 'message3', 'message4', 'skill_name', 'game_title', 'currency_unit', 'nickname', 'note'].include? context[-1]
       return :translate
     end
   end

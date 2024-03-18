@@ -41,7 +41,11 @@ class FileCopier(object, metaclass=ErrorMeta):
         self.dirssig = dirssig
 
     def doCopyDirs(self):
+        print("Copying directory", self.dirs)
+
         for directory in self.dirs:
+            self.comsout.send('displayMessage', "Copying directory "+directory)
+
             if os.path.exists(directory):
                 if os.path.isfile(directory):
                     os.remove(directory)
@@ -72,6 +76,7 @@ class FileCopier(object, metaclass=ErrorMeta):
         outfnmtime = self.mtimes.get(outfn, (None, None))[0]
         if infnmtime != outfnmtime:
             try:
+                self.comsout.send('displayMessage', "Copying file "+str(infn))
                 shutil.copy2(infn, outfn)
                 self.newmtimes[outfn] = infnmtime
             except FileNotFoundError:

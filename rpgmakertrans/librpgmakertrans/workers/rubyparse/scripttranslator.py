@@ -30,7 +30,7 @@ class ScriptTranslator:
 
     def rollback(self, index):
         self.translationIndices = [indices for indices in self.translationIndices if indices[0] < index]
-
+        
     def translate(self, debug_output=False):
         lastIndex = 0
         output = []
@@ -56,23 +56,50 @@ class ScriptTranslator:
         if debug_output:
             return ''.join(output), debug
         else:
-            return ''.join(output)
+            return ''.join(output)        
+
+    def translatewhole(self, string, filename):
+        context = 'Scripts/%s' % (filename)
+        translation = self.translationHandler.translate(string, context)
+        return translation
+
 
 
 def translateRuby(string, filename, translationHandler, errorComs,
                   scriptTranslator=None, inline=False, verbose=False):
     """Translate a ruby string"""
-    if scriptTranslator is None:
-        scriptTranslator = ScriptTranslator(string, translationHandler,
-                                            errorComs, inline=inline)
-    state = RubyParserState(string, filename, scriptTranslator, 0, [],
-                            verbose)
-    state.parse()
+    # if scriptTranslator is None:
+    #     scriptTranslator = ScriptTranslator(string, translationHandler,
+    #                                         errorComs, inline=inline)
+    # state = RubyParserState(string, filename, scriptTranslator, 0, [],
+    #                         verbose)
+    # state.parse()
 
     if translationHandler is False:
         return True
-    output, debug_output = scriptTranslator.translate(debug_output=True)
+    # output, debug_output = scriptTranslator.translate(debug_output=True)
+    context = 'Scripts/%s' % (filename)
+    try:
+        output = translationHandler.translate(string, context)
+    except RubyParserException as e:
+        print("error translating")
+        print(e)
     return filename, output
+
+# def translateRuby(string, filename, translationHandler, errorComs,
+#                   scriptTranslator=None, inline=False, verbose=False):
+#     """Translate a ruby string"""
+#     if scriptTranslator is None:
+#         scriptTranslator = ScriptTranslator(string, translationHandler,
+#                                             errorComs, inline=inline)
+#     state = RubyParserState(string, filename, scriptTranslator, 0, [],
+#                             verbose)
+#     state.parse()
+
+#     if translationHandler is False:
+#         return True
+#     output, debug_output = scriptTranslator.translate(debug_output=True)
+#     return filename, output
 
 
 def checkRuby(string):

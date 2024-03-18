@@ -43,20 +43,40 @@ module PageMatchers
     end
   end
   def match102(code, currentCommand, mode)
-      return code == 102 ? :patch102 : nil
+    return code == 102 ? :patch102 : nil
   end
   def match402(code, currentCommand, mode)
-      return code == 402 ? :patch402 : nil
+    return code == 402 ? :patch402 : nil
   end
-  def match118(code, currentCommand, mode)
-      return code == 118 ? :patch118119 : nil
-  end
-  def match119(code, currentCommand, mode)
-      return code == 119 ? :patch118119 : nil
-  end
+  # #label - we don't need this
+  # def match118(code, currentCommand, mode)
+  #   return code == 118 ? :patch118119 : nil
+  # end
+  # #jump to label - we don't need this
+  # def match119(code, currentCommand, mode)
+  #   return code == 119 ? :patch118119 : nil
+  # end
   def match355(code, currentCommand, mode)
-      return code == 355 ? :patch355 : nil
+    return code == 355 ? :patch355 : nil
+  end
+  #dreamsavior: scrolling text
+  def match105(code, currentCommand, mode)
+    return code == 105 ? :patch105 : nil
   end  
+  #variable
+  def match122(code, currentCommand, mode)
+    return code == 122 ? :patch122 : nil
+  end  
+  def match324(code, currentCommand, mode)
+    return code == 324 ? :patch324 : nil
+  end  
+  def match320(code, currentCommand, mode)
+    return code == 320 ? :patch320 : nil
+  end  
+  def match320(code, currentCommand, mode)
+    return code == 108 ? :patch108 : nil
+  end  
+
 end
 
 def pageMatchAll(code, currentCommand, mode)
@@ -84,8 +104,26 @@ module PagePatchers
       currentStr += pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip + "\n"
       currIndx += 1
     end
+    
+
     currentStr.rstrip!
-    translatedString = translate(currentStr, contextString + '%s/Dialogue' % dialogueLoc.to_s)
+    thisContextString = contextString + dialogueLoc.to_s + '/Dialogue'
+    if pageList[currIndx].instance_variable_get(:@parameters)[0] == ''
+      thisContextString = thisContextString+'/noPicture'
+    else
+      thisContextString = thisContextString+'/hasPicture'
+    end
+
+    if pageList[currIndx].instance_variable_get(:@parameters)[3] == 2
+      thisContextString = thisContextString+'/bottom'
+    elsif pageList[currIndx].instance_variable_get(:@parameters)[3] == 1
+      thisContextString = thisContextString+'/middle'
+    else
+      thisContextString = thisContextString+'/top'
+    end
+
+
+    translatedString = translate(currentStr, thisContextString )
     if translatedString == ''
       translatedString = ' '
     end
@@ -169,27 +207,157 @@ module PagePatchers
     return currIndx
   end
 
-  def patch355(currIndx, contextString, pageList, newPageList, storage)
-    # TODO: Check if this is also different in XP
-    line = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
-    scriptPos = currIndx
-    script = line + "\n"
-    indent = pageList[currIndx].instance_variable_get(:@indent)
+  def patch122(currIndx, contextString, pageList, newPageList, storage)
+    label_param = pageList[currIndx].instance_variable_get(:@parameters)[4]
+    
+    if label_param && label_param.is_a?(String)
+      label = label_param.rstrip
+      contextStr = contextString + '%s/VariableScript' % currIndx.to_s
+      translatedLabel = translate(label, contextStr)
+      pageList[currIndx].instance_variable_get(:@parameters)[4] = translatedLabel
+    else
+      # Handle the case where label_param is nil or not a string
+    end
+    
+    newPageList.push(pageList[currIndx])
     currIndx += 1
-    while pageList[currIndx].instance_variable_get(:@code) == 655 and currIndx < pageList.length do
-      line = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
-      script += line + "\n"
+    return currIndx
+  end
+
+  def patch320(currIndx, contextString, pageList, newPageList, storage)
+    label = pageList[currIndx].instance_variable_get(:@parameters)[1].rstrip
+    contextStr = contextString + '%s/ChangeName' % currIndx.to_s
+    translatedLabel = translate(label, contextStr)
+    pageList[currIndx].instance_variable_get(:@parameters)[1] = translatedLabel
+    newPageList.push(pageList[currIndx])
+    currIndx += 1
+    return currIndx
+  end
+
+  def patch324(currIndx, contextString, pageList, newPageList, storage)
+    label = pageList[currIndx].instance_variable_get(:@parameters)[1].rstrip
+    contextStr = contextString + '%s/ChangeNickname' % currIndx.to_s
+    translatedLabel = translate(label, contextStr)
+    pageList[currIndx].instance_variable_get(:@parameters)[1] = translatedLabel
+    newPageList.push(pageList[currIndx])
+    currIndx += 1
+    return currIndx
+  end
+
+
+  # def patch355(currIndx, contextString, pageList, newPageList, storage)
+  #   # TODO: Check if this is also different in XP
+  #   line = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
+  #   scriptPos = currIndx
+  #   script = line + "\n"
+  #   indent = pageList[currIndx].instance_variable_get(:@indent)
+  #   currIndx += 1
+  #   while pageList[currIndx].instance_variable_get(:@code) == 655 and currIndx < pageList.length do
+  #     line = pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip
+  #     script += line + "\n"
+  #     currIndx += 1
+  #   end
+  #   translatedscript = translateInlineScript(script, contextString + '%s/InlineScript' % scriptPos.to_s).lines
+  #   code = 355
+  #   translatedscript.each { |line|
+  #     line.chomp!
+  #     newPageList.push(RPG::EventCommand.new(code, indent, [line]))
+  #     code = 655
+  #   }
+  #   return currIndx
+  # end
+
+  #dreamsavior: Scrolling text handler
+  #Scrolling text is any length
+  def patch105(currIndx, contextString, pageList, newPageList, storage)
+    dialogueLoc = currIndx
+    windowInit = pageList[currIndx]
+    currIndx += 1
+    indent = windowInit.instance_variable_get(:@indent)
+    currentStr = ''
+    while pageList[currIndx].instance_variable_get(:@code) == 405 and currIndx < pageList.length do
+      currentStr += pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip + "\n"
       currIndx += 1
     end
-    translatedscript = translateInlineScript(script, contextString + '%s/InlineScript' % scriptPos.to_s).lines
-    code = 355
-    translatedscript.each { |line|
-      line.chomp!
-      newPageList.push(RPG::EventCommand.new(code, indent, [line]))
-      code = 655
+    currentStr.rstrip!
+    translatedString = translate(currentStr, contextString + '%s/ScrollingText' % dialogueLoc.to_s)
+    if translatedString == ''
+      translatedString = ' '
+    end
+    lineCount = 0
+    newPageList.push(windowInit)
+    translatedString.split("\n").each {|line|
+      if lineCount == 0
+        newPageList.push(windowInit)
+      end
+      lineCount += 1
+      newPageList.push(RPG::EventCommand.new(405, indent, [line]))
     }
     return currIndx
   end
+
+  def patch108(currIndx, contextString, pageList, newPageList, storage)
+    dialogueLoc = currIndx
+    indent = pageList[currIndx].instance_variable_get(:@indent)
+    currentStr = ''
+    firstLine = pageList[currIndx].instance_variable_get(:@parameters)[0]
+    if firstLine.class == String
+      currentStr += firstLine.rstrip + "\n"
+    end
+    currIndx += 1
+    while pageList[currIndx].instance_variable_get(:@code) == 408 and currIndx < pageList.length do
+      currentStr += pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip + "\n"
+      currIndx += 1
+    end
+    currentStr.rstrip!
+    translatedString = translate(currentStr, contextString + '%s/Comment' % dialogueLoc.to_s)
+    if translatedString == ''
+      translatedString = ' '
+    end
+    lineCount = 6
+    translatedString.split("\n").each {|line|
+      if lineCount == 6
+        lineCount = 1
+        newPageList.push(RPG::EventCommand.new(108, indent, [line]))
+      else
+        lineCount += 1
+        newPageList.push(RPG::EventCommand.new(408, indent, [line]))
+      end
+    }
+    return currIndx
+  end
+
+  def patch355(currIndx, contextString, pageList, newPageList, storage)
+    dialogueLoc = currIndx
+    indent = pageList[currIndx].instance_variable_get(:@indent)
+    currentStr = ''
+    firstLine = pageList[currIndx].instance_variable_get(:@parameters)[0]
+    if firstLine.class == String
+      currentStr += firstLine.rstrip + "\n"
+    end
+    currIndx += 1
+    while pageList[currIndx].instance_variable_get(:@code) == 655 and currIndx < pageList.length do
+      currentStr += pageList[currIndx].instance_variable_get(:@parameters)[0].rstrip + "\n"
+      currIndx += 1
+    end
+    currentStr.rstrip!
+    translatedString = translate(currentStr, contextString + '%s/EventScript' % dialogueLoc.to_s)
+    if translatedString == ''
+      translatedString = ' '
+    end
+    lineCount = 27
+    translatedString.split("\n").each {|line|
+      if lineCount == 27
+        lineCount = 1
+        newPageList.push(RPG::EventCommand.new(355, indent, [line]))
+      else
+        lineCount += 1
+        newPageList.push(RPG::EventCommand.new(655, indent, [line]))
+      end
+    }
+    return currIndx
+  end
+
 end
 
 def patchPage(page, context, mode)
@@ -221,7 +389,7 @@ def patchPage(page, context, mode)
   return page
 end
 
-$priority = [:@name, :@display_name, :@description, :@message1, :@message2, :@message3, :@message4]
+$priority = [:@name, :@display_name, :@description, :@message1, :@message2, :@message3, :@message4, :@note]
   
 def patch(data, context, mode)
   

@@ -117,6 +117,9 @@ class RBComms(SocketComms):
     def openRuby(self):
         """Open a ruby process"""
         rbScriptPath = os.path.join(self.basedir, 'rubyscripts', 'main.rb')
+        #dreamsavior debug
+        self.outputComs.send('displayMessage', "Opening ruby "+rbScriptPath)
+
         piping = None if self.debugRb else subprocess.PIPE
         return subprocess.Popen([self.rubypath, rbScriptPath, str(self.socket)],
                                 stdin=piping, stdout=piping, stderr=subprocess.PIPE)
@@ -154,6 +157,9 @@ class RBComms(SocketComms):
     @asyncio.coroutine
     def getInputComs(self):
         """Get input communications from inputcoms sender"""
+        #dreamsavior debug
+        self.outputComs.send('displayMessage', "getInputComs")
+
         try:
             while self.going:
                 yield from asyncio.sleep(0.1)
@@ -170,6 +176,7 @@ class RBComms(SocketComms):
 
     def translateScript(self, bName, bScript, magicNo):
         """Handler to request translation of a string"""
+        print("Translating script", bName)
         name = bName.decode('utf-8')
         if name == '' or self.name_counts[name]:
             self.name_counts[name] += 1
@@ -241,6 +248,8 @@ class RBComms(SocketComms):
     def getTaskParams(self):
         """Handler to get parameters for next Ruby task"""
         if self.scriptInput is not None:
+            # print("Mode translateScripts", self.scriptInput)
+            # self.outputComs.send("displayMessage", self.scriptInput)
             ret = ('translateScripts', self.scriptInput)
             self.scriptInput = None
             return ret

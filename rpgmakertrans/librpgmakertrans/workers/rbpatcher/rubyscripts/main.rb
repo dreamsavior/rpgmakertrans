@@ -8,6 +8,25 @@
 # Provides the main loop for the Ruby patching engine
 #
 
+# This ruby script will connected as client
+
+#dreamsavior debug
+puts "Starting Ruby script".inspect
+require 'net/http'
+require 'uri'
+
+def send_log(label, content)
+  url = URI.parse("http://localhost/logger/index.php?label=#{URI.encode(label)}&t=#{URI.encode(content)}")
+  response = Net::HTTP.get_response(url)
+
+  if response.is_a?(Net::HTTPSuccess)
+    return response.body
+  else
+    return "Error: #{response.message}"
+  end
+end
+#end of debug
+
 socketNo = ARGV[0].to_i
 if socketNo == 0
   socketNo = 27899
@@ -55,9 +74,9 @@ def loadScripts()
 end
 
 def translateFile(infile, outfile, context, mode)
-  #puts('working on %s' % context)
+  puts('working on %s' % context)
   patchFile(infile, outfile, context, mode)
-  #puts('translated %s (%s=>%s)' % [context, infile, outfile])
+  puts('translated %s (%s=>%s)' % [context, infile, outfile])
   doneTranslation(context)
 end
 
@@ -74,6 +93,7 @@ def rebuildScripts(outfile)
   while value[0].to_i > 0
     scripts.push([value[2], value[1], value[3]])
     #puts('receiving %s (magicNo:%s)' % [value[1], value[2]])
+    #send_log("rebuildScript", value[2] + "\n" + value[1]+ "\n" + value[3])
     value = getTranslatedScript()
   end
   scripts.push([value[2], value[1], value[3]])
