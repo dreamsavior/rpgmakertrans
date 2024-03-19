@@ -55,11 +55,11 @@ class FileCopier(object, metaclass=ErrorMeta):
         self.getLists()
         if not os.path.exists(self.outdir):
             os.mkdir(self.outdir)
-        patchmarkerfn = os.path.join(self.outdir, 'rpgmktranslated')
-        if not os.path.exists(patchmarkerfn):
-            with open(patchmarkerfn, 'w') as f:
-                f.write(
-                    'RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
+        # patchmarkerfn = os.path.join(self.outdir, 'rpgmktranslated')
+        # if not os.path.exists(patchmarkerfn):
+        #     with open(patchmarkerfn, 'w') as f:
+        #         f.write(
+        #             'RPGMaker Trans Patched Game. Not for redistribution.\n\n- Habisain')
         self.doCopyDirs()
         if self.dirssig:
             self.comsout.send('trigger', self.dirssig)
@@ -71,19 +71,39 @@ class FileCopier(object, metaclass=ErrorMeta):
             if self.progresssig:
                 self.comsout.send('incProgress', self.progresssig)
 
+    # def doCopyFile(self, fid, infn, outfn):
+    #     infnmtime = os.path.getmtime(infn)
+    #     outfnmtime = self.mtimes.get(outfn, (None, None))[0]
+    #     if infnmtime != outfnmtime:
+    #         try:
+    #             self.comsout.send('displayMessage', "Copying file "+str(infn))
+    #             shutil.copy2(infn, outfn)
+    #             self.newmtimes[outfn] = infnmtime
+    #         except FileNotFoundError:
+    #             self.comsout.send('nonfatalError',
+    #                               'Could not copy %s to %s' % (infn, outfn))
+    #     else:
+    #         self.newmtimes[outfn] = infnmtime
+
+
     def doCopyFile(self, fid, infn, outfn):
-        infnmtime = os.path.getmtime(infn)
-        outfnmtime = self.mtimes.get(outfn, (None, None))[0]
-        if infnmtime != outfnmtime:
-            try:
-                self.comsout.send('displayMessage', "Copying file "+str(infn))
-                shutil.copy2(infn, outfn)
+        # Check if the file has one of the required extensions
+        if infn.lower().endswith(('.rvdata2', '.rvdata', '.rxdata', '.ini')):
+            infnmtime = os.path.getmtime(infn)
+            outfnmtime = self.mtimes.get(outfn, (None, None))[0]
+            if infnmtime != outfnmtime:
+                try:
+                    self.comsout.send('displayMessage', "Copying file "+str(infn))
+                    shutil.copy2(infn, outfn)
+                    self.newmtimes[outfn] = infnmtime
+                except FileNotFoundError:
+                    self.comsout.send('nonfatalError',
+                                    'Could not copy %s to %s' % (infn, outfn))
+            else:
                 self.newmtimes[outfn] = infnmtime
-            except FileNotFoundError:
-                self.comsout.send('nonfatalError',
-                                  'Could not copy %s to %s' % (infn, outfn))
-        else:
-            self.newmtimes[outfn] = infnmtime
+        # else:
+        #     self.comsout.send('displayMessage', "Skipping file "+str(infn)+" due to unsupported extension")
+
 
     def changeDir(self, path, partA, partB):
         if partA.endswith(os.sep):

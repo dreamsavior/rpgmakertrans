@@ -169,6 +169,7 @@ class Headless(HeadlessUtils):
                     translator=translator, mtimes=mtimes,
                     newmtimes=newmtimes, progresssig='copying',
                     dirssig='dirsCopied')
+        
         self.setMessage('Patching game')
         self.setProgressDiv('patching', 1)
         self.localWaitUntil('dirsCopied', self.processGame, indir, outdir,
