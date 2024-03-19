@@ -21,6 +21,10 @@ def contextStr(context)
   return result
 end
 
+def convert_to_crlf(input_string)
+  input_string.gsub(/\r?\n/, "\r\n")
+end
+
 module RPG
 end
 
@@ -397,7 +401,9 @@ def patch(data, context, mode)
   
   case matchResult
   when :translate
-    return translate(data, contextStr(context))
+    translation = translate(data, contextStr(context))
+    #ensure translation is CRLF format
+    return convert_to_crlf(translation)
   when :randint
     return rand(2**32)
   when :eventList

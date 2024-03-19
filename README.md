@@ -7,6 +7,8 @@ This project focuses on the CLI version of rpgmakertrans and provides an easy wa
 - All texts that are previously uneditable, now editable. Such as. Map's name, event's name, comments. Why? Because some developer use ruby script to include texts that are not normally viewable in-game, viewable. They put those texts inside that previously mentioned fields.
 - Event's labels are no longer translatable, since there is no reason to translate it as it would cause harm more than benefits.
 - Ruby scripts are included literally.
+- Multi lined text are properly translated as a multi line texts.
+- Fixed several problems with the previous version of RPGMaker Trans
 
 ## How to run
 ```shell
