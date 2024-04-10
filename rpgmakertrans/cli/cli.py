@@ -94,11 +94,14 @@ class CLIMode(CoreProtocol):
 
     def normalPrint(self, string):
         """Print something if we're supposed to print"""
-        if not self.quiet:
-            if self.needNewLine:
-                print()
-            self.needNewLine = False
-            print(string)
+        try:
+            if not self.quiet:
+                if self.needNewLine:
+                    print()
+                self.needNewLine = False
+                print(string)
+        except UnicodeEncodeError:
+            print("Unicode error, cannot display string.")
 
     def progressPrint(self, string):
         """Print something using a progress bar style print"""

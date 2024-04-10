@@ -21,6 +21,7 @@ from ...controllers.socketcomms import SocketComms, SocketCommsError
 from ..rubyparse import translateRuby
 from ...errorhook import errorWrap, handleError
 from ...version import debug as debug_flag
+import datetime
 
 def _sortKey(item):
     if 'Map' in item[0]: return (1, item[0])
@@ -87,6 +88,7 @@ class RBComms(SocketComms):
         self.tickTasks = [self.checkForQuit, self.getInputComs, self.startRubies]
         self.setEnv()
         self.name_counts = defaultdict(int)
+        self.translationCount = 0
     
     def doFatalError(self, msg):
         """Send a fatal error message, then stop"""
@@ -173,6 +175,10 @@ class RBComms(SocketComms):
 
     def translate(self, string, context):
         """Handler to translate a string"""
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.translationCount += 1
+        if self.translationCount % 100 == 0:
+            self.outputComs.send('displayMessage', "[" + current_time + "] " + str(self.translationCount) + " items processed")
         return self.translator.translate(string, context)
 
     def translateScript(self, bName, bScript, magicNo):

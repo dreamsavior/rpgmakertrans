@@ -22,6 +22,7 @@ def contextStr(context)
 end
 
 def convert_to_crlf(input_string)
+  return input_string unless input_string.is_a?(String)
   input_string.gsub(/\r?\n/, "\r\n")
 end
 
