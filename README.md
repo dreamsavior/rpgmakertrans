@@ -48,3 +48,4 @@ The RPGMakerTrans CLI provides several command-line options for running the tool
 
 - `--dump-scripts`: Dumps scripts to the specified directory.
 
+- `-n, --maxline`: Maximum number of line in a dialog box. Default is 4.

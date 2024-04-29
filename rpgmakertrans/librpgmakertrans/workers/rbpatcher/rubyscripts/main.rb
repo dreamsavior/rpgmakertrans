@@ -16,7 +16,7 @@ require 'net/http'
 require 'uri'
 
 def send_log(label, content)
-  return
+  # return
   
   url = URI.parse("http://localhost/logger/index.php?label=#{URI.encode(label)}&t=#{URI.encode(content)}")
   response = Net::HTTP.get_response(url)
@@ -29,10 +29,28 @@ def send_log(label, content)
 end
 #end of debug
 
+def get_max_dialog_line(args)
+  n_index = args.index('-n')
+  return 4 unless n_index
+
+  n_value = args[n_index + 1]
+  return 4 if n_value.nil? || n_value.to_i.zero?
+
+  n_value.to_i
+end
+
+# Get command line arguments (excluding the script name)
+
+
 socketNo = ARGV[0].to_i
 if socketNo == 0
   socketNo = 27899
 end
+
+# Maximum number of lines in a dialog box
+args = ARGV[1..-1]
+$maxDialogLine = get_max_dialog_line(args)
+send_log("maxDialogLine", $maxDialogLine.to_s)
 
 require 'socket'
 if ARGV[1] != 'compile'

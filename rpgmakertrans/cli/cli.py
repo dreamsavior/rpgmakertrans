@@ -47,7 +47,8 @@ class CLIMode(CoreProtocol):
         config = HeadlessConfig(useBOM=cargs.use_bom, socket=cargs.socket,
                                 rebuild=cargs.rebuild,
                                 dumpScripts=cargs.dump_scripts,
-                                translateLabels=cargs.dump_labels)
+                                translateLabels=cargs.dump_labels,
+                                maxLine=cargs.maxline)
         initialiseHeadless(self.runner, self.inputcoms, game, patch, trans,
                            config)
 
@@ -159,7 +160,8 @@ def CLIBackend(runner):
                         help="Dump labels to patch file")
     parser.add_argument('--dump-scripts', type=str, default=None,
                         help="Dump scripts to given directory")
-    
+    parser.add_argument('-n', '--maxline', type=int, default=4, help='Maximum number of lines in a dialog box (default: 4)')
+
     t = sys.stderr # Hacks to ensure that custom error handling is suppressed
     sys.stderr = sys.__stderr__
     args = parser.parse_args()

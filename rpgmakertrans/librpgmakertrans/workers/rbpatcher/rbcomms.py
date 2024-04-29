@@ -121,10 +121,11 @@ class RBComms(SocketComms):
         """Open a ruby process"""
         rbScriptPath = os.path.join(self.basedir, 'rubyscripts', 'main.rb')
         #dreamsavior debug
-        self.outputComs.send('displayMessage', "Opening ruby "+rbScriptPath)
+        print("Running ruby script")
+        self.outputComs.send('displayMessage', "Opening ruby "+rbScriptPath+" with socket "+str(self.socket)+" and maxLine "+str(self.config.maxLine))
 
         piping = None if self.debugRb else subprocess.PIPE
-        return subprocess.Popen([self.rubypath, rbScriptPath, str(self.socket)],
+        return subprocess.Popen([self.rubypath, rbScriptPath, str(self.socket), "-n", str(self.config.maxLine)],
                                 stdin=piping, stdout=piping, stderr=subprocess.PIPE)
 
     @asyncio.coroutine
@@ -236,7 +237,7 @@ class RBComms(SocketComms):
         it can wait for the scripts to be loaded first."""
         # self.outputComs.send("displayMessage", '---getScripts')
         # print("getScripts", self)
-        # print("config", vars(self.config))
+        print("config:", vars(self.config))
         if not self.config.hasScripts:
             print("getScripts", "Script not found, skipping.")
             return self.rawScripts

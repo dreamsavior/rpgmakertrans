@@ -135,7 +135,7 @@ module PagePatchers
     lineCount = 0
     newPageList.push(windowInit)
     translatedString.split("\n").each {|line|
-      if lineCount == 4
+      if lineCount == $maxDialogLine
         lineCount = 0
         newPageList.push(windowInit)
       end
@@ -163,9 +163,9 @@ module PagePatchers
     if translatedString == ''
       translatedString = ' '
     end
-    lineCount = 4
+    lineCount = $maxDialogLine
     translatedString.split("\n").each {|line|
-      if lineCount == 4
+      if lineCount == $maxDialogLine
         lineCount = 1
         newPageList.push(RPG::EventCommand.new(101, indent, [line]))
       else
