@@ -16,7 +16,7 @@ require 'net/http'
 require 'uri'
 
 def send_log(label, content)
-  # return
+  return
   
   url = URI.parse("http://localhost/logger/index.php?label=#{URI.encode(label)}&t=#{URI.encode(content)}")
   response = Net::HTTP.get_response(url)
